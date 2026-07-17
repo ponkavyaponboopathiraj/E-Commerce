@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    @Override
-    public RegisterResponse register(RegisterRequest request) {
+   @Override
+public RegisterResponse register(RegisterRequest request) {
 
-        return null;
-
+    if (userRepository.existsByEmail(request.getEmail())) {
+        throw new EmailAlreadyExistsException("Email already exists.");
     }
+
+    return null;
+}
 }
