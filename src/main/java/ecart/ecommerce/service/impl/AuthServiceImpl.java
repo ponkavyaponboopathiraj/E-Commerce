@@ -57,14 +57,25 @@ public class AuthServiceImpl implements AuthService {
 
         user.setEmailVerified(false);
 
-        // Save User
-        userRepository.save(user);
+      // Save User
+User savedUser = userRepository.save(user);
 
-        // Response
-        RegisterResponse response = new RegisterResponse();
+// Response
+RegisterResponse response = new RegisterResponse();
 
-        response.setMessage("Registration Successful");
+response.setMessage("Registration Successful");
+response.setUserId(savedUser.getId());
+response.setEmail(savedUser.getEmail());
+response.setRole(savedUser.getRole().name());
 
-        return response;
+// Debug
+System.out.println("========== RESPONSE ==========");
+System.out.println("Message : " + response.getMessage());
+System.out.println("UserId  : " + response.getUserId());
+System.out.println("Email   : " + response.getEmail());
+System.out.println("Role    : " + response.getRole());
+System.out.println("==============================");
+
+return response;
     }
 }
