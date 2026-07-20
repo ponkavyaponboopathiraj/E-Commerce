@@ -14,18 +14,22 @@ import ecart.ecommerce.dto.request.LoginRequest;
 import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.exception.UserNotFoundException;
 import ecart.ecommerce.exception.InvalidPasswordException;
+import ecart.ecommerce.service.JwtService;
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService) {
 
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.jwtService = jwtService;
+}
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -95,13 +99,17 @@ public LoginResponse login(LoginRequest request) {
     }
 
     // Create Response
-    LoginResponse response = new LoginResponse();
+    String token = jwtService.generateToken(user);
 
-    response.setMessage("Login Successful");
-    response.setUserId(user.getId());
-    response.setEmail(user.getEmail());
-    response.setRole(user.getRole().name());
+LoginResponse response = new LoginResponse();
 
-    return response;
+response.setMessage("Login Successful");
+response.setUserId(user.getId());
+response.setEmail(user.getEmail());
+response.setRole(user.getRole().name());
+response.setToken(token);
+
+return response;
+    
 }
 }
