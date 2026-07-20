@@ -13,6 +13,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Validation Errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationException(
             MethodArgumentNotValidException ex) {
@@ -37,56 +38,45 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    // Email Already Exists
     @ExceptionHandler(EmailAlreadyExistsException.class)
-public ResponseEntity<Map<String, Object>> handleEmailAlreadyExists(
-        EmailAlreadyExistsException ex) {
+    public ResponseEntity<Map<String, Object>> handleEmailAlreadyExists(
+            EmailAlreadyExistsException ex) {
 
-    Map<String, Object> response = new LinkedHashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
 
-    response.put("timestamp", LocalDateTime.now());
-    response.put("status", HttpStatus.CONFLICT.value());
-    response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.CONFLICT.value());
+        response.put("message", ex.getMessage());
 
-    return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-}
-@ExceptionHandler(PhoneNumberAlreadyExistsException.class)
-public ResponseEntity<Map<String, Object>> handlePhoneAlreadyExists(
-        PhoneNumberAlreadyExistsException ex) {
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
 
-    Map<String, Object> response = new LinkedHashMap<>();
+    // Phone Number Already Exists
+    @ExceptionHandler(PhoneNumberAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handlePhoneAlreadyExists(
+            PhoneNumberAlreadyExistsException ex) {
 
-    response.put("timestamp", LocalDateTime.now());
-    response.put("status", HttpStatus.CONFLICT.value());
-    response.put("message", ex.getMessage());
+        Map<String, Object> response = new LinkedHashMap<>();
 
-    return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-}
- // Validation Errors
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationException(
-            MethodArgumentNotValidException ex) {
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.CONFLICT.value());
+        response.put("message", ex.getMessage());
 
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult().getFieldErrors().forEach(field -> {
-            errors.put(field.getField(), field.getDefaultMessage());
-        });
-
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     // Any Other Exception
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
 
-        Map<String, Object> error = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
 
-        error.put("timestamp", LocalDateTime.now());
-        error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        error.put("error", "Internal Server Error");
-        error.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("message", ex.getMessage());
 
-        return new ResponseEntity<>(error,
-                HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
