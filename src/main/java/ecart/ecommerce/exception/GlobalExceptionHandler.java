@@ -61,4 +61,32 @@ public ResponseEntity<Map<String, Object>> handlePhoneAlreadyExists(
 
     return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 }
+ // Validation Errors
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleValidationException(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(field -> {
+            errors.put(field.getField(), field.getDefaultMessage());
+        });
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    // Any Other Exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleException(Exception ex) {
+
+        Map<String, Object> error = new HashMap<>();
+
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        error.put("error", "Internal Server Error");
+        error.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(error,
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
