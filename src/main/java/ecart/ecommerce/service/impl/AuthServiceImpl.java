@@ -10,7 +10,10 @@ import ecart.ecommerce.repository.UserRepository;
 import ecart.ecommerce.service.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import ecart.ecommerce.dto.request.LoginRequest;
+import ecart.ecommerce.dto.response.LoginResponse;
+import ecart.ecommerce.exception.UserNotFoundException;
+import ecart.ecommerce.exception.InvalidPasswordException;
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -78,4 +81,27 @@ System.out.println("==============================");
 
 return response;
     }
+    @Override
+public LoginResponse login(LoginRequest request) {
+
+    // Check whether email exists
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() ->
+                    new UserNotFoundException("User not found with this email."));
+
+    // Verify Password
+    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        throw new InvalidPasswordException("Invalid password.");
+    }
+
+    // Create Response
+    LoginResponse response = new LoginResponse();
+
+    response.setMessage("Login Successful");
+    response.setUserId(user.getId());
+    response.setEmail(user.getEmail());
+    response.setRole(user.getRole().name());
+
+    return response;
+}
 }

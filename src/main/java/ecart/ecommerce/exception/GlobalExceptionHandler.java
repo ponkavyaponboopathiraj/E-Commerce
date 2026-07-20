@@ -79,4 +79,29 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+public ResponseEntity<Map<String, Object>> handleUserNotFound(
+        UserNotFoundException ex) {
+
+    Map<String, Object> response = new LinkedHashMap<>();
+
+    response.put("timestamp", LocalDateTime.now());
+    response.put("status", HttpStatus.NOT_FOUND.value());
+    response.put("message", ex.getMessage());
+
+    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+}
+@ExceptionHandler(InvalidPasswordException.class)
+public ResponseEntity<Map<String, Object>> handleInvalidPassword(
+        InvalidPasswordException ex) {
+
+    Map<String, Object> response = new LinkedHashMap<>();
+
+    response.put("timestamp", LocalDateTime.now());
+    response.put("status", HttpStatus.UNAUTHORIZED.value());
+    response.put("message", ex.getMessage());
+
+    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+}
 }
