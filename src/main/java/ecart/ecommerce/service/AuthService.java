@@ -2,6 +2,9 @@ package ecart.ecommerce.service;
 
 import ecart.ecommerce.dto.request.RegisterRequest;
 import ecart.ecommerce.dto.response.RegisterResponse;
+import ecart.ecommerce.dto.response.LoginResponse;
+import ecart.ecommerce.dto.request.LoginRequest;
+
 
 public interface AuthService {
 

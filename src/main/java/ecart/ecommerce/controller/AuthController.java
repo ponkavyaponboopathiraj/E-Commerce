@@ -1,6 +1,8 @@
 package ecart.ecommerce.controller;
 
+import ecart.ecommerce.dto.request.LoginRequest;
 import ecart.ecommerce.dto.request.RegisterRequest;
+import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.dto.response.RegisterResponse;
 import ecart.ecommerce.service.AuthService;
 import jakarta.validation.Valid;
@@ -18,6 +20,7 @@ public class AuthController {
         this.authService = authService;
     }
 
+    // Register API
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
             @Valid @RequestBody RegisterRequest request) {
@@ -25,5 +28,15 @@ public class AuthController {
         RegisterResponse response = authService.register(request);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    // Login API
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+
+        LoginResponse response = authService.login(request);
+
+        return ResponseEntity.ok(response);
     }
 }
