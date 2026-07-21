@@ -21,8 +21,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService,
-                                   UserRepository userRepository) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            UserRepository userRepository) {
 
         this.jwtService = jwtService;
         this.userRepository = userRepository;
@@ -38,8 +39,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Get Authorization Header
         String authHeader = request.getHeader("Authorization");
 
-        // Check whether Authorization Header exists
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // No JWT Token
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
 
             filterChain.doFilter(request, response);
             return;
@@ -50,50 +52,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            // Extract Email from JWT Token
-            String email = jwtService.extractEmail(token);
+            // Extract Email from JWT
+            String email = jwtService.extractUsername(token);
 
             // Check whether user is already authenticated
             if (email != null &&
-                    SecurityContextHolder.getContext().getAuthentication() == null) {
+                    SecurityContextHolder
+                            .getContext()
+                            .getAuthentication() == null) {
 
                 // Find User from Database
-                User user = userRepository.findByEmail(email)
+                User user = userRepository
+                        .findByEmail(email)
                         .orElse(null);
 
                 // Check User exists
-                if (user != null) {
+                if (user != null &&
+                        jwtService.isTokenValid(token, user)) {
 
-                    // Validate JWT Token
-                    if (jwtService.isTokenValid(token, user)) {
+                    // Create Authentication Object
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    user,
+                                    null,
+                                    user.getAuthorities()
+                            );
 
-                        // Create Authentication Object
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
-                                        user,
-                                        null,
-                                        user.getAuthorities()
-                                );
+                    // Set Request Details
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
 
-                        // Set Request Details
-                        authentication.setDetails(
-                                new WebAuthenticationDetailsSource()
-                                        .buildDetails(request)
-                        );
-
-                        // Set Authentication in Security Context
-                        SecurityContextHolder
-                                .getContext()
-                                .setAuthentication(authentication);
-                    }
+                    // Set Authentication
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
                 }
             }
 
         } catch (Exception ex) {
 
-            // Invalid JWT Token
             System.out.println(
-                    "JWT Authentication Failed: " + ex.getMessage()
+                    "JWT Authentication Failed: "
+                            + ex.getMessage()
             );
         }
 

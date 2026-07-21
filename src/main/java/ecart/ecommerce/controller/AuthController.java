@@ -39,4 +39,9 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/protected")
+public String protectedApi() {
+    return "JWT Authentication Successful! You can access this protected API.";
+}
 }

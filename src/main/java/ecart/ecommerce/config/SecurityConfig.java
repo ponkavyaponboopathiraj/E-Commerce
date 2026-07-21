@@ -1,6 +1,7 @@
 package ecart.ecommerce.config;
 
 import ecart.ecommerce.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +36,12 @@ public class SecurityConfig {
                 // Disable CSRF
                 .csrf(csrf -> csrf.disable())
 
+                // Disable Form Login
+                .formLogin(form -> form.disable())
+
+                // Disable HTTP Basic Authentication
+                .httpBasic(basic -> basic.disable())
+
                 // JWT is Stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -58,7 +65,28 @@ public class SecurityConfig {
                         .authenticated()
                 )
 
-                // Add JWT Filter
+                // Handle Unauthorized Requests
+                .exceptionHandling(exception -> exception
+
+                        .authenticationEntryPoint(
+                                (request, response, authException) -> {
+
+                                    response.setStatus(
+                                            HttpServletResponse.SC_UNAUTHORIZED
+                                    );
+
+                                    response.setContentType(
+                                            "application/json"
+                                    );
+
+                                    response.getWriter().write(
+                                            "{\"message\":\"Unauthorized - JWT token is required\"}"
+                                    );
+                                }
+                        )
+                )
+
+                // Add JWT Authentication Filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
