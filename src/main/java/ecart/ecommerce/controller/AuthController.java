@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,4 +45,10 @@ public class AuthController {
 public String protectedApi() {
     return "JWT Authentication Successful! You can access this protected API.";
 }
+ // Temporary BCrypt Password Generator
+    @GetMapping("/generate-password")
+    public String generatePassword() {
+        return new BCryptPasswordEncoder()
+                .encode("Admin@123");
+    }
 }

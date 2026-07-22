@@ -36,7 +36,10 @@ public class GlobalExceptionHandler {
         response.put("message", "Validation Failed");
         response.put("errors", validationErrors);
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.BAD_REQUEST
+        );
     }
 
     // Email Already Exists
@@ -50,7 +53,10 @@ public class GlobalExceptionHandler {
         response.put("status", HttpStatus.CONFLICT.value());
         response.put("message", ex.getMessage());
 
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.CONFLICT
+        );
     }
 
     // Phone Number Already Exists
@@ -64,12 +70,50 @@ public class GlobalExceptionHandler {
         response.put("status", HttpStatus.CONFLICT.value());
         response.put("message", ex.getMessage());
 
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.CONFLICT
+        );
+    }
+
+    // User Not Found
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(
+            UserNotFoundException ex) {
+
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    // Invalid Password
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPassword(
+            InvalidPasswordException ex) {
+
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.UNAUTHORIZED.value());
+        response.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.UNAUTHORIZED
+        );
     }
 
     // Any Other Exception
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleException(
+            Exception ex) {
 
         Map<String, Object> response = new LinkedHashMap<>();
 
@@ -77,31 +121,9 @@ public class GlobalExceptionHandler {
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.put("message", ex.getMessage());
 
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
-
-    @ExceptionHandler(UserNotFoundException.class)
-public ResponseEntity<Map<String, Object>> handleUserNotFound(
-        UserNotFoundException ex) {
-
-    Map<String, Object> response = new LinkedHashMap<>();
-
-    response.put("timestamp", LocalDateTime.now());
-    response.put("status", HttpStatus.NOT_FOUND.value());
-    response.put("message", ex.getMessage());
-
-    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-}
-@ExceptionHandler(InvalidPasswordException.class)
-public ResponseEntity<Map<String, Object>> handleInvalidPassword(
-        InvalidPasswordException ex) {
-
-    Map<String, Object> response = new LinkedHashMap<>();
-
-    response.put("timestamp", LocalDateTime.now());
-    response.put("status", HttpStatus.UNAUTHORIZED.value());
-    response.put("message", ex.getMessage());
-
-    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-}
 }
