@@ -45,10 +45,5 @@ public class AuthController {
 public String protectedApi() {
     return "JWT Authentication Successful! You can access this protected API.";
 }
- // Temporary BCrypt Password Generator
-    @GetMapping("/generate-password")
-    public String generatePassword() {
-        return new BCryptPasswordEncoder()
-                .encode("Admin@123");
-    }
+ 
 }
