@@ -14,6 +14,7 @@ function Login() {
 
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (event) => {
 
@@ -21,6 +22,8 @@ function Login() {
             ...formData,
             [event.target.name]: event.target.value,
         });
+
+        setMessage("");
     };
 
     const handleSubmit = async (event) => {
@@ -36,33 +39,65 @@ function Login() {
 
             console.log("Login Response:", response);
 
-            // Save JWT Token
+            // =========================================
+            // SAVE JWT TOKEN
+            // =========================================
+
             localStorage.setItem(
                 "token",
                 response.token
             );
 
-            // Save User Role
-            if (response.role) {
+            // =========================================
+            // GET ROLE
+            // =========================================
+
+            const userRole = response.role?.toUpperCase();
+
+            if (userRole) {
+
                 localStorage.setItem(
                     "role",
-                    response.role
+                    userRole
                 );
             }
 
-            // Save User Email
+            // =========================================
+            // SAVE USER EMAIL
+            // =========================================
+
             localStorage.setItem(
                 "email",
                 formData.email
             );
 
+            // =========================================
+            // SUCCESS MESSAGE
+            // =========================================
+
             setMessage(
-                "Login successful! Redirecting..."
+                "Login successful! Welcome back 🎉"
             );
 
-            // Go to Home
+            // =========================================
+            // ROLE BASED REDIRECTION
+            // =========================================
+
             setTimeout(() => {
-                navigate("/");
+
+                if (userRole === "ADMIN") {
+
+                    navigate("/admin-dashboard");
+
+                } else if (userRole === "SELLER") {
+
+                    navigate("/seller-dashboard");
+
+                } else {
+
+                    navigate("/customer-dashboard");
+                }
+
             }, 1000);
 
         } catch (error) {
@@ -94,91 +129,255 @@ function Login() {
 
     return (
 
-        <div className="auth-container">
+        <div className="auth-container login-page">
 
-            <div className="auth-card">
+            {/* =========================================
+                LEFT SIDE - E-CART BRANDING
+            ========================================= */}
 
-                <div className="auth-header">
+            <div className="auth-visual">
 
-                    <h1>Welcome Back</h1>
+                <div className="visual-content">
+
+                    <div className="brand-logo">
+                        🛍️
+                    </div>
+
+                    <h1>
+                        Welcome to
+                        <span> E-Cart</span>
+                    </h1>
 
                     <p>
-                        Login to your E-Cart account
+                        Your world of shopping,
+                        delivered to your doorstep.
                     </p>
+
+                    <div className="shopping-features">
+
+                        <div className="feature-item">
+                            <span>🚚</span>
+                            <p>Fast & Secure Delivery</p>
+                        </div>
+
+                        <div className="feature-item">
+                            <span>💳</span>
+                            <p>Safe & Easy Payments</p>
+                        </div>
+
+                        <div className="feature-item">
+                            <span>⭐</span>
+                            <p>Quality Products</p>
+                        </div>
+
+                    </div>
 
                 </div>
 
-                <form
-                    className="auth-form"
-                    onSubmit={handleSubmit}
-                >
+                <div className="floating-shape shape-one">
+                    🛒
+                </div>
 
-                    <div className="form-group">
+                <div className="floating-shape shape-two">
+                    📦
+                </div>
 
-                        <label>
-                            Email Address
-                        </label>
+                <div className="floating-shape shape-three">
+                    ❤️
+                </div>
 
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Enter your email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                        />
+            </div>
+
+
+            {/* =========================================
+                RIGHT SIDE - LOGIN FORM
+            ========================================= */}
+
+            <div className="auth-form-section">
+
+                <div className="auth-card">
+
+                    <div className="auth-header">
+
+                        <div className="mobile-logo">
+                            🛍️ E-Cart
+                        </div>
+
+                        <h1>
+                            Welcome Back 👋
+                        </h1>
+
+                        <p>
+                            Login to continue your shopping journey
+                        </p>
 
                     </div>
 
-                    <div className="form-group">
 
-                        <label>
-                            Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Enter your password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="auth-button"
-                        disabled={loading}
+                    <form
+                        className="auth-form"
+                        onSubmit={handleSubmit}
                     >
 
-                        {loading
-                            ? "Logging in..."
-                            : "Login"
-                        }
+                        {/* EMAIL */}
 
-                    </button>
+                        <div className="form-group">
 
-                </form>
+                            <label>
+                                📧 Email Address
+                            </label>
 
-                {message && (
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Enter your email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                            />
 
-                    <p className="auth-message">
-                        {message}
-                    </p>
+                        </div>
 
-                )}
 
-                <div className="auth-footer">
+                        {/* PASSWORD */}
 
-                    <p>
-                        Don't have an account?
-                    </p>
+                        <div className="form-group">
 
-                    <Link to="/register">
-                        Create Account
-                    </Link>
+                            <label>
+                                🔐 Password
+                            </label>
+
+                            <div className="password-wrapper">
+
+                                <input
+                                    type={
+                                        showPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() =>
+                                        setShowPassword(
+                                            !showPassword
+                                        )
+                                    }
+                                >
+                                    {showPassword
+                                        ? "🙈"
+                                        : "👁️"
+                                    }
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* FORGOT PASSWORD */}
+
+                        <div className="login-options">
+
+                            <label className="remember-me">
+
+                                <input
+                                    type="checkbox"
+                                />
+
+                                Remember me
+
+                            </label>
+
+                            <Link
+                                to="/forgot-password"
+                                className="forgot-password"
+                            >
+                                Forgot Password?
+                            </Link>
+
+                        </div>
+
+
+                        {/* LOGIN BUTTON */}
+
+                        <button
+                            type="submit"
+                            className="auth-button login-button"
+                            disabled={loading}
+                        >
+
+                            {loading ? (
+
+                                <>
+                                    <span className="spinner"></span>
+                                    Signing you in...
+                                </>
+
+                            ) : (
+
+                                <>
+                                    Login to E-Cart →
+                                </>
+
+                            )}
+
+                        </button>
+
+                    </form>
+
+
+                    {/* MESSAGE */}
+
+                    {message && (
+
+                        <div
+                            className={
+                                message.includes("successful")
+                                    ? "auth-message success-message"
+                                    : "auth-message error-message"
+                            }
+                        >
+
+                            {message}
+
+                        </div>
+
+                    )}
+
+
+                    {/* REGISTER */}
+
+                    <div className="auth-footer">
+
+                        <p>
+                            New to E-Cart?
+                        </p>
+
+                        <Link to="/register">
+                            Create your account →
+                        </Link>
+
+                    </div>
+
+
+                    {/* SECURITY */}
+
+                    <div className="secure-login">
+
+                        🔒
+                        <span>
+                            Your information is securely protected
+                        </span>
+
+                    </div>
 
                 </div>
 

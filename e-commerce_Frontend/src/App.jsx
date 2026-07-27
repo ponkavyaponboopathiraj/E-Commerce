@@ -1,38 +1,53 @@
 import {
     BrowserRouter,
     Routes,
-    Route
+    Route,
+    Navigate
 } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RoleTest from "./pages/RoleTest";
+import Home from "./pages/Home";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import "./App.css";
+
+
 function App() {
 
     return (
-
         <BrowserRouter>
 
-            {/* Common Navbar */}
             <Navbar />
 
             <Routes>
 
                 {/* =========================
-                    Public Routes
+                    HOME
                 ========================== */}
 
-                {/* Login Page */}
+                <Route
+                    path="/"
+                    element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================
+                    PUBLIC ROUTES
+                ========================== */}
+
                 <Route
                     path="/login"
                     element={<Login />}
                 />
 
-                {/* Register Page */}
                 <Route
                     path="/register"
                     element={<Register />}
@@ -40,16 +55,27 @@ function App() {
 
 
                 {/* =========================
-                    Protected Routes
+                    PROTECTED ROUTES
                 ========================== */}
 
-                {/* Role Test / Dashboard */}
                 <Route
                     path="/role-test"
                     element={
                         <ProtectedRoute>
                             <RoleTest />
                         </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================
+                    UNKNOWN URL
+                ========================== */}
+
+                <Route
+                    path="*"
+                    element={
+                        <Navigate to="/" replace />
                     }
                 />
 

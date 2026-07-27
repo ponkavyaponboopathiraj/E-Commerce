@@ -19,14 +19,32 @@ function Register() {
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Handle Input Changes
     const handleChange = (event) => {
+
+        const { name, value } = event.target;
 
         setFormData({
             ...formData,
-            [event.target.name]: event.target.value,
+            [name]: value,
         });
     };
 
+
+    // Handle Role Selection
+    const handleRoleSelect = (role) => {
+
+        setFormData({
+            ...formData,
+            role: role,
+        });
+
+        // Clear old error/success message
+        setMessage("");
+    };
+
+
+    // Handle Registration
     const handleSubmit = async (event) => {
 
         event.preventDefault();
@@ -35,6 +53,11 @@ function Register() {
         setLoading(true);
 
         try {
+
+            console.log(
+                "Register Request:",
+                formData
+            );
 
             const response = await registerUser(formData);
 
@@ -47,8 +70,11 @@ function Register() {
                 "Registration successful! Redirecting to login..."
             );
 
+            // Redirect to Login
             setTimeout(() => {
+
                 navigate("/login");
+
             }, 1500);
 
         } catch (error) {
@@ -75,9 +101,9 @@ function Register() {
         } finally {
 
             setLoading(false);
-
         }
     };
+
 
     return (
 
@@ -85,31 +111,50 @@ function Register() {
 
             <div className="auth-card register-card">
 
+                {/* =========================
+                    Header
+                ========================== */}
+
                 <div className="auth-header">
 
-                    <h1>Create Account</h1>
+                    <div className="auth-logo">
+                        🛍️
+                    </div>
+
+                    <h1>
+                        Create Your Account
+                    </h1>
 
                     <p>
-                        Join E-Cart and start shopping
+                        Join E-Cart and start your shopping journey
                     </p>
 
                 </div>
+
+
+                {/* =========================
+                    Registration Form
+                ========================== */}
 
                 <form
                     className="auth-form"
                     onSubmit={handleSubmit}
                 >
 
+                    {/* First Name + Last Name */}
+
                     <div className="form-row">
 
                         <div className="form-group">
 
-                            <label>First Name</label>
+                            <label>
+                                First Name
+                            </label>
 
                             <input
                                 type="text"
                                 name="firstName"
-                                placeholder="First name"
+                                placeholder="Enter your first name"
                                 value={formData.firstName}
                                 onChange={handleChange}
                                 required
@@ -117,14 +162,17 @@ function Register() {
 
                         </div>
 
+
                         <div className="form-group">
 
-                            <label>Last Name</label>
+                            <label>
+                                Last Name
+                            </label>
 
                             <input
                                 type="text"
                                 name="lastName"
-                                placeholder="Last name"
+                                placeholder="Enter your last name"
                                 value={formData.lastName}
                                 onChange={handleChange}
                                 required
@@ -134,14 +182,19 @@ function Register() {
 
                     </div>
 
+
+                    {/* Email */}
+
                     <div className="form-group">
 
-                        <label>Email Address</label>
+                        <label>
+                            Email Address
+                        </label>
 
                         <input
                             type="email"
                             name="email"
-                            placeholder="Enter your email"
+                            placeholder="Enter your email address"
                             value={formData.email}
                             onChange={handleChange}
                             required
@@ -149,28 +202,38 @@ function Register() {
 
                     </div>
 
+
+                    {/* Phone Number */}
+
                     <div className="form-group">
 
-                        <label>Phone Number</label>
+                        <label>
+                            Phone Number
+                        </label>
 
                         <input
-                            type="text"
+                            type="tel"
                             name="phoneNumber"
-                            placeholder="Enter phone number"
+                            placeholder="Enter your phone number"
                             value={formData.phoneNumber}
                             onChange={handleChange}
                         />
 
                     </div>
 
+
+                    {/* Password */}
+
                     <div className="form-group">
 
-                        <label>Password</label>
+                        <label>
+                            Password
+                        </label>
 
                         <input
                             type="password"
                             name="password"
-                            placeholder="Create a password"
+                            placeholder="Create a strong password"
                             value={formData.password}
                             onChange={handleChange}
                             required
@@ -178,27 +241,147 @@ function Register() {
 
                     </div>
 
-                    <div className="form-group">
 
-                        <label>Account Type</label>
+                    {/* =========================
+                        Account Type
+                    ========================== */}
 
-                        <select
-                            name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                        >
+                    <div className="role-section">
 
-                            <option value="CUSTOMER">
-                                Customer
-                            </option>
+                        <div className="role-title">
 
-                            <option value="SELLER">
-                                Seller
-                            </option>
+                            <h3>
+                                Choose Your Account Type
+                            </h3>
 
-                        </select>
+                            <p>
+                                Select how you want to use E-Cart
+                            </p>
+
+                        </div>
+
+
+                        <div className="role-options">
+
+
+                            {/* =====================
+                                Customer Role
+                            ====================== */}
+
+                            <div
+                                className={`role-card ${
+                                    formData.role === "CUSTOMER"
+                                        ? "role-card-active customer-role"
+                                        : ""
+                                }`}
+                                onClick={() =>
+                                    handleRoleSelect("CUSTOMER")
+                                }
+                            >
+
+                                <div className="role-icon">
+                                    🛍️
+                                </div>
+
+                                <div className="role-content">
+
+                                    <h4>
+                                        Customer
+                                    </h4>
+
+                                    <p>
+                                        Discover amazing products,
+                                        add items to your cart,
+                                        and enjoy a great shopping
+                                        experience.
+                                    </p>
+
+                                </div>
+
+                                <div className="role-check">
+
+                                    {formData.role === "CUSTOMER"
+                                        ? "✓"
+                                        : ""
+                                    }
+
+                                </div>
+
+                            </div>
+
+
+                            {/* =====================
+                                Seller Role
+                            ====================== */}
+
+                            <div
+                                className={`role-card ${
+                                    formData.role === "SELLER"
+                                        ? "role-card-active seller-role"
+                                        : ""
+                                }`}
+                                onClick={() =>
+                                    handleRoleSelect("SELLER")
+                                }
+                            >
+
+                                <div className="role-icon">
+                                    🏪
+                                </div>
+
+                                <div className="role-content">
+
+                                    <h4>
+                                        Seller
+                                    </h4>
+
+                                    <p>
+                                        Create your store, manage
+                                        products, track orders,
+                                        and grow your business.
+                                    </p>
+
+                                </div>
+
+                                <div className="role-check">
+
+                                    {formData.role === "SELLER"
+                                        ? "✓"
+                                        : ""
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
+
+
+                    {/* =========================
+                        Selected Role
+                    ========================== */}
+
+                    <div className="selected-role">
+
+                        <span>
+                            Selected Account:
+                        </span>
+
+                        <strong>
+                            {formData.role === "CUSTOMER"
+                                ? " 🛍️ Customer"
+                                : " 🏪 Seller"
+                            }
+                        </strong>
+
+                    </div>
+
+
+                    {/* =========================
+                        Submit Button
+                    ========================== */}
 
                     <button
                         type="submit"
@@ -207,7 +390,7 @@ function Register() {
                     >
 
                         {loading
-                            ? "Creating Account..."
+                            ? "Creating Your Account..."
                             : "Create Account"
                         }
 
@@ -215,13 +398,31 @@ function Register() {
 
                 </form>
 
+
+                {/* =========================
+                    Response Message
+                ========================== */}
+
                 {message && (
 
-                    <p className="auth-message">
+                    <div
+                        className={`auth-message ${
+                            message.includes("successful")
+                                ? "success-message"
+                                : "error-message"
+                        }`}
+                    >
+
                         {message}
-                    </p>
+
+                    </div>
 
                 )}
+
+
+                {/* =========================
+                    Login Link
+                ========================== */}
 
                 <div className="auth-footer">
 
@@ -230,7 +431,7 @@ function Register() {
                     </p>
 
                     <Link to="/login">
-                        Login here
+                        Login to E-Cart →
                     </Link>
 
                 </div>
@@ -238,7 +439,6 @@ function Register() {
             </div>
 
         </div>
-
     );
 }
 
