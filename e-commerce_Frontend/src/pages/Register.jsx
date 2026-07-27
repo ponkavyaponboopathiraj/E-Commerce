@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { registerUser } from "../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../service/authService";
+import "./Auth.css";
 
 function Register() {
+
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -13,6 +17,7 @@ function Register() {
     });
 
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (event) => {
 
@@ -26,6 +31,9 @@ function Register() {
 
         event.preventDefault();
 
+        setMessage("");
+        setLoading(true);
+
         try {
 
             const response = await registerUser(formData);
@@ -36,12 +44,19 @@ function Register() {
             );
 
             setMessage(
-                "Registration successful!"
+                "Registration successful! Redirecting to login..."
             );
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 1500);
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Registration Error:",
+                error
+            );
 
             if (error.response) {
 
@@ -56,104 +71,174 @@ function Register() {
                     "Unable to connect to server"
                 );
             }
+
+        } finally {
+
+            setLoading(false);
+
         }
     };
 
     return (
-        <div>
 
-            <h1>Register</h1>
+        <div className="auth-container">
 
-            <form onSubmit={handleSubmit}>
+            <div className="auth-card register-card">
 
-                <div>
-                    <label>First Name</label>
+                <div className="auth-header">
 
-                    <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        required
-                    />
+                    <h1>Create Account</h1>
+
+                    <p>
+                        Join E-Cart and start shopping
+                    </p>
+
                 </div>
 
-                <div>
-                    <label>Last Name</label>
+                <form
+                    className="auth-form"
+                    onSubmit={handleSubmit}
+                >
 
-                    <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
+                    <div className="form-row">
 
-                <div>
-                    <label>Email</label>
+                        <div className="form-group">
 
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
+                            <label>First Name</label>
 
-                <div>
-                    <label>Phone Number</label>
+                            <input
+                                type="text"
+                                name="firstName"
+                                placeholder="First name"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                required
+                            />
 
-                    <input
-                        type="text"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                    />
-                </div>
+                        </div>
 
-                <div>
-                    <label>Password</label>
+                        <div className="form-group">
 
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
+                            <label>Last Name</label>
 
-                <div>
-                    <label>Role</label>
+                            <input
+                                type="text"
+                                name="lastName"
+                                placeholder="Last name"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                required
+                            />
 
-                    <select
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
+                        </div>
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>Email Address</label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>Phone Number</label>
+
+                        <input
+                            type="text"
+                            name="phoneNumber"
+                            placeholder="Enter phone number"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Create a password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>Account Type</label>
+
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                        >
+
+                            <option value="CUSTOMER">
+                                Customer
+                            </option>
+
+                            <option value="SELLER">
+                                Seller
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="auth-button"
+                        disabled={loading}
                     >
-                        <option value="CUSTOMER">
-                            Customer
-                        </option>
 
-                        <option value="SELLER">
-                            Seller
-                        </option>
-                    </select>
+                        {loading
+                            ? "Creating Account..."
+                            : "Create Account"
+                        }
+
+                    </button>
+
+                </form>
+
+                {message && (
+
+                    <p className="auth-message">
+                        {message}
+                    </p>
+
+                )}
+
+                <div className="auth-footer">
+
+                    <p>
+                        Already have an account?
+                    </p>
+
+                    <Link to="/login">
+                        Login here
+                    </Link>
+
                 </div>
 
-                <button type="submit">
-                    Register
-                </button>
-
-            </form>
-
-            {message && (
-                <p>{message}</p>
-            )}
+            </div>
 
         </div>
+
     );
 }
 

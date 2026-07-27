@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { loginUser } from "../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../service/authService";
+import "./Auth.css";
 
 function Login() {
+
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -9,6 +13,7 @@ function Login() {
     });
 
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (event) => {
         setFormData({
@@ -21,6 +26,9 @@ function Login() {
 
         event.preventDefault();
 
+        setMessage("");
+        setLoading(true);
+
         try {
 
             const response = await loginUser(formData);
@@ -28,72 +36,135 @@ function Login() {
             console.log("Login Response:", response);
 
             // Save JWT Token
-            localStorage.setItem(
-                "token",
-                response.token
-            );
+            localStorage.setItem("token", response.token);
+
+            // Save role if backend sends role
+            if (response.role) {
+                localStorage.setItem("role", response.role);
+            }
 
             setMessage("Login successful!");
 
+            // Navigate after login
+            setTimeout(() => {
+                navigate("/");
+            }, 1000);
+
         } catch (error) {
 
-            console.error(error);
+            console.error("Login Error:", error);
 
             if (error.response) {
+
                 setMessage(
                     error.response.data.message ||
-                    "Login failed"
+                    "Invalid email or password"
                 );
+
             } else {
+
                 setMessage(
                     "Unable to connect to server"
                 );
             }
+
+        } finally {
+
+            setLoading(false);
+
         }
     };
 
     return (
-        <div>
 
-            <h1>Login</h1>
+        <div className="auth-container">
 
-            <form onSubmit={handleSubmit}>
+            <div className="auth-card">
 
-                <div>
-                    <label>Email</label>
+                <div className="auth-header">
 
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
+                    <h1>Welcome Back</h1>
+
+                    <p>
+                        Login to your E-Cart account
+                    </p>
+
                 </div>
 
-                <div>
-                    <label>Password</label>
+                <form
+                    className="auth-form"
+                    onSubmit={handleSubmit}
+                >
 
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div className="form-group">
+
+                        <label>Email Address</label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="auth-button"
+                        disabled={loading}
+                    >
+
+                        {loading
+                            ? "Logging in..."
+                            : "Login"
+                        }
+
+                    </button>
+
+                </form>
+
+                {message && (
+
+                    <p className="auth-message">
+                        {message}
+                    </p>
+
+                )}
+
+                <div className="auth-footer">
+
+                    <p>
+                        Don't have an account?
+                    </p>
+
+                    <Link to="/register">
+                        Create an account
+                    </Link>
+
                 </div>
 
-                <button type="submit">
-                    Login
-                </button>
-
-            </form>
-
-            {message && (
-                <p>{message}</p>
-            )}
+            </div>
 
         </div>
+
     );
 }
 
