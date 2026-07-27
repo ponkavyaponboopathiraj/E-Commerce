@@ -20,10 +20,10 @@ function Login() {
 
         const { name, value } = event.target;
 
-        setFormData((previousData) => ({
-            ...previousData,
+        setFormData({
+            ...formData,
             [name]: value,
-        }));
+        });
 
         setMessage("");
     };
@@ -42,17 +42,14 @@ function Login() {
 
             console.log("Login Response:", response);
 
-            // Save JWT
             localStorage.setItem(
                 "token",
                 response.token
             );
 
-            // Get user role
             const userRole =
                 response.role?.toUpperCase();
 
-            // Save role
             if (userRole) {
 
                 localStorage.setItem(
@@ -61,7 +58,6 @@ function Login() {
                 );
             }
 
-            // Save email
             localStorage.setItem(
                 "email",
                 formData.email
@@ -71,7 +67,6 @@ function Login() {
                 "Login successful! Welcome back 🎉"
             );
 
-            // Role based navigation
             setTimeout(() => {
 
                 if (userRole === "ADMIN") {
@@ -89,7 +84,6 @@ function Login() {
 
             }, 1000);
 
-
         } catch (error) {
 
             console.error(
@@ -100,7 +94,7 @@ function Login() {
             if (error.response) {
 
                 setMessage(
-                    error.response.data?.message ||
+                    error.response.data.message ||
                     "Invalid email or password"
                 );
 
@@ -120,218 +114,132 @@ function Login() {
 
     return (
 
-        <div className="login-page">
+        <div className="auth-page">
 
-            {/* =================================
-                DECORATIVE BACKGROUND
-            ================================= */}
+            {/* LEFT BRAND SECTION */}
 
-            <div className="background-decoration decoration-one"></div>
+            <div className="auth-brand-panel">
 
-            <div className="background-decoration decoration-two"></div>
+                <div className="brand-decoration decoration-one">
+                    ✨
+                </div>
 
-            <div className="background-decoration decoration-three"></div>
+                <div className="brand-decoration decoration-two">
+                    🛍️
+                </div>
+
+                <div className="brand-decoration decoration-three">
+                    💜
+                </div>
 
 
-            {/* =================================
-                LEFT BRANDING SECTION
-            ================================= */}
+                <div className="brand-content">
 
-            <section className="login-visual">
-
-                <div className="visual-overlay"></div>
-
-                <div className="visual-content">
-
-                    <div className="brand-logo-wrapper">
-
-                        <div className="brand-logo">
-                            🛍️
-                        </div>
-
-                        <span>
-                            E-Cart
-                        </span>
-
+                    <div className="brand-logo">
+                        🛍️
                     </div>
 
+                    <h1>
+                        E-Cart
+                    </h1>
 
-                    <div className="visual-text">
+                    <h2>
+                        Shop smarter.
+                        <br />
+                        Live better.
+                    </h2>
 
-                        <span className="welcome-badge">
-                            ✨ Welcome Back
-                        </span>
-
-                        <h1>
-                            Your shopping
-                            <br />
-
-                            <span>
-                                journey starts here.
-                            </span>
-                        </h1>
-
-                        <p>
-                            Discover amazing products,
-                            explore new collections,
-                            and enjoy a seamless
-                            shopping experience with E-Cart.
-                        </p>
-
-                    </div>
+                    <p>
+                        Discover products you love,
+                        enjoy secure shopping and
+                        experience effortless delivery.
+                    </p>
 
 
-                    {/* FEATURE CARDS */}
+                    <div className="brand-features">
 
-                    <div className="shopping-features">
-
-                        <div className="feature-item">
-
-                            <div className="feature-icon">
-                                🚚
-                            </div>
-
+                        <div className="brand-feature">
+                            <span>🚚</span>
                             <div>
                                 <strong>
                                     Fast Delivery
                                 </strong>
-
-                                <span>
-                                    Quick & reliable shipping
-                                </span>
+                                <small>
+                                    Delivered to your doorstep
+                                </small>
                             </div>
-
                         </div>
 
 
-                        <div className="feature-item">
-
-                            <div className="feature-icon">
-                                🔒
-                            </div>
-
+                        <div className="brand-feature">
+                            <span>🔒</span>
                             <div>
                                 <strong>
                                     Secure Shopping
                                 </strong>
-
-                                <span>
+                                <small>
                                     Your data is always protected
-                                </span>
+                                </small>
                             </div>
-
                         </div>
 
 
-                        <div className="feature-item">
-
-                            <div className="feature-icon">
-                                ⭐
-                            </div>
-
+                        <div className="brand-feature">
+                            <span>⭐</span>
                             <div>
                                 <strong>
-                                    Premium Quality
+                                    Quality Products
                                 </strong>
-
-                                <span>
-                                    Products you'll love
-                                </span>
+                                <small>
+                                    Shop with confidence
+                                </small>
                             </div>
-
                         </div>
 
                     </div>
 
                 </div>
 
-
-                {/* FLOATING DECORATIONS */}
-
-                <div className="floating-card floating-card-one">
-
-                    🛒
-
-                    <span>
-                        Shop
-                    </span>
-
-                </div>
+            </div>
 
 
-                <div className="floating-card floating-card-two">
+            {/* RIGHT LOGIN SECTION */}
 
-                    📦
+            <div className="auth-form-panel">
 
-                    <span>
-                        Delivered
-                    </span>
-
-                </div>
-
-
-                <div className="floating-card floating-card-three">
-
-                    ❤️
-
-                </div>
-
-            </section>
-
-
-            {/* =================================
-                RIGHT LOGIN SECTION
-            ================================= */}
-
-            <section className="login-form-section">
-
-                <div className="login-card">
-
-                    {/* MOBILE BRAND */}
+                <div className="auth-card">
 
                     <div className="mobile-brand">
-
-                        <div className="mobile-brand-icon">
-                            🛍️
-                        </div>
-
-                        <span>
-                            E-Cart
-                        </span>
-
+                        🛍️ E-Cart
                     </div>
 
 
-                    {/* HEADER */}
+                    <div className="auth-header">
 
-                    <div className="login-header">
-
-                        <span className="login-small-title">
-                            ACCOUNT LOGIN
+                        <span className="auth-eyebrow">
+                            Welcome back
                         </span>
 
-                        <h2>
-                            Welcome back 👋
-                        </h2>
+                        <h1>
+                            Sign in to your account
+                        </h1>
 
                         <p>
-                            Sign in to continue your
-                            shopping experience.
+                            Enter your details to continue
+                            shopping with E-Cart.
                         </p>
 
                     </div>
 
 
-                    {/* LOGIN FORM */}
-
                     <form
-                        className="login-form"
+                        className="auth-form"
                         onSubmit={handleSubmit}
                     >
 
                         {/* EMAIL */}
 
-                        <div className="input-group">
+                        <div className="form-group">
 
                             <label>
                                 Email Address
@@ -339,14 +247,14 @@ function Login() {
 
                             <div className="input-wrapper">
 
-                                <span className="input-icon">
+                                <span>
                                     ✉️
                                 </span>
 
                                 <input
                                     type="email"
                                     name="email"
-                                    placeholder="Enter your email"
+                                    placeholder="you@example.com"
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
@@ -359,27 +267,15 @@ function Login() {
 
                         {/* PASSWORD */}
 
-                        <div className="input-group">
+                        <div className="form-group">
 
-                            <div className="password-label-row">
-
-                                <label>
-                                    Password
-                                </label>
-
-                                <Link
-                                    to="/forgot-password"
-                                    className="forgot-link"
-                                >
-                                    Forgot password?
-                                </Link>
-
-                            </div>
-
+                            <label>
+                                Password
+                            </label>
 
                             <div className="input-wrapper">
 
-                                <span className="input-icon">
+                                <span>
                                     🔐
                                 </span>
 
@@ -401,17 +297,14 @@ function Login() {
                                     className="password-toggle"
                                     onClick={() =>
                                         setShowPassword(
-                                            (previous) =>
-                                                !previous
+                                            !showPassword
                                         )
                                     }
                                 >
-
                                     {showPassword
                                         ? "🙈"
                                         : "👁️"
                                     }
-
                                 </button>
 
                             </div>
@@ -419,53 +312,46 @@ function Login() {
                         </div>
 
 
-                        {/* REMEMBER ME */}
+                        <div className="login-options">
 
-                        <label className="remember-row">
+                            <label className="remember-me">
 
-                            <input
-                                type="checkbox"
-                            />
+                                <input
+                                    type="checkbox"
+                                />
 
-                            <span>
-                                Remember me
-                            </span>
+                                <span>
+                                    Remember me
+                                </span>
 
-                        </label>
+                            </label>
 
+                            <Link
+                                to="/forgot-password"
+                                className="forgot-password"
+                            >
+                                Forgot password?
+                            </Link>
 
-                        {/* LOGIN BUTTON */}
+                        </div>
+
 
                         <button
                             type="submit"
-                            className="login-button"
+                            className="auth-button"
                             disabled={loading}
                         >
 
                             {loading ? (
-
                                 <>
-
                                     <span className="spinner"></span>
-
-                                    Signing you in...
-
+                                    Signing in...
                                 </>
-
                             ) : (
-
                                 <>
-
-                                    <span>
-                                        Login to E-Cart
-                                    </span>
-
-                                    <span className="button-arrow">
-                                        →
-                                    </span>
-
+                                    Sign In
+                                    <span>→</span>
                                 </>
-
                             )}
 
                         </button>
@@ -473,78 +359,47 @@ function Login() {
                     </form>
 
 
-                    {/* MESSAGE */}
-
                     {message && (
 
                         <div
                             className={
-                                message.includes(
-                                    "successful"
-                                )
-                                    ? "login-message success"
-                                    : "login-message error"
+                                message.includes("successful")
+                                    ? "auth-message success-message"
+                                    : "auth-message error-message"
                             }
                         >
-
-                            <span>
-                                {message.includes(
-                                    "successful"
-                                )
-                                    ? "✓"
-                                    : "!"
-                                }
-                            </span>
-
                             {message}
-
                         </div>
 
                     )}
 
 
-                    {/* REGISTER */}
-
-                    <div className="register-section">
-
-                        <span>
-                            Don't have an account?
-                        </span>
-
-                        <Link to="/register">
-                            Create Account
-                            <span> →</span>
-                        </Link>
-
+                    <div className="auth-divider">
+                        <span>New to E-Cart?</span>
                     </div>
 
 
-                    {/* SECURITY */}
+                    <Link
+                        to="/register"
+                        className="secondary-button"
+                    >
+                        Create an account
+                    </Link>
 
-                    <div className="security-info">
+
+                    <div className="secure-login">
+
+                        🔒
 
                         <span>
-                            🛡️
+                            Secure and encrypted login
                         </span>
-
-                        <div>
-
-                            <strong>
-                                Secure Login
-                            </strong>
-
-                            <p>
-                                Your information is encrypted
-                                and protected.
-                            </p>
-
-                        </div>
 
                     </div>
 
                 </div>
 
-            </section>
+            </div>
 
         </div>
     );

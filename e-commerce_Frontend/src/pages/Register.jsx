@@ -18,8 +18,9 @@ function Register() {
 
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
-    // Handle Input Changes
+
     const handleChange = (event) => {
 
         const { name, value } = event.target;
@@ -28,10 +29,11 @@ function Register() {
             ...formData,
             [name]: value,
         });
+
+        setMessage("");
     };
 
 
-    // Handle Role Selection
     const handleRoleSelect = (role) => {
 
         setFormData({
@@ -39,12 +41,10 @@ function Register() {
             role: role,
         });
 
-        // Clear old error/success message
         setMessage("");
     };
 
 
-    // Handle Registration
     const handleSubmit = async (event) => {
 
         event.preventDefault();
@@ -59,7 +59,8 @@ function Register() {
                 formData
             );
 
-            const response = await registerUser(formData);
+            const response =
+                await registerUser(formData);
 
             console.log(
                 "Register Response:",
@@ -70,7 +71,6 @@ function Register() {
                 "Registration successful! Redirecting to login..."
             );
 
-            // Redirect to Login
             setTimeout(() => {
 
                 navigate("/login");
@@ -107,332 +107,485 @@ function Register() {
 
     return (
 
-        <div className="auth-container">
+        <div className="auth-page register-page">
 
-            <div className="auth-card register-card">
+            {/* LEFT BRAND PANEL */}
 
-                {/* =========================
-                    Header
-                ========================== */}
+            <div className="auth-brand-panel register-brand-panel">
 
-                <div className="auth-header">
+                <div className="brand-decoration decoration-one">
+                    ✨
+                </div>
 
-                    <div className="auth-logo">
+                <div className="brand-decoration decoration-two">
+                    🏪
+                </div>
+
+                <div className="brand-decoration decoration-three">
+                    🚀
+                </div>
+
+
+                <div className="brand-content">
+
+                    <div className="brand-logo">
                         🛍️
                     </div>
 
                     <h1>
-                        Create Your Account
+                        E-Cart
                     </h1>
 
+                    <h2>
+                        Your journey
+                        <br />
+                        starts here.
+                    </h2>
+
                     <p>
-                        Join E-Cart and start your shopping journey
+                        Create your account and
+                        unlock a world of shopping,
+                        selling and endless possibilities.
                     </p>
+
+
+                    <div className="brand-features">
+
+                        <div className="brand-feature">
+                            <span>🛍️</span>
+
+                            <div>
+                                <strong>
+                                    Shop Everything
+                                </strong>
+
+                                <small>
+                                    Discover products you love
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <div className="brand-feature">
+                            <span>🏪</span>
+
+                            <div>
+                                <strong>
+                                    Grow Your Business
+                                </strong>
+
+                                <small>
+                                    Sell products with E-Cart
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <div className="brand-feature">
+                            <span>💜</span>
+
+                            <div>
+                                <strong>
+                                    Simple Experience
+                                </strong>
+
+                                <small>
+                                    Easy, fast and secure
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
-
-                {/* =========================
-                    Registration Form
-                ========================== */}
-
-                <form
-                    className="auth-form"
-                    onSubmit={handleSubmit}
-                >
-
-                    {/* First Name + Last Name */}
-
-                    <div className="form-row">
-
-                        <div className="form-group">
-
-                            <label>
-                                First Name
-                            </label>
-
-                            <input
-                                type="text"
-                                name="firstName"
-                                placeholder="Enter your first name"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                required
-                            />
-
-                        </div>
+            </div>
 
 
-                        <div className="form-group">
+            {/* RIGHT REGISTER PANEL */}
 
-                            <label>
-                                Last Name
-                            </label>
+            <div className="auth-form-panel">
 
-                            <input
-                                type="text"
-                                name="lastName"
-                                placeholder="Enter your last name"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                required
-                            />
+                <div className="auth-card register-card">
 
-                        </div>
-
+                    <div className="mobile-brand">
+                        🛍️ E-Cart
                     </div>
 
 
-                    {/* Email */}
+                    <div className="auth-header">
 
-                    <div className="form-group">
-
-                        <label>
-                            Email Address
-                        </label>
-
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Enter your email address"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                        />
-
-                    </div>
-
-
-                    {/* Phone Number */}
-
-                    <div className="form-group">
-
-                        <label>
-                            Phone Number
-                        </label>
-
-                        <input
-                            type="tel"
-                            name="phoneNumber"
-                            placeholder="Enter your phone number"
-                            value={formData.phoneNumber}
-                            onChange={handleChange}
-                        />
-
-                    </div>
-
-
-                    {/* Password */}
-
-                    <div className="form-group">
-
-                        <label>
-                            Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Create a strong password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-
-                    </div>
-
-
-                    {/* =========================
-                        Account Type
-                    ========================== */}
-
-                    <div className="role-section">
-
-                        <div className="role-title">
-
-                            <h3>
-                                Choose Your Account Type
-                            </h3>
-
-                            <p>
-                                Select how you want to use E-Cart
-                            </p>
-
-                        </div>
-
-
-                        <div className="role-options">
-
-
-                            {/* =====================
-                                Customer Role
-                            ====================== */}
-
-                            <div
-                                className={`role-card ${
-                                    formData.role === "CUSTOMER"
-                                        ? "role-card-active customer-role"
-                                        : ""
-                                }`}
-                                onClick={() =>
-                                    handleRoleSelect("CUSTOMER")
-                                }
-                            >
-
-                                <div className="role-icon">
-                                    🛍️
-                                </div>
-
-                                <div className="role-content">
-
-                                    <h4>
-                                        Customer
-                                    </h4>
-
-                                    <p>
-                                        Discover amazing products,
-                                        add items to your cart,
-                                        and enjoy a great shopping
-                                        experience.
-                                    </p>
-
-                                </div>
-
-                                <div className="role-check">
-
-                                    {formData.role === "CUSTOMER"
-                                        ? "✓"
-                                        : ""
-                                    }
-
-                                </div>
-
-                            </div>
-
-
-                            {/* =====================
-                                Seller Role
-                            ====================== */}
-
-                            <div
-                                className={`role-card ${
-                                    formData.role === "SELLER"
-                                        ? "role-card-active seller-role"
-                                        : ""
-                                }`}
-                                onClick={() =>
-                                    handleRoleSelect("SELLER")
-                                }
-                            >
-
-                                <div className="role-icon">
-                                    🏪
-                                </div>
-
-                                <div className="role-content">
-
-                                    <h4>
-                                        Seller
-                                    </h4>
-
-                                    <p>
-                                        Create your store, manage
-                                        products, track orders,
-                                        and grow your business.
-                                    </p>
-
-                                </div>
-
-                                <div className="role-check">
-
-                                    {formData.role === "SELLER"
-                                        ? "✓"
-                                        : ""
-                                    }
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* =========================
-                        Selected Role
-                    ========================== */}
-
-                    <div className="selected-role">
-
-                        <span>
-                            Selected Account:
+                        <span className="auth-eyebrow">
+                            Get started
                         </span>
 
-                        <strong>
-                            {formData.role === "CUSTOMER"
-                                ? " 🛍️ Customer"
-                                : " 🏪 Seller"
+                        <h1>
+                            Create your account
+                        </h1>
+
+                        <p>
+                            Join E-Cart and start your
+                            shopping journey today.
+                        </p>
+
+                    </div>
+
+
+                    <form
+                        className="auth-form"
+                        onSubmit={handleSubmit}
+                    >
+
+                        {/* NAME */}
+
+                        <div className="form-row">
+
+                            <div className="form-group">
+
+                                <label>
+                                    First Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    placeholder="First name"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
+
+
+                            <div className="form-group">
+
+                                <label>
+                                    Last Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    placeholder="Last name"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* EMAIL */}
+
+                        <div className="form-group">
+
+                            <label>
+                                Email Address
+                            </label>
+
+                            <div className="input-wrapper">
+
+                                <span>
+                                    ✉️
+                                </span>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="you@example.com"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* PHONE */}
+
+                        <div className="form-group">
+
+                            <label>
+                                Phone Number
+                            </label>
+
+                            <div className="input-wrapper">
+
+                                <span>
+                                    📱
+                                </span>
+
+                                <input
+                                    type="tel"
+                                    name="phoneNumber"
+                                    placeholder="Enter phone number"
+                                    value={formData.phoneNumber}
+                                    onChange={handleChange}
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* PASSWORD */}
+
+                        <div className="form-group">
+
+                            <label>
+                                Password
+                            </label>
+
+                            <div className="input-wrapper">
+
+                                <span>
+                                    🔐
+                                </span>
+
+                                <input
+                                    type={
+                                        showPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    name="password"
+                                    placeholder="Create a strong password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() =>
+                                        setShowPassword(
+                                            !showPassword
+                                        )
+                                    }
+                                >
+                                    {showPassword
+                                        ? "🙈"
+                                        : "👁️"
+                                    }
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* ACCOUNT TYPE */}
+
+                        <div className="role-section">
+
+                            <div className="role-title">
+
+                                <h3>
+                                    Choose your account type
+                                </h3>
+
+                                <p>
+                                    How do you want to use E-Cart?
+                                </p>
+
+                            </div>
+
+
+                            <div className="role-options">
+
+                                {/* CUSTOMER */}
+
+                                <button
+                                    type="button"
+                                    className={
+                                        formData.role === "CUSTOMER"
+                                            ? "role-card active customer-role"
+                                            : "role-card"
+                                    }
+                                    onClick={() =>
+                                        handleRoleSelect(
+                                            "CUSTOMER"
+                                        )
+                                    }
+                                >
+
+                                    <span className="role-icon">
+                                        🛍️
+                                    </span>
+
+                                    <span className="role-content">
+
+                                        <strong>
+                                            Customer
+                                        </strong>
+
+                                        <small>
+                                            Shop products,
+                                            discover new items
+                                            and enjoy easy delivery.
+                                        </small>
+
+                                    </span>
+
+                                    <span className="role-check">
+
+                                        {formData.role === "CUSTOMER"
+                                            ? "✓"
+                                            : ""
+                                        }
+
+                                    </span>
+
+                                </button>
+
+
+                                {/* SELLER */}
+
+                                <button
+                                    type="button"
+                                    className={
+                                        formData.role === "SELLER"
+                                            ? "role-card active seller-role"
+                                            : "role-card"
+                                    }
+                                    onClick={() =>
+                                        handleRoleSelect(
+                                            "SELLER"
+                                        )
+                                    }
+                                >
+
+                                    <span className="role-icon">
+                                        🏪
+                                    </span>
+
+                                    <span className="role-content">
+
+                                        <strong>
+                                            Seller
+                                        </strong>
+
+                                        <small>
+                                            Create your store,
+                                            manage products
+                                            and grow your business.
+                                        </small>
+
+                                    </span>
+
+                                    <span className="role-check">
+
+                                        {formData.role === "SELLER"
+                                            ? "✓"
+                                            : ""
+                                        }
+
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* SELECTED ROLE */}
+
+                        <div className="selected-role">
+
+                            <span>
+                                Account selected
+                            </span>
+
+                            <strong>
+
+                                {formData.role === "CUSTOMER"
+                                    ? "🛍️ Customer"
+                                    : "🏪 Seller"
+                                }
+
+                            </strong>
+
+                        </div>
+
+
+                        {/* SUBMIT */}
+
+                        <button
+                            type="submit"
+                            className="auth-button"
+                            disabled={loading}
+                        >
+
+                            {loading ? (
+
+                                <>
+                                    <span className="spinner"></span>
+                                    Creating account...
+                                </>
+
+                            ) : (
+
+                                <>
+                                    Create Account
+                                    <span>→</span>
+                                </>
+
+                            )}
+
+                        </button>
+
+                    </form>
+
+
+                    {/* MESSAGE */}
+
+                    {message && (
+
+                        <div
+                            className={
+                                message.includes("successful")
+                                    ? "auth-message success-message"
+                                    : "auth-message error-message"
                             }
-                        </strong>
+                        >
+                            {message}
+                        </div>
 
+                    )}
+
+
+                    <div className="auth-divider">
+                        <span>Already have an account?</span>
                     </div>
 
 
-                    {/* =========================
-                        Submit Button
-                    ========================== */}
-
-                    <button
-                        type="submit"
-                        className="auth-button"
-                        disabled={loading}
+                    <Link
+                        to="/login"
+                        className="secondary-button"
                     >
-
-                        {loading
-                            ? "Creating Your Account..."
-                            : "Create Account"
-                        }
-
-                    </button>
-
-                </form>
-
-
-                {/* =========================
-                    Response Message
-                ========================== */}
-
-                {message && (
-
-                    <div
-                        className={`auth-message ${
-                            message.includes("successful")
-                                ? "success-message"
-                                : "error-message"
-                        }`}
-                    >
-
-                        {message}
-
-                    </div>
-
-                )}
-
-
-                {/* =========================
-                    Login Link
-                ========================== */}
-
-                <div className="auth-footer">
-
-                    <p>
-                        Already have an account?
-                    </p>
-
-                    <Link to="/login">
-                        Login to E-Cart →
+                        Sign in to E-Cart
                     </Link>
+
+
+                    <div className="secure-login">
+
+                        🔒
+
+                        <span>
+                            Your information is securely protected
+                        </span>
+
+                    </div>
 
                 </div>
 
