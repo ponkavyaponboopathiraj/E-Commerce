@@ -16,6 +16,7 @@ function Login() {
     const [loading, setLoading] = useState(false);
 
     const handleChange = (event) => {
+
         setFormData({
             ...formData,
             [event.target.name]: event.target.value,
@@ -36,23 +37,40 @@ function Login() {
             console.log("Login Response:", response);
 
             // Save JWT Token
-            localStorage.setItem("token", response.token);
+            localStorage.setItem(
+                "token",
+                response.token
+            );
 
-            // Save role if backend sends role
+            // Save User Role
             if (response.role) {
-                localStorage.setItem("role", response.role);
+                localStorage.setItem(
+                    "role",
+                    response.role
+                );
             }
 
-            setMessage("Login successful!");
+            // Save User Email
+            localStorage.setItem(
+                "email",
+                formData.email
+            );
 
-            // Navigate after login
+            setMessage(
+                "Login successful! Redirecting..."
+            );
+
+            // Go to Home
             setTimeout(() => {
                 navigate("/");
             }, 1000);
 
         } catch (error) {
 
-            console.error("Login Error:", error);
+            console.error(
+                "Login Error:",
+                error
+            );
 
             if (error.response) {
 
@@ -71,7 +89,6 @@ function Login() {
         } finally {
 
             setLoading(false);
-
         }
     };
 
@@ -98,7 +115,9 @@ function Login() {
 
                     <div className="form-group">
 
-                        <label>Email Address</label>
+                        <label>
+                            Email Address
+                        </label>
 
                         <input
                             type="email"
@@ -113,7 +132,9 @@ function Login() {
 
                     <div className="form-group">
 
-                        <label>Password</label>
+                        <label>
+                            Password
+                        </label>
 
                         <input
                             type="password"
@@ -156,7 +177,7 @@ function Login() {
                     </p>
 
                     <Link to="/register">
-                        Create an account
+                        Create Account
                     </Link>
 
                 </div>
@@ -164,7 +185,6 @@ function Login() {
             </div>
 
         </div>
-
     );
 }
 
