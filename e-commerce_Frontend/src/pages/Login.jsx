@@ -18,13 +18,16 @@ function Login() {
 
     const handleChange = (event) => {
 
-        setFormData({
-            ...formData,
-            [event.target.name]: event.target.value,
-        });
+        const { name, value } = event.target;
+
+        setFormData((previousData) => ({
+            ...previousData,
+            [name]: value,
+        }));
 
         setMessage("");
     };
+
 
     const handleSubmit = async (event) => {
 
@@ -39,21 +42,17 @@ function Login() {
 
             console.log("Login Response:", response);
 
-            // =========================================
-            // SAVE JWT TOKEN
-            // =========================================
-
+            // Save JWT
             localStorage.setItem(
                 "token",
                 response.token
             );
 
-            // =========================================
-            // GET ROLE
-            // =========================================
+            // Get user role
+            const userRole =
+                response.role?.toUpperCase();
 
-            const userRole = response.role?.toUpperCase();
-
+            // Save role
             if (userRole) {
 
                 localStorage.setItem(
@@ -62,27 +61,17 @@ function Login() {
                 );
             }
 
-            // =========================================
-            // SAVE USER EMAIL
-            // =========================================
-
+            // Save email
             localStorage.setItem(
                 "email",
                 formData.email
             );
 
-            // =========================================
-            // SUCCESS MESSAGE
-            // =========================================
-
             setMessage(
                 "Login successful! Welcome back 🎉"
             );
 
-            // =========================================
-            // ROLE BASED REDIRECTION
-            // =========================================
-
+            // Role based navigation
             setTimeout(() => {
 
                 if (userRole === "ADMIN") {
@@ -100,6 +89,7 @@ function Login() {
 
             }, 1000);
 
+
         } catch (error) {
 
             console.error(
@@ -110,7 +100,7 @@ function Login() {
             if (error.response) {
 
                 setMessage(
-                    error.response.data.message ||
+                    error.response.data?.message ||
                     "Invalid email or password"
                 );
 
@@ -127,127 +117,271 @@ function Login() {
         }
     };
 
+
     return (
 
-        <div className="auth-container login-page">
+        <div className="login-page">
 
-            {/* =========================================
-                LEFT SIDE - E-CART BRANDING
-            ========================================= */}
+            {/* =================================
+                DECORATIVE BACKGROUND
+            ================================= */}
 
-            <div className="auth-visual">
+            <div className="background-decoration decoration-one"></div>
+
+            <div className="background-decoration decoration-two"></div>
+
+            <div className="background-decoration decoration-three"></div>
+
+
+            {/* =================================
+                LEFT BRANDING SECTION
+            ================================= */}
+
+            <section className="login-visual">
+
+                <div className="visual-overlay"></div>
 
                 <div className="visual-content">
 
-                    <div className="brand-logo">
-                        🛍️
-                    </div>
+                    <div className="brand-logo-wrapper">
 
-                    <h1>
-                        Welcome to
-                        <span> E-Cart</span>
-                    </h1>
-
-                    <p>
-                        Your world of shopping,
-                        delivered to your doorstep.
-                    </p>
-
-                    <div className="shopping-features">
-
-                        <div className="feature-item">
-                            <span>🚚</span>
-                            <p>Fast & Secure Delivery</p>
+                        <div className="brand-logo">
+                            🛍️
                         </div>
 
-                        <div className="feature-item">
-                            <span>💳</span>
-                            <p>Safe & Easy Payments</p>
-                        </div>
-
-                        <div className="feature-item">
-                            <span>⭐</span>
-                            <p>Quality Products</p>
-                        </div>
+                        <span>
+                            E-Cart
+                        </span>
 
                     </div>
 
-                </div>
 
-                <div className="floating-shape shape-one">
-                    🛒
-                </div>
+                    <div className="visual-text">
 
-                <div className="floating-shape shape-two">
-                    📦
-                </div>
-
-                <div className="floating-shape shape-three">
-                    ❤️
-                </div>
-
-            </div>
-
-
-            {/* =========================================
-                RIGHT SIDE - LOGIN FORM
-            ========================================= */}
-
-            <div className="auth-form-section">
-
-                <div className="auth-card">
-
-                    <div className="auth-header">
-
-                        <div className="mobile-logo">
-                            🛍️ E-Cart
-                        </div>
+                        <span className="welcome-badge">
+                            ✨ Welcome Back
+                        </span>
 
                         <h1>
-                            Welcome Back 👋
+                            Your shopping
+                            <br />
+
+                            <span>
+                                journey starts here.
+                            </span>
                         </h1>
 
                         <p>
-                            Login to continue your shopping journey
+                            Discover amazing products,
+                            explore new collections,
+                            and enjoy a seamless
+                            shopping experience with E-Cart.
                         </p>
 
                     </div>
 
 
+                    {/* FEATURE CARDS */}
+
+                    <div className="shopping-features">
+
+                        <div className="feature-item">
+
+                            <div className="feature-icon">
+                                🚚
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Fast Delivery
+                                </strong>
+
+                                <span>
+                                    Quick & reliable shipping
+                                </span>
+                            </div>
+
+                        </div>
+
+
+                        <div className="feature-item">
+
+                            <div className="feature-icon">
+                                🔒
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Secure Shopping
+                                </strong>
+
+                                <span>
+                                    Your data is always protected
+                                </span>
+                            </div>
+
+                        </div>
+
+
+                        <div className="feature-item">
+
+                            <div className="feature-icon">
+                                ⭐
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Premium Quality
+                                </strong>
+
+                                <span>
+                                    Products you'll love
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {/* FLOATING DECORATIONS */}
+
+                <div className="floating-card floating-card-one">
+
+                    🛒
+
+                    <span>
+                        Shop
+                    </span>
+
+                </div>
+
+
+                <div className="floating-card floating-card-two">
+
+                    📦
+
+                    <span>
+                        Delivered
+                    </span>
+
+                </div>
+
+
+                <div className="floating-card floating-card-three">
+
+                    ❤️
+
+                </div>
+
+            </section>
+
+
+            {/* =================================
+                RIGHT LOGIN SECTION
+            ================================= */}
+
+            <section className="login-form-section">
+
+                <div className="login-card">
+
+                    {/* MOBILE BRAND */}
+
+                    <div className="mobile-brand">
+
+                        <div className="mobile-brand-icon">
+                            🛍️
+                        </div>
+
+                        <span>
+                            E-Cart
+                        </span>
+
+                    </div>
+
+
+                    {/* HEADER */}
+
+                    <div className="login-header">
+
+                        <span className="login-small-title">
+                            ACCOUNT LOGIN
+                        </span>
+
+                        <h2>
+                            Welcome back 👋
+                        </h2>
+
+                        <p>
+                            Sign in to continue your
+                            shopping experience.
+                        </p>
+
+                    </div>
+
+
+                    {/* LOGIN FORM */}
+
                     <form
-                        className="auth-form"
+                        className="login-form"
                         onSubmit={handleSubmit}
                     >
 
                         {/* EMAIL */}
 
-                        <div className="form-group">
+                        <div className="input-group">
 
                             <label>
-                                📧 Email Address
+                                Email Address
                             </label>
 
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Enter your email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                            />
+                            <div className="input-wrapper">
+
+                                <span className="input-icon">
+                                    ✉️
+                                </span>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
 
                         </div>
 
 
                         {/* PASSWORD */}
 
-                        <div className="form-group">
+                        <div className="input-group">
 
-                            <label>
-                                🔐 Password
-                            </label>
+                            <div className="password-label-row">
 
-                            <div className="password-wrapper">
+                                <label>
+                                    Password
+                                </label>
+
+                                <Link
+                                    to="/forgot-password"
+                                    className="forgot-link"
+                                >
+                                    Forgot password?
+                                </Link>
+
+                            </div>
+
+
+                            <div className="input-wrapper">
+
+                                <span className="input-icon">
+                                    🔐
+                                </span>
 
                                 <input
                                     type={
@@ -267,14 +401,17 @@ function Login() {
                                     className="password-toggle"
                                     onClick={() =>
                                         setShowPassword(
-                                            !showPassword
+                                            (previous) =>
+                                                !previous
                                         )
                                     }
                                 >
+
                                     {showPassword
                                         ? "🙈"
                                         : "👁️"
                                     }
+
                                 </button>
 
                             </div>
@@ -282,49 +419,51 @@ function Login() {
                         </div>
 
 
-                        {/* FORGOT PASSWORD */}
+                        {/* REMEMBER ME */}
 
-                        <div className="login-options">
+                        <label className="remember-row">
 
-                            <label className="remember-me">
+                            <input
+                                type="checkbox"
+                            />
 
-                                <input
-                                    type="checkbox"
-                                />
-
+                            <span>
                                 Remember me
+                            </span>
 
-                            </label>
-
-                            <Link
-                                to="/forgot-password"
-                                className="forgot-password"
-                            >
-                                Forgot Password?
-                            </Link>
-
-                        </div>
+                        </label>
 
 
                         {/* LOGIN BUTTON */}
 
                         <button
                             type="submit"
-                            className="auth-button login-button"
+                            className="login-button"
                             disabled={loading}
                         >
 
                             {loading ? (
 
                                 <>
+
                                     <span className="spinner"></span>
+
                                     Signing you in...
+
                                 </>
 
                             ) : (
 
                                 <>
-                                    Login to E-Cart →
+
+                                    <span>
+                                        Login to E-Cart
+                                    </span>
+
+                                    <span className="button-arrow">
+                                        →
+                                    </span>
+
                                 </>
 
                             )}
@@ -340,11 +479,22 @@ function Login() {
 
                         <div
                             className={
-                                message.includes("successful")
-                                    ? "auth-message success-message"
-                                    : "auth-message error-message"
+                                message.includes(
+                                    "successful"
+                                )
+                                    ? "login-message success"
+                                    : "login-message error"
                             }
                         >
+
+                            <span>
+                                {message.includes(
+                                    "successful"
+                                )
+                                    ? "✓"
+                                    : "!"
+                                }
+                            </span>
 
                             {message}
 
@@ -355,14 +505,15 @@ function Login() {
 
                     {/* REGISTER */}
 
-                    <div className="auth-footer">
+                    <div className="register-section">
 
-                        <p>
-                            New to E-Cart?
-                        </p>
+                        <span>
+                            Don't have an account?
+                        </span>
 
                         <Link to="/register">
-                            Create your account →
+                            Create Account
+                            <span> →</span>
                         </Link>
 
                     </div>
@@ -370,18 +521,30 @@ function Login() {
 
                     {/* SECURITY */}
 
-                    <div className="secure-login">
+                    <div className="security-info">
 
-                        🔒
                         <span>
-                            Your information is securely protected
+                            🛡️
                         </span>
+
+                        <div>
+
+                            <strong>
+                                Secure Login
+                            </strong>
+
+                            <p>
+                                Your information is encrypted
+                                and protected.
+                            </p>
+
+                        </div>
 
                     </div>
 
                 </div>
 
-            </div>
+            </section>
 
         </div>
     );

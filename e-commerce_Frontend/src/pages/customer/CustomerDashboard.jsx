@@ -8,53 +8,53 @@ function CustomerDashboard() {
 
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
-
     const [cartCount, setCartCount] = useState(0);
+    const [wishlist, setWishlist] = useState([]);
 
-    const [products] = useState([
+    const products = [
         {
             id: 1,
             name: "Premium Sneakers",
             category: "Fashion",
             price: 89.99,
-            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600"
+            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80"
         },
         {
             id: 2,
             name: "Wireless Headphones",
             category: "Electronics",
             price: 129.99,
-            image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600"
+            image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80"
         },
         {
             id: 3,
             name: "Smart Watch",
             category: "Electronics",
             price: 199.99,
-            image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600"
+            image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80"
         },
         {
             id: 4,
             name: "Leather Handbag",
             category: "Fashion",
             price: 79.99,
-            image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600"
+            image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"
         },
         {
             id: 5,
             name: "Modern Chair",
             category: "Home",
             price: 149.99,
-            image: "https://images.unsplash.com/photo-1503602642458-232111445657?w=600"
+            image: "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80"
         },
         {
             id: 6,
             name: "Minimal Lamp",
             category: "Home",
             price: 49.99,
-            image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600"
+            image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80"
         }
-    ]);
+    ];
 
     const categories = [
         {
@@ -75,6 +75,7 @@ function CustomerDashboard() {
         }
     ];
 
+    // Search + Category Filter
     const filteredProducts = products.filter((product) => {
 
         const matchesCategory =
@@ -90,14 +91,40 @@ function CustomerDashboard() {
     });
 
 
-    const addToCart = () => {
+    // Add Product To Cart
+    const addToCart = (product) => {
 
         setCartCount((previousCount) =>
             previousCount + 1
         );
+
+        alert(`${product.name} added to cart 🛒`);
     };
 
 
+    // Wishlist
+    const toggleWishlist = (productId) => {
+
+        setWishlist((previousWishlist) => {
+
+            if (previousWishlist.includes(productId)) {
+
+                return previousWishlist.filter(
+                    (id) => id !== productId
+                );
+
+            }
+
+            return [
+                ...previousWishlist,
+                productId
+            ];
+
+        });
+    };
+
+
+    // Logout
     const handleLogout = () => {
 
         localStorage.removeItem("token");
@@ -105,6 +132,34 @@ function CustomerDashboard() {
         localStorage.removeItem("email");
 
         navigate("/login");
+    };
+
+
+    // Profile
+    const handleProfile = () => {
+
+        const email =
+            localStorage.getItem("email");
+
+        alert(
+            `Logged in as:\n${email || "User"}`
+        );
+    };
+
+
+    // Scroll To Products
+    const scrollToProducts = () => {
+
+        const productSection =
+            document.getElementById("products");
+
+        if (productSection) {
+
+            productSection.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        }
     };
 
 
@@ -118,7 +173,10 @@ function CustomerDashboard() {
 
             <header className="customer-navbar">
 
-                <div className="brand">
+                <div
+                    className="brand"
+                    onClick={() => navigate("/")}
+                >
 
                     <span className="brand-icon">
                         🛍️
@@ -131,9 +189,11 @@ function CustomerDashboard() {
                 </div>
 
 
+                {/* SEARCH */}
+
                 <div className="search-box">
 
-                    <span>
+                    <span className="search-icon">
                         🔍
                     </span>
 
@@ -149,35 +209,49 @@ function CustomerDashboard() {
                 </div>
 
 
+                {/* NAV ACTIONS */}
+
                 <div className="nav-actions">
+
+                    {/* CART */}
 
                     <button
                         className="cart-button"
-                        onClick={() => alert("Cart coming soon!")}
+                        onClick={() =>
+                            alert(
+                                `You have ${cartCount} item(s) in your cart 🛒`
+                            )
+                        }
+                        aria-label="Shopping Cart"
                     >
 
                         🛒
 
-                        <span>
-                            {cartCount}
-                        </span>
+                        {cartCount > 0 && (
+
+                            <span>
+                                {cartCount}
+                            </span>
+
+                        )}
 
                     </button>
 
 
+                    {/* PROFILE */}
+
                     <button
                         className="profile-button"
-                        onClick={() =>
-                            alert(
-                                `Logged in as ${localStorage.getItem("email")}`
-                            )
-                        }
+                        onClick={handleProfile}
+                        aria-label="Profile"
                     >
 
                         👤
 
                     </button>
 
+
+                    {/* LOGOUT */}
 
                     <button
                         className="logout-button"
@@ -205,38 +279,47 @@ function CustomerDashboard() {
                         ✨ Welcome to E-Cart
                     </span>
 
+
                     <h1>
+
                         Discover.
                         <br />
+
                         Shop.
                         <br />
+
                         Enjoy.
+
                     </h1>
 
+
                     <p>
+
                         Explore amazing products,
                         discover new styles,
-                        and enjoy a seamless shopping experience.
+                        and enjoy a seamless
+                        shopping experience.
+
                     </p>
+
 
                     <button
                         className="shop-now-button"
-                        onClick={() =>
-                            document
-                                .getElementById("products")
-                                .scrollIntoView({
-                                    behavior: "smooth"
-                                })
-                        }
+                        onClick={scrollToProducts}
                     >
 
                         Shop Now
-                        <span>→</span>
+
+                        <span>
+                            →
+                        </span>
 
                     </button>
 
                 </div>
 
+
+                {/* HERO IMAGE */}
 
                 <div className="hero-image-container">
 
@@ -244,9 +327,10 @@ function CustomerDashboard() {
 
                     <div className="floating-circle circle-two"></div>
 
+
                     <img
-                        src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1000"
-                        alt="Shopping"
+                        src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1000&q=80"
+                        alt="E-Cart Shopping"
                         className="hero-image"
                     />
 
@@ -310,7 +394,7 @@ function CustomerDashboard() {
 
 
             {/* =========================
-                PRODUCT SECTION
+                PRODUCTS SECTION
             ========================== */}
 
             <section
@@ -342,26 +426,54 @@ function CustomerDashboard() {
                                 key={product.id}
                             >
 
+                                {/* PRODUCT IMAGE */}
+
                                 <div className="product-image-container">
 
                                     <img
                                         src={product.image}
                                         alt={product.name}
                                         className="product-image"
+                                        loading="lazy"
                                     />
 
-                                    <button className="wishlist-button">
-                                        ♡
+
+                                    {/* WISHLIST */}
+
+                                    <button
+                                        className={
+                                            wishlist.includes(product.id)
+                                                ? "wishlist-button active"
+                                                : "wishlist-button"
+                                        }
+                                        onClick={() =>
+                                            toggleWishlist(
+                                                product.id
+                                            )
+                                        }
+                                        aria-label="Add to wishlist"
+                                    >
+
+                                        {wishlist.includes(
+                                            product.id
+                                        )
+                                            ? "♥"
+                                            : "♡"
+                                        }
+
                                     </button>
 
                                 </div>
 
+
+                                {/* PRODUCT DETAILS */}
 
                                 <div className="product-details">
 
                                     <span className="product-category">
                                         {product.category}
                                     </span>
+
 
                                     <h3>
                                         {product.name}
@@ -374,12 +486,15 @@ function CustomerDashboard() {
                                             ${product.price.toFixed(2)}
                                         </strong>
 
+
                                         <button
                                             className="add-cart-button"
-                                            onClick={addToCart}
+                                            onClick={() =>
+                                                addToCart(product)
+                                            }
                                         >
 
-                                            + 🛒
+                                            🛒
 
                                         </button>
 

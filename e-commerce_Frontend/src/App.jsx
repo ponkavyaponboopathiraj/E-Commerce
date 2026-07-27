@@ -9,6 +9,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RoleTest from "./pages/RoleTest";
 import Home from "./pages/Home";
+import "./pages/Home.css";
+
+import CustomerDashboard from "./pages/customer/CustomerDashboard";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -67,7 +70,14 @@ function App() {
                     }
                 />
 
-
+<Route
+    path="/customer-dashboard"
+    element={
+        <ProtectedRoute>
+            <CustomerDashboard />
+        </ProtectedRoute>
+    }
+/>
                 {/* =========================
                     UNKNOWN URL
                 ========================== */}
