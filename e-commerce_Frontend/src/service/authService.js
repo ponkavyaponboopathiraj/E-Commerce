@@ -19,3 +19,12 @@ export const loginUser = async (loginData) => {
 
     return response.data;
 };
+// Logout User
+export const logoutUser = () => {
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+
+    window.location.href = "/login";
+};
