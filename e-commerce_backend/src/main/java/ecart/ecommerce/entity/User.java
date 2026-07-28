@@ -1,244 +1,513 @@
-    package ecart.ecommerce.entity;
+package ecart.ecommerce.entity;
 
-    import ecart.ecommerce.enums.AccountStatus;
-    import ecart.ecommerce.enums.Role;
-    import jakarta.persistence.Column;
-    import jakarta.persistence.Entity;
-    import jakarta.persistence.EnumType;
-    import jakarta.persistence.Enumerated;
-    import jakarta.persistence.GeneratedValue;
-    import jakarta.persistence.Id;
-    import jakarta.persistence.Table;
-    import org.hibernate.annotations.CreationTimestamp;
-    import org.hibernate.annotations.UpdateTimestamp;
-    import org.springframework.security.core.GrantedAuthority;
-    import org.springframework.security.core.authority.SimpleGrantedAuthority;
-    import org.springframework.security.core.userdetails.UserDetails;
+import ecart.ecommerce.enums.AccountStatus;
+import ecart.ecommerce.enums.Role;
 
-    import java.time.LocalDateTime;
-    import java.util.Collection;
-    import java.util.List;
-    import java.util.UUID;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-    @Entity
-    @Table(name = "users")
-    public class User implements UserDetails {
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-        @Id
-        @GeneratedValue
-        private UUID id;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-        @Column(name = "first_name", nullable = false)
-        private String firstName;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
-        @Column(name = "last_name", nullable = false)
-        private String lastName;
 
-        @Column(nullable = false, unique = true)
-        private String email;
+@Entity
+@Table(name = "users")
+public class User implements UserDetails {
 
-        @Column(name = "phone_number", unique = true)
-        private String phoneNumber;
 
-        @Column(nullable = false)
-        private String password;
+    // =========================================================
+    // PRIMARY KEY
+    // =========================================================
 
-        @Enumerated(EnumType.STRING)
-        @Column(nullable = false)
-        private Role role;
+    @Id
+    @GeneratedValue
+    private UUID id;
 
-        @Enumerated(EnumType.STRING)
-        @Column(nullable = false)
-        private AccountStatus status;
 
-        @Column(name = "email_verified", nullable = false)
-        private Boolean emailVerified = false;
+    // =========================================================
+    // USER BASIC DETAILS
+    // =========================================================
 
-        @CreationTimestamp
-        @Column(name = "created_at", nullable = false, updatable = false)
-        private LocalDateTime createdAt;
+    @Column(
+            name = "first_name",
+            nullable = false
+    )
+    private String firstName;
 
-        @UpdateTimestamp
-        @Column(name = "updated_at", nullable = false)
-        private LocalDateTime updatedAt;
 
-        // Default Constructor
-        public User() {
-        }
+    @Column(
+            name = "last_name",
+            nullable = false
+    )
+    private String lastName;
 
-        // Get ID
-        public UUID getId() {
-            return id;
-        }
 
-        // Set ID
-        public void setId(UUID id) {
-            this.id = id;
-        }
+    // =========================================================
+    // EMAIL
+    // =========================================================
 
-        // Get First Name
-        public String getFirstName() {
-            return firstName;
-        }
+    @Column(
+            nullable = false,
+            unique = true
+    )
+    private String email;
 
-        // Set First Name
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
 
-        // Get Last Name
-        public String getLastName() {
-            return lastName;
-        }
+    // =========================================================
+    // PHONE NUMBER
+    // =========================================================
 
-        // Set Last Name
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
+    @Column(
+            name = "phone_number",
+            unique = true
+    )
+    private String phoneNumber;
 
-        // Get Email
-        public String getEmail() {
-            return email;
-        }
 
-        // Set Email
-        public void setEmail(String email) {
-            this.email = email;
-        }
+    // =========================================================
+    // PASSWORD
+    // =========================================================
 
-        // Get Phone Number
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
+    @Column(
+            nullable = false
+    )
+    private String password;
 
-        // Set Phone Number
-        public void setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
 
-        // Get Password
-        @Override
-        public String getPassword() {
-            return password;
-        }
+    // =========================================================
+    // ROLE
+    // CUSTOMER / SELLER / ADMIN
+    // =========================================================
 
-        // Set Password
-        public void setPassword(String password) {
-            this.password = password;
-        }
+    @Enumerated(EnumType.STRING)
+    @Column(
+            nullable = false
+    )
+    private Role role;
 
-        // Get Role
-        public Role getRole() {
-            return role;
-        }
 
-        // Set Role
-        public void setRole(Role role) {
-            this.role = role;
-        }
+    // =========================================================
+    // ACCOUNT STATUS
+    //
+    // ACTIVE
+    // PENDING_APPROVAL
+    // BLOCKED
+    // =========================================================
 
-        // Get Account Status
-        public AccountStatus getStatus() {
-            return status;
-        }
+    @Enumerated(EnumType.STRING)
+    @Column(
+            nullable = false
+    )
+    private AccountStatus status;
 
-        // Set Account Status
-        public void setStatus(AccountStatus status) {
-            this.status = status;
-        }
 
-        // Get Email Verified
-        public Boolean getEmailVerified() {
-            return emailVerified;
-        }
+    // =========================================================
+    // EMAIL VERIFICATION
+    // =========================================================
 
-        // Set Email Verified
-        public void setEmailVerified(Boolean emailVerified) {
-            this.emailVerified = emailVerified;
-        }
+    @Column(
+            name = "email_verified",
+            nullable = false
+    )
+    private Boolean emailVerified = false;
 
-        // Get Created At
-        public LocalDateTime getCreatedAt() {
-            return createdAt;
-        }
 
-        // Get Updated At
-        public LocalDateTime getUpdatedAt() {
-            return updatedAt;
-        }
+    // =========================================================
+    // PASSWORD RESET TOKEN
+    //
+    // Used for Forgot Password functionality.
+    //
+    // Example:
+    // 8c7a9e1b-xxxx-xxxx-xxxx
+    // =========================================================
 
-        // =========================================================
-        // Spring Security UserDetails Methods
-        // =========================================================
+    @Column(
+            name = "reset_token",
+            unique = true
+    )
+    private String resetToken;
 
-        /**
-         * Returns the roles/authorities of the user.
-         *
-         * Example:
-         * CUSTOMER -> ROLE_CUSTOMER
-         * SELLER   -> ROLE_SELLER
-         * ADMIN    -> ROLE_ADMIN
-         */
-        @Override
-        public Collection<? extends GrantedAuthority> getAuthorities() {
 
-            return List.of(
-                    new SimpleGrantedAuthority("ROLE_" + role.name())
-            );
-        }
+    // =========================================================
+    // PASSWORD RESET TOKEN EXPIRY
+    //
+    // Example:
+    // Current Time + 15 Minutes
+    // =========================================================
 
-        /**
-         * Spring Security uses this as the username.
-         *
-         * In our application, email is the login username.
-         */
-        @Override
-        public String getUsername() {
+    @Column(
+            name = "reset_token_expiry"
+    )
+    private LocalDateTime resetTokenExpiry;
 
-            return email;
-        }
 
-        /**
-         * Checks whether the user's account has expired.
-         *
-         * Currently always true.
-         */
-        @Override
-        public boolean isAccountNonExpired() {
+    // =========================================================
+    // CREATED AT
+    // =========================================================
 
-            return true;
-        }
+    @CreationTimestamp
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
+    private LocalDateTime createdAt;
 
-        /**
-         * Checks whether the user's account is locked.
-         *
-         * Currently always true.
-         */
-        @Override
-        public boolean isAccountNonLocked() {
 
-            return true;
-        }
+    // =========================================================
+    // UPDATED AT
+    // =========================================================
 
-        /**
-         * Checks whether the user's credentials have expired.
-         *
-         * Currently always true.
-         */
-        @Override
-        public boolean isCredentialsNonExpired() {
+    @UpdateTimestamp
+    @Column(
+            name = "updated_at",
+            nullable = false
+    )
+    private LocalDateTime updatedAt;
 
-            return true;
-        }
 
-        /**
-         * Checks whether the account is enabled.
-         *
-         * Only ACTIVE users are enabled.                   
-         */
-        @Override
-        public boolean isEnabled() {
+    // =========================================================
+    // DEFAULT CONSTRUCTOR
+    // =========================================================
 
-            return status == AccountStatus.ACTIVE;
-        }
+    public User() {
     }
+
+
+    // =========================================================
+    // GET ID
+    // =========================================================
+
+    public UUID getId() {
+
+        return id;
+    }
+
+
+    // =========================================================
+    // SET ID
+    // =========================================================
+
+    public void setId(UUID id) {
+
+        this.id = id;
+    }
+
+
+    // =========================================================
+    // GET FIRST NAME
+    // =========================================================
+
+    public String getFirstName() {
+
+        return firstName;
+    }
+
+
+    // =========================================================
+    // SET FIRST NAME
+    // =========================================================
+
+    public void setFirstName(String firstName) {
+
+        this.firstName = firstName;
+    }
+
+
+    // =========================================================
+    // GET LAST NAME
+    // =========================================================
+
+    public String getLastName() {
+
+        return lastName;
+    }
+
+
+    // =========================================================
+    // SET LAST NAME
+    // =========================================================
+
+    public void setLastName(String lastName) {
+
+        this.lastName = lastName;
+    }
+
+
+    // =========================================================
+    // GET EMAIL
+    // =========================================================
+
+    public String getEmail() {
+
+        return email;
+    }
+
+
+    // =========================================================
+    // SET EMAIL
+    // =========================================================
+
+    public void setEmail(String email) {
+
+        this.email = email;
+    }
+
+
+    // =========================================================
+    // GET PHONE NUMBER
+    // =========================================================
+
+    public String getPhoneNumber() {
+
+        return phoneNumber;
+    }
+
+
+    // =========================================================
+    // SET PHONE NUMBER
+    // =========================================================
+
+    public void setPhoneNumber(String phoneNumber) {
+
+        this.phoneNumber = phoneNumber;
+    }
+
+
+    // =========================================================
+    // GET PASSWORD
+    // =========================================================
+
+    @Override
+    public String getPassword() {
+
+        return password;
+    }
+
+
+    // =========================================================
+    // SET PASSWORD
+    // =========================================================
+
+    public void setPassword(String password) {
+
+        this.password = password;
+    }
+
+
+    // =========================================================
+    // GET ROLE
+    // =========================================================
+
+    public Role getRole() {
+
+        return role;
+    }
+
+
+    // =========================================================
+    // SET ROLE
+    // =========================================================
+
+    public void setRole(Role role) {
+
+        this.role = role;
+    }
+
+
+    // =========================================================
+    // GET ACCOUNT STATUS
+    // =========================================================
+
+    public AccountStatus getStatus() {
+
+        return status;
+    }
+
+
+    // =========================================================
+    // SET ACCOUNT STATUS
+    // =========================================================
+
+    public void setStatus(AccountStatus status) {
+
+        this.status = status;
+    }
+
+
+    // =========================================================
+    // GET EMAIL VERIFIED
+    // =========================================================
+
+    public Boolean getEmailVerified() {
+
+        return emailVerified;
+    }
+
+
+    // =========================================================
+    // SET EMAIL VERIFIED
+    // =========================================================
+
+    public void setEmailVerified(Boolean emailVerified) {
+
+        this.emailVerified = emailVerified;
+    }
+
+
+    // =========================================================
+    // GET RESET TOKEN
+    // =========================================================
+
+    public String getResetToken() {
+
+        return resetToken;
+    }
+
+
+    // =========================================================
+    // SET RESET TOKEN
+    // =========================================================
+
+    public void setResetToken(String resetToken) {
+
+        this.resetToken = resetToken;
+    }
+
+
+    // =========================================================
+    // GET RESET TOKEN EXPIRY
+    // =========================================================
+
+    public LocalDateTime getResetTokenExpiry() {
+
+        return resetTokenExpiry;
+    }
+
+
+    // =========================================================
+    // SET RESET TOKEN EXPIRY
+    // =========================================================
+
+    public void setResetTokenExpiry(
+            LocalDateTime resetTokenExpiry
+    ) {
+
+        this.resetTokenExpiry = resetTokenExpiry;
+    }
+
+
+    // =========================================================
+    // GET CREATED AT
+    // =========================================================
+
+    public LocalDateTime getCreatedAt() {
+
+        return createdAt;
+    }
+
+
+    // =========================================================
+    // GET UPDATED AT
+    // =========================================================
+
+    public LocalDateTime getUpdatedAt() {
+
+        return updatedAt;
+    }
+
+
+    // =========================================================
+    // SPRING SECURITY AUTHORITIES
+    //
+    // CUSTOMER -> ROLE_CUSTOMER
+    // SELLER   -> ROLE_SELLER
+    // ADMIN    -> ROLE_ADMIN
+    // =========================================================
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        return List.of(
+                new SimpleGrantedAuthority(
+                        "ROLE_" + role.name()
+                )
+        );
+    }
+
+
+    // =========================================================
+    // SPRING SECURITY USERNAME
+    //
+    // Email is used as username.
+    // =========================================================
+
+    @Override
+    public String getUsername() {
+
+        return email;
+    }
+
+
+    // =========================================================
+    // ACCOUNT NON EXPIRED
+    // =========================================================
+
+    @Override
+    public boolean isAccountNonExpired() {
+
+        return true;
+    }
+
+
+    // =========================================================
+    // ACCOUNT NON LOCKED
+    // =========================================================
+
+    @Override
+    public boolean isAccountNonLocked() {
+
+        return true;
+    }
+
+
+    // =========================================================
+    // CREDENTIALS NON EXPIRED
+    // =========================================================
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+
+        return true;
+    }
+
+
+    // =========================================================
+    // ACCOUNT ENABLED
+    //
+    // ACTIVE          -> Can Login
+    // PENDING_APPROVAL -> Cannot Login
+    // BLOCKED         -> Cannot Login
+    // =========================================================
+
+    @Override
+    public boolean isEnabled() {
+
+        return status == AccountStatus.ACTIVE;
+    }
+
+}

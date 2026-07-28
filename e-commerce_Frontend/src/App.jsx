@@ -8,8 +8,10 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RoleTest from "./pages/RoleTest";
+import AdminDashboard
+    from "./pages/admin/AdminDashboard";
 
-import CustomerDashboard
+    import CustomerDashboard
     from "./pages/customer/CustomerDashboard";
     
 import SellerDashboard from "./pages/seller/SellerDashboard";
@@ -65,22 +67,14 @@ function App() {
                     CUSTOMER DASHBOARD
                 ========================== */}
 
-                <Route
-                    path="/customer-dashboard"
-                    element={
-
-                        <ProtectedRoute
-                            allowedRoles={[
-                                "CUSTOMER"
-                            ]}
-                        >
-
-                            <CustomerDashboard />
-
-                        </ProtectedRoute>
-
-                    }
-                />
+              <Route
+    path="/customer-dashboard"
+    element={
+        <ProtectedRoute>
+            <CustomerDashboard />
+        </ProtectedRoute>
+    }
+/>
 
 
                 {/* =========================
@@ -102,23 +96,13 @@ function App() {
                 ========================== */}
 
                 <Route
-                    path="/admin-dashboard"
-                    element={
-
-                        <ProtectedRoute
-                            allowedRoles={[
-                                "ADMIN"
-                            ]}
-                        >
-
-                            <div>
-                                Admin Dashboard
-                            </div>
-
-                        </ProtectedRoute>
-
-                    }
-                />
+    path="/admin-dashboard"
+    element={
+        <ProtectedRoute allowedRole="ADMIN">
+            <AdminDashboard />
+        </ProtectedRoute>
+    }
+/>
 
 
                 {/* =========================

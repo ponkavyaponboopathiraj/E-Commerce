@@ -1,15 +1,23 @@
 package ecart.ecommerce.controller;
 
+import ecart.ecommerce.dto.request.ForgotPasswordRequest;
 import ecart.ecommerce.dto.request.LoginRequest;
 import ecart.ecommerce.dto.request.RegisterRequest;
+import ecart.ecommerce.dto.request.ResetPasswordRequest;
+
+import ecart.ecommerce.dto.response.ForgotPasswordResponse;
 import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.dto.response.RegisterResponse;
+import ecart.ecommerce.dto.response.ResetPasswordResponse;
+
 import ecart.ecommerce.service.AuthService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,33 +25,90 @@ public class AuthController {
 
     private final AuthService authService;
 
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
+
     public AuthController(AuthService authService) {
+
         this.authService = authService;
     }
 
-    // Register API
+
+    // =========================================================
+    // REGISTER
+    // =========================================================
+
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+            @Valid
+            @RequestBody
+            RegisterRequest request
+    ) {
 
-        RegisterResponse response = authService.register(request);
+        RegisterResponse response =
+                authService.register(request);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
-    // Login API
+
+    // =========================================================
+    // LOGIN
+    // =========================================================
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+            @Valid
+            @RequestBody
+            LoginRequest request
+    ) {
 
-        LoginResponse response = authService.login(request);
+        LoginResponse response =
+                authService.login(request);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity
+                .ok(response);
     }
 
-    @GetMapping("/protected")
-public String protectedApi() {
-    return "JWT Authentication Successful! You can access this protected API.";
-}
- 
+
+    // =========================================================
+    // FORGOT PASSWORD
+    // =========================================================
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
+            @Valid
+            @RequestBody
+            ForgotPasswordRequest request
+    ) {
+
+        ForgotPasswordResponse response =
+                authService.forgotPassword(request);
+
+        return ResponseEntity
+                .ok(response);
+    }
+
+
+    // =========================================================
+    // RESET PASSWORD
+    // =========================================================
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponse> resetPassword(
+            @Valid
+            @RequestBody
+            ResetPasswordRequest request
+    ) {
+
+        ResetPasswordResponse response =
+                authService.resetPassword(request);
+
+        return ResponseEntity
+                .ok(response);
+    }
 }

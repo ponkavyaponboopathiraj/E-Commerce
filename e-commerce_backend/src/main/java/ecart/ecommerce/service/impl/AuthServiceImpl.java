@@ -15,6 +15,12 @@ import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.exception.UserNotFoundException;
 import ecart.ecommerce.exception.InvalidPasswordException;
 import ecart.ecommerce.service.JwtService;
+import ecart.ecommerce.dto.request.ForgotPasswordRequest;
+import ecart.ecommerce.dto.request.ResetPasswordRequest;
+import ecart.ecommerce.dto.response.ForgotPasswordResponse;
+import ecart.ecommerce.dto.response.ResetPasswordResponse;
+import java.time.LocalDateTime;
+import java.util.UUID;
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -111,5 +117,86 @@ response.setToken(token);
 
 return response;
     
+}
+@Override
+public ForgotPasswordResponse forgotPassword(
+        ForgotPasswordRequest request) {
+
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() ->
+                    new UserNotFoundException(
+                            "User not found with this email."
+                    )
+            );
+
+    // Generate unique reset token
+    String resetToken = UUID.randomUUID().toString();
+
+    // Token valid for 15 minutes
+    LocalDateTime expiryTime =
+            LocalDateTime.now().plusMinutes(15);
+
+    // Save token
+    user.setResetToken(resetToken);
+
+    user.setResetTokenExpiry(expiryTime);
+
+    userRepository.save(user);
+
+    ForgotPasswordResponse response =
+            new ForgotPasswordResponse();
+
+    response.setMessage(
+            "Password reset token generated successfully. " +
+            "Token: " + resetToken
+    );
+
+    return response;
+}
+@Override
+public ResetPasswordResponse resetPassword(
+        ResetPasswordRequest request) {
+
+    User user = userRepository
+            .findByResetToken(request.getToken())
+            .orElseThrow(() ->
+                    new UserNotFoundException(
+                            "Invalid or expired reset token."
+                    )
+            );
+
+    // Check token expiry
+    if (user.getResetTokenExpiry() == null ||
+            user.getResetTokenExpiry()
+                    .isBefore(LocalDateTime.now())) {
+
+        throw new IllegalArgumentException(
+                "Reset token has expired."
+        );
+    }
+
+    // Encrypt new password
+    String encodedPassword =
+            passwordEncoder.encode(
+                    request.getNewPassword()
+            );
+
+    user.setPassword(encodedPassword);
+
+    // Clear reset token after successful reset
+    user.setResetToken(null);
+
+    user.setResetTokenExpiry(null);
+
+    userRepository.save(user);
+
+    ResetPasswordResponse response =
+            new ResetPasswordResponse();
+
+    response.setMessage(
+            "Password reset successfully."
+    );
+
+    return response;
 }
 }

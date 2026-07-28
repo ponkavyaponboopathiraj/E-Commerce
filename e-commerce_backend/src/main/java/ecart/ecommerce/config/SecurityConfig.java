@@ -23,23 +23,26 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+
     // =========================================================
-    // Password Encryption
+    // PASSWORD ENCODER
     // =========================================================
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
+
     // =========================================================
-    // CORS Configuration
-    // React Frontend: http://localhost:5173
-    // Spring Boot Backend: http://localhost:8080
+    // CORS CONFIGURATION
     // =========================================================
 
     @Bean
@@ -48,12 +51,14 @@ public class SecurityConfig {
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
-        // Allow React Frontend
+        // React Frontend
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
+                List.of(
+                        "http://localhost:5173"
+                )
         );
 
-        // Allow HTTP Methods
+        // Allowed HTTP Methods
         configuration.setAllowedMethods(
                 List.of(
                         "GET",
@@ -76,7 +81,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        // Apply CORS configuration to all APIs
         source.registerCorsConfiguration(
                 "/**",
                 configuration
@@ -85,63 +89,78 @@ public class SecurityConfig {
         return source;
     }
 
+
     // =========================================================
-    // Security Configuration
+    // SECURITY FILTER CHAIN
     // =========================================================
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http
+    ) throws Exception {
 
         http
 
                 // =================================================
-                // Enable CORS
+                // CORS
                 // =================================================
+
                 .cors(cors ->
                         cors.configurationSource(
                                 corsConfigurationSource()
                         )
                 )
 
+
                 // =================================================
-                // Disable CSRF
+                // CSRF DISABLED
                 // =================================================
+
                 .csrf(csrf ->
                         csrf.disable()
                 )
 
+
                 // =================================================
-                // Disable Form Login
+                // FORM LOGIN DISABLED
                 // =================================================
+
                 .formLogin(form ->
                         form.disable()
                 )
 
+
                 // =================================================
-                // Disable HTTP Basic Authentication
+                // HTTP BASIC DISABLED
                 // =================================================
+
                 .httpBasic(basic ->
                         basic.disable()
                 )
 
+
                 // =================================================
-                // JWT is Stateless
+                // STATELESS SESSION
                 // =================================================
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
+
                 // =================================================
-                // Handle Unauthorized and Access Denied
+                // EXCEPTION HANDLING
                 // =================================================
+
                 .exceptionHandling(exception -> exception
 
-                        // -------------------------------------------------
-                        // 401 - JWT Missing or Invalid
-                        // -------------------------------------------------
+
+                        // =================================================
+                        // 401 - UNAUTHORIZED
+                        // =================================================
+
                         .authenticationEntryPoint(
                                 (request, response, authException) -> {
 
@@ -159,12 +178,17 @@ public class SecurityConfig {
                                 }
                         )
 
-                        // -------------------------------------------------
-                        // 403 - Valid JWT but Insufficient Role
-                        // -------------------------------------------------
+
+                        // =================================================
+                        // 403 - ACCESS DENIED
+                        // =================================================
+
                         .accessDeniedHandler(
-                                (request, response,
-                                 accessDeniedException) -> {
+                                (
+                                        request,
+                                        response,
+                                        accessDeniedException
+                                ) -> {
 
                                     response.setStatus(
                                             HttpServletResponse.SC_FORBIDDEN
@@ -181,41 +205,72 @@ public class SecurityConfig {
                         )
                 )
 
+
                 // =================================================
-                // Authorization Rules
+                // AUTHORIZATION RULES
                 // =================================================
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // -------------------------------------------------
-                        // Register API - Public
-                        // -------------------------------------------------
+
+                        // =================================================
+                        // REGISTER - PUBLIC
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/auth/register"
                         )
                         .permitAll()
 
-                        // -------------------------------------------------
-                        // Login API - Public
-                        // -------------------------------------------------
+
+                        // =================================================
+                        // LOGIN - PUBLIC
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/auth/login"
                         )
                         .permitAll()
 
-                        // -------------------------------------------------
-                        // All Other APIs - JWT Required
-                        // -------------------------------------------------
+
+                        // =================================================
+                        // FORGOT PASSWORD - PUBLIC
+                        // =================================================
+
+                        .requestMatchers(
+                                "/api/auth/forgot-password"
+                        )
+                        .permitAll()
+
+
+                        // =================================================
+                        // RESET PASSWORD - PUBLIC
+                        // =================================================
+
+                        .requestMatchers(
+                                "/api/auth/reset-password"
+                        )
+                        .permitAll()
+
+
+                        // =================================================
+                        // ALL OTHER APIs - JWT REQUIRED
+                        // =================================================
+
                         .anyRequest()
                         .authenticated()
                 )
 
+
                 // =================================================
-                // Add JWT Authentication Filter
+                // JWT AUTHENTICATION FILTER
                 // =================================================
+
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
+
 
         return http.build();
     }
