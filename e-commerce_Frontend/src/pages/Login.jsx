@@ -9,20 +9,29 @@ function Login() {
 
     const [formData, setFormData] = useState({
         email: "",
-        password: "",
+        password: ""
     });
 
-    const [message, setMessage] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] =
+        useState(false);
+
+    const [message, setMessage] =
+        useState("");
+
+    const [loading, setLoading] =
+        useState(false);
+
 
     const handleChange = (event) => {
 
-        const { name, value } = event.target;
+        const {
+            name,
+            value
+        } = event.target;
 
         setFormData({
             ...formData,
-            [name]: value,
+            [name]: value
         });
 
         setMessage("");
@@ -33,22 +42,29 @@ function Login() {
 
         event.preventDefault();
 
-        setMessage("");
         setLoading(true);
+        setMessage("");
 
         try {
 
-            const response = await loginUser(formData);
+            const response =
+                await loginUser(formData);
 
-            console.log("Login Response:", response);
+            console.log(
+                "Login Response:",
+                response
+            );
+
 
             localStorage.setItem(
                 "token",
                 response.token
             );
 
+
             const userRole =
                 response.role?.toUpperCase();
+
 
             if (userRole) {
 
@@ -58,31 +74,45 @@ function Login() {
                 );
             }
 
+
             localStorage.setItem(
                 "email",
                 formData.email
             );
 
+
             setMessage(
-                "Login successful! Welcome back 🎉"
+                "Welcome back to DeluLu Cart! 🎉"
             );
+
 
             setTimeout(() => {
 
-                if (userRole === "ADMIN") {
+                if (
+                    userRole === "ADMIN"
+                ) {
 
-                    navigate("/admin-dashboard");
+                    navigate(
+                        "/admin-dashboard"
+                    );
 
-                } else if (userRole === "SELLER") {
+                } else if (
+                    userRole === "SELLER"
+                ) {
 
-                    navigate("/seller-dashboard");
+                    navigate(
+                        "/seller-dashboard"
+                    );
 
                 } else {
 
-                    navigate("/customer-dashboard");
+                    navigate(
+                        "/customer-dashboard"
+                    );
                 }
 
             }, 1000);
+
 
         } catch (error) {
 
@@ -91,7 +121,10 @@ function Login() {
                 error
             );
 
-            if (error.response) {
+
+            if (
+                error.response
+            ) {
 
                 setMessage(
                     error.response.data.message ||
@@ -116,284 +149,221 @@ function Login() {
 
         <div className="auth-page">
 
-            {/* LEFT BRAND SECTION */}
+            <div className="auth-glow auth-glow-one"></div>
 
-            <div className="auth-brand-panel">
-
-                <div className="brand-decoration decoration-one">
-                    ✨
-                </div>
-
-                <div className="brand-decoration decoration-two">
-                    🛍️
-                </div>
-
-                <div className="brand-decoration decoration-three">
-                    💜
-                </div>
+            <div className="auth-glow auth-glow-two"></div>
 
 
-                <div className="brand-content">
-
-                    <div className="brand-logo">
-                        🛍️
-                    </div>
-
-                    <h1>
-                        E-Cart
-                    </h1>
-
-                    <h2>
-                        Shop smarter.
-                        <br />
-                        Live better.
-                    </h2>
-
-                    <p>
-                        Discover products you love,
-                        enjoy secure shopping and
-                        experience effortless delivery.
-                    </p>
+            <div className="auth-wrapper">
 
 
-                    <div className="brand-features">
+                {/* LEFT */}
 
-                        <div className="brand-feature">
-                            <span>🚚</span>
-                            <div>
-                                <strong>
-                                    Fast Delivery
-                                </strong>
-                                <small>
-                                    Delivered to your doorstep
-                                </small>
-                            </div>
-                        </div>
+                <div className="auth-showcase">
+
+                    <Link
+                        to="/"
+                        className="auth-brand"
+                    >
+                        🛍️ DeluLu <b>Cart</b>
+                    </Link>
 
 
-                        <div className="brand-feature">
-                            <span>🔒</span>
-                            <div>
-                                <strong>
-                                    Secure Shopping
-                                </strong>
-                                <small>
-                                    Your data is always protected
-                                </small>
-                            </div>
-                        </div>
+                    <div className="showcase-content">
 
-
-                        <div className="brand-feature">
-                            <span>⭐</span>
-                            <div>
-                                <strong>
-                                    Quality Products
-                                </strong>
-                                <small>
-                                    Shop with confidence
-                                </small>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            {/* RIGHT LOGIN SECTION */}
-
-            <div className="auth-form-panel">
-
-                <div className="auth-card">
-
-                    <div className="mobile-brand">
-                        🛍️ E-Cart
-                    </div>
-
-
-                    <div className="auth-header">
-
-                        <span className="auth-eyebrow">
-                            Welcome back
+                        <span>
+                            ✨ WELCOME BACK
                         </span>
 
                         <h1>
-                            Sign in to your account
+                            Your shopping
+                            journey continues
+                            <strong>
+                                here.
+                            </strong>
                         </h1>
 
                         <p>
-                            Enter your details to continue
-                            shopping with E-Cart.
+                            Sign in to discover
+                            products, manage your
+                            cart and enjoy a smarter
+                            shopping experience.
                         </p>
 
                     </div>
 
 
-                    <form
-                        className="auth-form"
-                        onSubmit={handleSubmit}
-                    >
+                    <div className="showcase-floating">
 
-                        {/* EMAIL */}
+                        🛒
 
-                        <div className="form-group">
+                        <span>
+                            Shop smarter.
+                            Live better.
+                        </span>
 
-                            <label>
-                                Email Address
-                            </label>
+                    </div>
 
-                            <div className="input-wrapper">
+                </div>
 
-                                <span>
-                                    ✉️
-                                </span>
+
+                {/* FORM */}
+
+                <div className="auth-form-container">
+
+                    <div className="auth-card">
+
+
+                        <div className="mobile-brand">
+
+                            🛍️ DeluLu Cart
+
+                        </div>
+
+
+                        <div className="auth-header">
+
+                            <h2>
+                                Welcome Back 👋
+                            </h2>
+
+                            <p>
+                                Login to your account
+                            </p>
+
+                        </div>
+
+
+                        <form
+                            onSubmit={
+                                handleSubmit
+                            }
+                        >
+
+
+                            <div className="form-group">
+
+                                <label>
+                                    Email Address
+                                </label>
 
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="you@example.com"
-                                    value={formData.email}
-                                    onChange={handleChange}
+                                    value={
+                                        formData.email
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     required
                                 />
 
                             </div>
 
-                        </div>
 
+                            <div className="form-group">
 
-                        {/* PASSWORD */}
+                                <label>
+                                    Password
+                                </label>
 
-                        <div className="form-group">
+                                <div className="password-field">
 
-                            <label>
-                                Password
-                            </label>
+                                    <input
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        name="password"
+                                        placeholder="Enter your password"
+                                        value={
+                                            formData.password
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        required
+                                    />
 
-                            <div className="input-wrapper">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowPassword(
+                                                !showPassword
+                                            )
+                                        }
+                                    >
 
-                                <span>
-                                    🔐
-                                </span>
+                                        {
+                                            showPassword
+                                                ? "🙈"
+                                                : "👁️"
+                                        }
 
-                                <input
-                                    type={
-                                        showPassword
-                                            ? "text"
-                                            : "password"
-                                    }
-                                    name="password"
-                                    placeholder="Enter your password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                    </button>
 
-                                <button
-                                    type="button"
-                                    className="password-toggle"
-                                    onClick={() =>
-                                        setShowPassword(
-                                            !showPassword
-                                        )
-                                    }
-                                >
-                                    {showPassword
-                                        ? "🙈"
-                                        : "👁️"
-                                    }
-                                </button>
+                                </div>
 
                             </div>
 
-                        </div>
 
-
-                        <div className="login-options">
-
-                            <label className="remember-me">
-
-                                <input
-                                    type="checkbox"
-                                />
-
-                                <span>
-                                    Remember me
-                                </span>
-
-                            </label>
-
-                            <Link
-                                to="/forgot-password"
-                                className="forgot-password"
+                            <button
+                                type="submit"
+                                className="auth-submit"
+                                disabled={loading}
                             >
-                                Forgot password?
+
+                                {loading
+                                    ? "Signing In..."
+                                    : "Sign In →"
+                                }
+
+                            </button>
+
+                        </form>
+
+
+                        {message && (
+
+                            <div
+                                className={
+                                    message.includes(
+                                        "Welcome"
+                                    )
+                                        ? "auth-message success"
+                                        : "auth-message error"
+                                }
+                            >
+
+                                {message}
+
+                            </div>
+
+                        )}
+
+
+                        <div className="auth-footer">
+
+                            <span>
+                                Don't have an account?
+                            </span>
+
+                            <Link to="/register">
+                                Create Account
                             </Link>
 
                         </div>
 
 
-                        <button
-                            type="submit"
-                            className="auth-button"
-                            disabled={loading}
-                        >
+                        <div className="security-note">
 
-                            {loading ? (
-                                <>
-                                    <span className="spinner"></span>
-                                    Signing in...
-                                </>
-                            ) : (
-                                <>
-                                    Sign In
-                                    <span>→</span>
-                                </>
-                            )}
+                            🔒 Secure & encrypted
+                            authentication
 
-                        </button>
-
-                    </form>
-
-
-                    {message && (
-
-                        <div
-                            className={
-                                message.includes("successful")
-                                    ? "auth-message success-message"
-                                    : "auth-message error-message"
-                            }
-                        >
-                            {message}
                         </div>
-
-                    )}
-
-
-                    <div className="auth-divider">
-                        <span>New to E-Cart?</span>
-                    </div>
-
-
-                    <Link
-                        to="/register"
-                        className="secondary-button"
-                    >
-                        Create an account
-                    </Link>
-
-
-                    <div className="secure-login">
-
-                        🔒
-
-                        <span>
-                            Secure and encrypted login
-                        </span>
 
                     </div>
 

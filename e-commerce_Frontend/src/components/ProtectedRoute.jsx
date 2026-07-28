@@ -1,9 +1,21 @@
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "../service/authUtils";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({
+    children,
+    allowedRoles
+}) {
 
-    if (!isAuthenticated()) {
+    const token =
+        localStorage.getItem("token");
+
+    const role =
+        localStorage
+            .getItem("role")
+            ?.toUpperCase();
+
+
+    // No login
+    if (!token) {
 
         return (
             <Navigate
@@ -12,6 +24,44 @@ function ProtectedRoute({ children }) {
             />
         );
     }
+
+
+    // Role restriction
+    if (
+        allowedRoles &&
+        !allowedRoles.includes(role)
+    ) {
+
+        if (role === "ADMIN") {
+
+            return (
+                <Navigate
+                    to="/admin-dashboard"
+                    replace
+                />
+            );
+        }
+
+
+        if (role === "SELLER") {
+
+            return (
+                <Navigate
+                    to="/seller-dashboard"
+                    replace
+                />
+            );
+        }
+
+
+        return (
+            <Navigate
+                to="/customer-dashboard"
+                replace
+            />
+        );
+    }
+
 
     return children;
 }

@@ -7,11 +7,20 @@ import {
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import RoleTest from "./pages/RoleTest";
 
-import CustomerDashboard from "./pages/customer/CustomerDashboard";
+import CustomerDashboard
+    from "./pages/customer/CustomerDashboard";
+    
+import SellerDashboard from "./pages/seller/SellerDashboard";
+import Navbar
+    from "./components/Navbar";
 
-import Navbar from "./components/Navbar";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute
+    from "./components/ProtectedRoute";
+
+import "./App.css";
+
 
 function App() {
 
@@ -22,40 +31,110 @@ function App() {
             <Routes>
 
                 {/* =========================
-                    PUBLIC HOME PAGE
+                    PUBLIC LANDING PAGE
                 ========================== */}
 
                 <Route
                     path="/"
-                    element={<Home />}
+                    element={
+                        <Home />
+                    }
                 />
 
 
                 {/* =========================
-                    AUTH
+                    AUTHENTICATION
                 ========================== */}
 
                 <Route
                     path="/login"
-                    element={<Login />}
+                    element={
+                        <Login />
+                    }
                 />
 
                 <Route
                     path="/register"
-                    element={<Register />}
+                    element={
+                        <Register />
+                    }
                 />
 
 
                 {/* =========================
-                    CUSTOMER
+                    CUSTOMER DASHBOARD
                 ========================== */}
 
                 <Route
                     path="/customer-dashboard"
                     element={
-                        <ProtectedRoute>
+
+                        <ProtectedRoute
+                            allowedRoles={[
+                                "CUSTOMER"
+                            ]}
+                        >
+
                             <CustomerDashboard />
+
                         </ProtectedRoute>
+
+                    }
+                />
+
+
+                {/* =========================
+                    SELLER DASHBOARD
+                ========================== */}
+
+   <Route
+    path="/seller-dashboard"
+    element={
+        <ProtectedRoute>
+            <SellerDashboard />
+        </ProtectedRoute>
+    }
+/>
+
+
+                {/* =========================
+                    ADMIN DASHBOARD
+                ========================== */}
+
+                <Route
+                    path="/admin-dashboard"
+                    element={
+
+                        <ProtectedRoute
+                            allowedRoles={[
+                                "ADMIN"
+                            ]}
+                        >
+
+                            <div>
+                                Admin Dashboard
+                            </div>
+
+                        </ProtectedRoute>
+
+                    }
+                />
+
+
+                {/* =========================
+                    ROLE TEST
+                ========================== */}
+
+                <Route
+                    path="/role-test"
+                    element={
+
+                        <ProtectedRoute>
+
+                            <RoleTest />
+
+                        </ProtectedRoute>
+
                     }
                 />
 

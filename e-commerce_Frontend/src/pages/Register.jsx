@@ -13,21 +13,26 @@ function Register() {
         email: "",
         phoneNumber: "",
         password: "",
-        role: "CUSTOMER",
+        role: "CUSTOMER"
     });
 
-    const [message, setMessage] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] =
+        useState(false);
+
+    const [message, setMessage] =
+        useState("");
 
 
     const handleChange = (event) => {
 
-        const { name, value } = event.target;
+        const {
+            name,
+            value
+        } = event.target;
 
         setFormData({
             ...formData,
-            [name]: value,
+            [name]: value
         });
 
         setMessage("");
@@ -38,10 +43,8 @@ function Register() {
 
         setFormData({
             ...formData,
-            role: role,
+            role
         });
-
-        setMessage("");
     };
 
 
@@ -49,33 +52,26 @@ function Register() {
 
         event.preventDefault();
 
-        setMessage("");
         setLoading(true);
+        setMessage("");
 
         try {
 
-            console.log(
-                "Register Request:",
+            await registerUser(
                 formData
             );
 
-            const response =
-                await registerUser(formData);
-
-            console.log(
-                "Register Response:",
-                response
-            );
-
             setMessage(
-                "Registration successful! Redirecting to login..."
+                "Account created successfully! 🎉"
             );
+
 
             setTimeout(() => {
 
                 navigate("/login");
 
             }, 1500);
+
 
         } catch (error) {
 
@@ -84,7 +80,10 @@ function Register() {
                 error
             );
 
-            if (error.response) {
+
+            if (
+                error.response
+            ) {
 
                 setMessage(
                     error.response.data.message ||
@@ -109,137 +108,60 @@ function Register() {
 
         <div className="auth-page register-page">
 
-            {/* LEFT BRAND PANEL */}
+            <div className="auth-glow auth-glow-one"></div>
 
-            <div className="auth-brand-panel register-brand-panel">
-
-                <div className="brand-decoration decoration-one">
-                    ✨
-                </div>
-
-                <div className="brand-decoration decoration-two">
-                    🏪
-                </div>
-
-                <div className="brand-decoration decoration-three">
-                    🚀
-                </div>
+            <div className="auth-glow auth-glow-two"></div>
 
 
-                <div className="brand-content">
-
-                    <div className="brand-logo">
-                        🛍️
-                    </div>
-
-                    <h1>
-                        E-Cart
-                    </h1>
-
-                    <h2>
-                        Your journey
-                        <br />
-                        starts here.
-                    </h2>
-
-                    <p>
-                        Create your account and
-                        unlock a world of shopping,
-                        selling and endless possibilities.
-                    </p>
+            <div className="register-wrapper">
 
 
-                    <div className="brand-features">
+                <div className="register-top">
 
-                        <div className="brand-feature">
-                            <span>🛍️</span>
+                    <Link
+                        to="/"
+                        className="auth-brand"
+                    >
+                        🛍️ DeluLu <b>Cart</b>
+                    </Link>
 
-                            <div>
-                                <strong>
-                                    Shop Everything
-                                </strong>
-
-                                <small>
-                                    Discover products you love
-                                </small>
-                            </div>
-
-                        </div>
-
-
-                        <div className="brand-feature">
-                            <span>🏪</span>
-
-                            <div>
-                                <strong>
-                                    Grow Your Business
-                                </strong>
-
-                                <small>
-                                    Sell products with E-Cart
-                                </small>
-                            </div>
-
-                        </div>
-
-
-                        <div className="brand-feature">
-                            <span>💜</span>
-
-                            <div>
-                                <strong>
-                                    Simple Experience
-                                </strong>
-
-                                <small>
-                                    Easy, fast and secure
-                                </small>
-                            </div>
-
-                        </div>
-
-                    </div>
+                    <span>
+                        Already a member?
+                        <Link to="/login">
+                            Sign In
+                        </Link>
+                    </span>
 
                 </div>
 
-            </div>
 
-
-            {/* RIGHT REGISTER PANEL */}
-
-            <div className="auth-form-panel">
-
-                <div className="auth-card register-card">
-
-                    <div className="mobile-brand">
-                        🛍️ E-Cart
-                    </div>
+                <div className="register-card">
 
 
                     <div className="auth-header">
 
-                        <span className="auth-eyebrow">
-                            Get started
+                        <span className="register-icon">
+                            ✨
                         </span>
 
-                        <h1>
-                            Create your account
-                        </h1>
+                        <h2>
+                            Create Your Account
+                        </h2>
 
                         <p>
-                            Join E-Cart and start your
-                            shopping journey today.
+                            Join DeluLu Cart and
+                            start your journey
                         </p>
 
                     </div>
 
 
                     <form
-                        className="auth-form"
-                        onSubmit={handleSubmit}
+                        onSubmit={
+                            handleSubmit
+                        }
                     >
 
-                        {/* NAME */}
 
                         <div className="form-row">
 
@@ -253,8 +175,12 @@ function Register() {
                                     type="text"
                                     name="firstName"
                                     placeholder="First name"
-                                    value={formData.firstName}
-                                    onChange={handleChange}
+                                    value={
+                                        formData.firstName
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     required
                                 />
 
@@ -271,8 +197,12 @@ function Register() {
                                     type="text"
                                     name="lastName"
                                     placeholder="Last name"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
+                                    value={
+                                        formData.lastName
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     required
                                 />
 
@@ -281,62 +211,52 @@ function Register() {
                         </div>
 
 
-                        {/* EMAIL */}
+                        <div className="form-row">
 
-                        <div className="form-group">
+                            <div className="form-group">
 
-                            <label>
-                                Email Address
-                            </label>
-
-                            <div className="input-wrapper">
-
-                                <span>
-                                    ✉️
-                                </span>
+                                <label>
+                                    Email
+                                </label>
 
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="you@example.com"
-                                    value={formData.email}
-                                    onChange={handleChange}
+                                    value={
+                                        formData.email
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     required
                                 />
 
                             </div>
 
-                        </div>
 
+                            <div className="form-group">
 
-                        {/* PHONE */}
-
-                        <div className="form-group">
-
-                            <label>
-                                Phone Number
-                            </label>
-
-                            <div className="input-wrapper">
-
-                                <span>
-                                    📱
-                                </span>
+                                <label>
+                                    Phone Number
+                                </label>
 
                                 <input
                                     type="tel"
                                     name="phoneNumber"
-                                    placeholder="Enter phone number"
-                                    value={formData.phoneNumber}
-                                    onChange={handleChange}
+                                    placeholder="Phone number"
+                                    value={
+                                        formData.phoneNumber
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                 />
 
                             </div>
 
                         </div>
 
-
-                        {/* PASSWORD */}
 
                         <div className="form-group">
 
@@ -344,72 +264,39 @@ function Register() {
                                 Password
                             </label>
 
-                            <div className="input-wrapper">
-
-                                <span>
-                                    🔐
-                                </span>
-
-                                <input
-                                    type={
-                                        showPassword
-                                            ? "text"
-                                            : "password"
-                                    }
-                                    name="password"
-                                    placeholder="Create a strong password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                />
-
-                                <button
-                                    type="button"
-                                    className="password-toggle"
-                                    onClick={() =>
-                                        setShowPassword(
-                                            !showPassword
-                                        )
-                                    }
-                                >
-                                    {showPassword
-                                        ? "🙈"
-                                        : "👁️"
-                                    }
-                                </button>
-
-                            </div>
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Create a strong password"
+                                value={
+                                    formData.password
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                required
+                            />
 
                         </div>
 
 
-                        {/* ACCOUNT TYPE */}
-
                         <div className="role-section">
 
-                            <div className="role-title">
-
-                                <h3>
-                                    Choose your account type
-                                </h3>
-
-                                <p>
-                                    How do you want to use E-Cart?
-                                </p>
-
-                            </div>
+                            <label>
+                                Choose Account Type
+                            </label>
 
 
                             <div className="role-options">
 
-                                {/* CUSTOMER */}
 
                                 <button
                                     type="button"
                                     className={
-                                        formData.role === "CUSTOMER"
-                                            ? "role-card active customer-role"
-                                            : "role-card"
+                                        formData.role ===
+                                        "CUSTOMER"
+                                            ? "role-option active"
+                                            : "role-option"
                                     }
                                     onClick={() =>
                                         handleRoleSelect(
@@ -418,44 +305,39 @@ function Register() {
                                     }
                                 >
 
-                                    <span className="role-icon">
+                                    <span>
                                         🛍️
                                     </span>
 
-                                    <span className="role-content">
+                                    <div>
 
                                         <strong>
                                             Customer
                                         </strong>
 
                                         <small>
-                                            Shop products,
-                                            discover new items
-                                            and enjoy easy delivery.
+                                            Shop amazing products
                                         </small>
 
-                                    </span>
+                                    </div>
 
-                                    <span className="role-check">
-
-                                        {formData.role === "CUSTOMER"
+                                    {
+                                        formData.role ===
+                                        "CUSTOMER"
                                             ? "✓"
                                             : ""
-                                        }
-
-                                    </span>
+                                    }
 
                                 </button>
 
 
-                                {/* SELLER */}
-
                                 <button
                                     type="button"
                                     className={
-                                        formData.role === "SELLER"
-                                            ? "role-card active seller-role"
-                                            : "role-card"
+                                        formData.role ===
+                                        "SELLER"
+                                            ? "role-option active"
+                                            : "role-option"
                                     }
                                     onClick={() =>
                                         handleRoleSelect(
@@ -464,32 +346,28 @@ function Register() {
                                     }
                                 >
 
-                                    <span className="role-icon">
+                                    <span>
                                         🏪
                                     </span>
 
-                                    <span className="role-content">
+                                    <div>
 
                                         <strong>
                                             Seller
                                         </strong>
 
                                         <small>
-                                            Create your store,
-                                            manage products
-                                            and grow your business.
+                                            Grow your business
                                         </small>
 
-                                    </span>
+                                    </div>
 
-                                    <span className="role-check">
-
-                                        {formData.role === "SELLER"
+                                    {
+                                        formData.role ===
+                                        "SELLER"
                                             ? "✓"
                                             : ""
-                                        }
-
-                                    </span>
+                                    }
 
                                 </button>
 
@@ -498,94 +376,44 @@ function Register() {
                         </div>
 
 
-                        {/* SELECTED ROLE */}
-
-                        <div className="selected-role">
-
-                            <span>
-                                Account selected
-                            </span>
-
-                            <strong>
-
-                                {formData.role === "CUSTOMER"
-                                    ? "🛍️ Customer"
-                                    : "🏪 Seller"
-                                }
-
-                            </strong>
-
-                        </div>
-
-
-                        {/* SUBMIT */}
-
                         <button
                             type="submit"
-                            className="auth-button"
+                            className="auth-submit"
                             disabled={loading}
                         >
 
-                            {loading ? (
-
-                                <>
-                                    <span className="spinner"></span>
-                                    Creating account...
-                                </>
-
-                            ) : (
-
-                                <>
-                                    Create Account
-                                    <span>→</span>
-                                </>
-
-                            )}
+                            {loading
+                                ? "Creating Account..."
+                                : `Create ${
+                                    formData.role ===
+                                    "SELLER"
+                                        ? "Seller"
+                                        : "Customer"
+                                  } Account →`
+                            }
 
                         </button>
 
                     </form>
 
 
-                    {/* MESSAGE */}
-
                     {message && (
 
                         <div
                             className={
-                                message.includes("successful")
-                                    ? "auth-message success-message"
-                                    : "auth-message error-message"
+                                message.includes(
+                                    "successfully"
+                                )
+                                    ? "auth-message success"
+                                    : "auth-message error"
                             }
                         >
+
                             {message}
+
                         </div>
 
                     )}
-
-
-                    <div className="auth-divider">
-                        <span>Already have an account?</span>
-                    </div>
-
-
-                    <Link
-                        to="/login"
-                        className="secondary-button"
-                    >
-                        Sign in to E-Cart
-                    </Link>
-
-
-                    <div className="secure-login">
-
-                        🔒
-
-                        <span>
-                            Your information is securely protected
-                        </span>
-
-                    </div>
 
                 </div>
 

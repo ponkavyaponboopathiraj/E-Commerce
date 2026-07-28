@@ -1,105 +1,32 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
 function Home() {
 
-    const navigate = useNavigate();
-
-    const categories = [
-        {
-            icon: "👗",
-            title: "Fashion",
-            description: "Discover the latest styles",
-        },
-        {
-            icon: "📱",
-            title: "Electronics",
-            description: "Smart gadgets for you",
-        },
-        {
-            icon: "🏠",
-            title: "Home & Living",
-            description: "Make your space beautiful",
-        },
-        {
-            icon: "💄",
-            title: "Beauty",
-            description: "Feel confident every day",
-        },
-    ];
-
-    const products = [
-        {
-            id: 1,
-            name: "Premium Sneakers",
-            category: "Fashion",
-            price: "$89.99",
-            oldPrice: "$119.99",
-            image:
-                "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700",
-            badge: "Best Seller",
-        },
-        {
-            id: 2,
-            name: "Wireless Headphones",
-            category: "Electronics",
-            price: "$129.99",
-            oldPrice: "$169.99",
-            image:
-                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=700",
-            badge: "Popular",
-        },
-        {
-            id: 3,
-            name: "Smart Watch",
-            category: "Electronics",
-            price: "$199.99",
-            oldPrice: "$249.99",
-            image:
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700",
-            badge: "Trending",
-        },
-        {
-            id: 4,
-            name: "Luxury Handbag",
-            category: "Fashion",
-            price: "$79.99",
-            oldPrice: "$109.99",
-            image:
-                "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700",
-            badge: "New",
-        },
-    ];
-
-    const handleExplore = () => {
-        navigate("/customer-dashboard");
-    };
-
     return (
 
-        <div className="home-page">
+        <div className="delulu-home">
 
-            {/* ====================================
+            {/* =========================
                 NAVBAR
-            ==================================== */}
+            ========================== */}
 
             <nav className="home-navbar">
 
-                <div
+                <Link
+                    to="/"
                     className="home-logo"
-                    onClick={() => navigate("/")}
                 >
 
-                    <div className="logo-icon">
+                    <span className="logo-icon">
                         🛍️
-                    </div>
+                    </span>
 
-                    <div className="logo-text">
-                        <span>DeluLu</span>
-                        <strong>Cart</strong>
-                    </div>
+                    <span>
+                        DeluLu <b>Cart</b>
+                    </span>
 
-                </div>
+                </Link>
 
 
                 <div className="home-nav-links">
@@ -108,16 +35,16 @@ function Home() {
                         Home
                     </a>
 
+                    <a href="#features">
+                        Features
+                    </a>
+
                     <a href="#categories">
                         Categories
                     </a>
 
-                    <a href="#products">
-                        Products
-                    </a>
-
                     <a href="#about">
-                        About Us
+                        About
                     </a>
 
                 </div>
@@ -125,53 +52,60 @@ function Home() {
 
                 <div className="home-nav-actions">
 
-                    <button
-                        className="nav-login-btn"
-                        onClick={() => navigate("/login")}
+                    <Link
+                        to="/login"
+                        className="nav-login"
                     >
                         Login
-                    </button>
+                    </Link>
 
-                    <button
-                        className="nav-register-btn"
-                        onClick={() => navigate("/register")}
+                    <Link
+                        to="/register"
+                        className="nav-register"
                     >
                         Get Started
-                    </button>
+                    </Link>
 
                 </div>
 
             </nav>
 
 
-            {/* ====================================
+            {/* =========================
                 HERO SECTION
-            ==================================== */}
+            ========================== */}
 
             <section
-                className="hero-section"
+                className="home-hero"
                 id="home"
             >
 
-                <div className="hero-background-circle circle-1"></div>
+                <div className="hero-blob blob-one"></div>
 
-                <div className="hero-background-circle circle-2"></div>
+                <div className="hero-blob blob-two"></div>
+
 
                 <div className="hero-content">
 
-                    <div className="hero-small-badge">
+                    <div className="hero-badge">
 
-                        ✨ Your Everyday Shopping Destination
+                        ✨ The future of shopping is here
 
                     </div>
 
 
                     <h1>
 
-                        Shop Smarter.
-
+                        Shop Your
                         <span>
-                            Live Better.
+                            Way.
+                        </span>
+
+                        <br />
+
+                        Live Your
+                        <span>
+                            Style.
                         </span>
 
                     </h1>
@@ -180,61 +114,78 @@ function Home() {
                     <p>
 
                         Welcome to <strong>DeluLu Cart</strong> —
-                        your one-stop destination for fashion,
-                        electronics, lifestyle, and everything
-                        you love.
+                        your modern shopping destination where
+                        fashion, technology and lifestyle come
+                        together in one beautiful experience.
 
                     </p>
 
 
                     <div className="hero-buttons">
 
-                        <button
-                            className="primary-hero-btn"
-                            onClick={handleExplore}
+                        <Link
+                            to="/register"
+                            className="primary-hero-button"
                         >
 
-                            Explore Products
+                            Start Shopping
 
                             <span>
                                 →
                             </span>
 
-                        </button>
+                        </Link>
 
 
-                        <button
-                            className="secondary-hero-btn"
-                            onClick={() => navigate("/register")}
+                        <a
+                            href="#categories"
+                            className="secondary-hero-button"
                         >
 
-                            Join DeluLu Cart
+                            Explore Categories
 
-                        </button>
+                        </a>
 
                     </div>
 
 
-                    <div className="hero-trust">
-
-                        <div className="trust-avatars">
-
-                            <span>👩</span>
-                            <span>👨</span>
-                            <span>👩‍💼</span>
-                            <span>👨‍💻</span>
-
-                        </div>
+                    <div className="hero-stats">
 
                         <div>
 
                             <strong>
-                                10K+ Happy Shoppers
+                                10K+
                             </strong>
 
-                            <p>
-                                Loved by customers everywhere
-                            </p>
+                            <span>
+                                Products
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                5K+
+                            </strong>
+
+                            <span>
+                                Happy Customers
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                99%
+                            </strong>
+
+                            <span>
+                                Satisfaction
+                            </span>
 
                         </div>
 
@@ -243,14 +194,48 @@ function Home() {
                 </div>
 
 
-                {/* HERO IMAGE */}
+                {/* =========================
+                    HERO VISUAL
+                ========================== */}
 
                 <div className="hero-visual">
 
-                    <div className="hero-glow"></div>
+                    <div className="visual-glow"></div>
 
 
                     <div className="floating-card card-top">
+
+                        <span>
+                            🔥
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                Trending Now
+                            </strong>
+
+                            <small>
+                                New collections
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="shopping-circle">
+
+                        <div className="circle-inner">
+
+                            🛍️
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="floating-card card-bottom">
 
                         <span>
                             ⭐
@@ -259,11 +244,11 @@ function Home() {
                         <div>
 
                             <strong>
-                                4.9/5
+                                Loved by shoppers
                             </strong>
 
                             <small>
-                                Customer Rating
+                                4.9 / 5 rating
                             </small>
 
                         </div>
@@ -271,34 +256,16 @@ function Home() {
                     </div>
 
 
-                    <div className="hero-image-wrapper">
-
-                        <img
-                            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1000"
-                            alt="DeluLu Cart Shopping"
-                        />
-
+                    <div className="visual-product product-one">
+                        👟
                     </div>
 
+                    <div className="visual-product product-two">
+                        🎧
+                    </div>
 
-                    <div className="floating-card card-bottom">
-
-                        <span>
-                            🛒
-                        </span>
-
-                        <div>
-
-                            <strong>
-                                Shop Freely
-                            </strong>
-
-                            <small>
-                                Everything you need
-                            </small>
-
-                        </div>
-
+                    <div className="visual-product product-three">
+                        ⌚
                     </div>
 
                 </div>
@@ -306,89 +273,106 @@ function Home() {
             </section>
 
 
-            {/* ====================================
+            {/* =========================
                 FEATURES
-            ==================================== */}
+            ========================== */}
 
-            <section className="features-section">
+            <section
+                className="features-section"
+                id="features"
+            >
 
-                <div className="feature-box">
+                <div className="section-heading">
 
-                    <div className="feature-icon">
-                        🚚
-                    </div>
+                    <span>
+                        Why DeluLu Cart?
+                    </span>
 
-                    <div>
+                    <h2>
+                        Shopping made beautifully simple
+                    </h2>
+
+                    <p>
+                        Everything you need for a smooth,
+                        secure and enjoyable shopping journey.
+                    </p>
+
+                </div>
+
+
+                <div className="features-grid">
+
+                    <div className="feature-card">
+
+                        <div className="feature-icon">
+                            🚚
+                        </div>
 
                         <h3>
                             Fast Delivery
                         </h3>
 
                         <p>
-                            Get your products delivered quickly.
+                            Get your favourite products
+                            delivered quickly and safely
+                            to your doorstep.
                         </p>
 
                     </div>
 
-                </div>
 
+                    <div className="feature-card">
 
-                <div className="feature-box">
-
-                    <div className="feature-icon">
-                        🔒
-                    </div>
-
-                    <div>
+                        <div className="feature-icon">
+                            🔐
+                        </div>
 
                         <h3>
                             Secure Shopping
                         </h3>
 
                         <p>
-                            Your data and payments are protected.
+                            Your account and personal
+                            information are protected
+                            with secure authentication.
                         </p>
 
                     </div>
 
-                </div>
 
+                    <div className="feature-card">
 
-                <div className="feature-box">
-
-                    <div className="feature-icon">
-                        💳
-                    </div>
-
-                    <div>
+                        <div className="feature-icon">
+                            💳
+                        </div>
 
                         <h3>
                             Easy Payments
                         </h3>
 
                         <p>
-                            Simple and secure payment options.
+                            Enjoy a simple and seamless
+                            checkout experience with
+                            secure payment options.
                         </p>
 
                     </div>
 
-                </div>
 
+                    <div className="feature-card">
 
-                <div className="feature-box">
-
-                    <div className="feature-icon">
-                        ⭐
-                    </div>
-
-                    <div>
+                        <div className="feature-icon">
+                            💖
+                        </div>
 
                         <h3>
-                            Quality Products
+                            Loved Products
                         </h3>
 
                         <p>
-                            Carefully selected products for you.
+                            Discover products selected
+                            to match your style and
+                            everyday lifestyle.
                         </p>
 
                     </div>
@@ -398,311 +382,191 @@ function Home() {
             </section>
 
 
-            {/* ====================================
-                CATEGORY SECTION
-            ==================================== */}
+            {/* =========================
+                CATEGORIES
+            ========================== */}
 
             <section
                 className="categories-section"
                 id="categories"
             >
 
-                <div className="section-title">
+                <div className="section-heading">
 
                     <span>
-                        Explore Our World
+                        Explore
                     </span>
 
                     <h2>
-                        Shop By Category
+                        Shop your favourite world
                     </h2>
-
-                    <p>
-                        Find everything you love,
-                        all in one beautiful place.
-                    </p>
 
                 </div>
 
 
                 <div className="category-grid">
 
-                    {categories.map((category) => (
+                    <div className="category-card fashion">
 
-                        <div
-                            className="category-box"
-                            key={category.title}
-                            onClick={handleExplore}
-                        >
-
-                            <div className="category-icon">
-                                {category.icon}
-                            </div>
-
-                            <h3>
-                                {category.title}
-                            </h3>
-
-                            <p>
-                                {category.description}
-                            </p>
-
-                            <span className="category-arrow">
-                                Explore →
-                            </span>
-
+                        <div>
+                            👗
                         </div>
 
-                    ))}
+                        <h3>
+                            Fashion
+                        </h3>
 
-                </div>
+                        <p>
+                            Discover your style
+                        </p>
 
-            </section>
+                        <Link to="/register">
+                            Explore →
+                        </Link>
 
-
-            {/* ====================================
-                OFFER BANNER
-            ==================================== */}
-
-            <section className="offer-section">
-
-                <div className="offer-content">
-
-                    <span className="offer-badge">
-                        🔥 Limited Time Offer
-                    </span>
-
-                    <h2>
-                        Up to 50% Off
-                    </h2>
-
-                    <p>
-                        Fresh deals. Amazing products.
-                        Unbeatable prices.
-                    </p>
-
-                    <button
-                        onClick={handleExplore}
-                    >
-                        Shop Deals →
-                    </button>
-
-                </div>
+                    </div>
 
 
-                <div className="offer-emoji">
+                    <div className="category-card electronics">
 
-                    🛍️
-
-                </div>
-
-            </section>
-
-
-            {/* ====================================
-                PRODUCTS
-            ==================================== */}
-
-            <section
-                className="products-section"
-                id="products"
-            >
-
-                <div className="section-title">
-
-                    <span>
-                        Trending Now
-                    </span>
-
-                    <h2>
-                        Featured Products
-                    </h2>
-
-                    <p>
-                        Handpicked products that
-                        everyone is loving right now.
-                    </p>
-
-                </div>
-
-
-                <div className="products-grid">
-
-                    {products.map((product) => (
-
-                        <div
-                            className="home-product-card"
-                            key={product.id}
-                        >
-
-                            <div className="product-image-wrapper">
-
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                />
-
-                                <span className="product-badge">
-                                    {product.badge}
-                                </span>
-
-                                <button className="wishlist-btn">
-                                    ♡
-                                </button>
-
-                            </div>
-
-
-                            <div className="product-info">
-
-                                <span className="product-category">
-                                    {product.category}
-                                </span>
-
-                                <h3>
-                                    {product.name}
-                                </h3>
-
-
-                                <div className="product-rating">
-
-                                    ⭐⭐⭐⭐⭐
-
-                                    <span>
-                                        4.8
-                                    </span>
-
-                                </div>
-
-
-                                <div className="price-row">
-
-                                    <div>
-
-                                        <strong>
-                                            {product.price}
-                                        </strong>
-
-                                        <del>
-                                            {product.oldPrice}
-                                        </del>
-
-                                    </div>
-
-
-                                    <button
-                                        className="quick-add-btn"
-                                        onClick={handleExplore}
-                                    >
-                                        +
-                                    </button>
-
-                                </div>
-
-                            </div>
-
+                        <div>
+                            🎧
                         </div>
 
-                    ))}
+                        <h3>
+                            Electronics
+                        </h3>
+
+                        <p>
+                            Smart life starts here
+                        </p>
+
+                        <Link to="/register">
+                            Explore →
+                        </Link>
+
+                    </div>
+
+
+                    <div className="category-card home-category">
+
+                        <div>
+                            🏠
+                        </div>
+
+                        <h3>
+                            Home & Living
+                        </h3>
+
+                        <p>
+                            Make your space beautiful
+                        </p>
+
+                        <Link to="/register">
+                            Explore →
+                        </Link>
+
+                    </div>
+
+
+                    <div className="category-card beauty">
+
+                        <div>
+                            ✨
+                        </div>
+
+                        <h3>
+                            Beauty
+                        </h3>
+
+                        <p>
+                            Feel confident every day
+                        </p>
+
+                        <Link to="/register">
+                            Explore →
+                        </Link>
+
+                    </div>
 
                 </div>
-
-
-                <button
-                    className="view-all-btn"
-                    onClick={handleExplore}
-                >
-
-                    View All Products →
-
-                </button>
 
             </section>
 
 
-            {/* ====================================
-                STATISTICS
-            ==================================== */}
+            {/* =========================
+                ROLE SECTION
+            ========================== */}
 
             <section
-                className="stats-section"
+                className="role-section"
                 id="about"
             >
 
-                <div className="stats-content">
+                <div className="section-heading">
 
                     <span>
-                        WHY DELULU CART?
+                        One Platform
                     </span>
 
                     <h2>
-                        Shopping Made
-                        <br />
-                        <strong>
-                            Simple & Joyful.
-                        </strong>
+                        Built for everyone
                     </h2>
 
                     <p>
-                        We believe shopping should be more
-                        than just buying things. It should be
-                        an experience that is easy, exciting,
-                        and enjoyable.
+                        Whether you love shopping or
+                        growing your business, DeluLu Cart
+                        has a place for you.
                     </p>
 
                 </div>
 
 
-                <div className="stats-grid">
+                <div className="role-grid">
 
-                    <div className="stat-item">
+                    <div className="role-box customer-box">
 
-                        <strong>
-                            10K+
-                        </strong>
-
-                        <span>
-                            Happy Customers
+                        <span className="role-box-icon">
+                            🛍️
                         </span>
+
+                        <h3>
+                            Shop as a Customer
+                        </h3>
+
+                        <p>
+                            Discover products, explore
+                            categories, manage your cart
+                            and enjoy an amazing shopping
+                            experience.
+                        </p>
+
+                        <Link to="/register">
+                            Join as Customer →
+                        </Link>
 
                     </div>
 
 
-                    <div className="stat-item">
+                    <div className="role-box seller-box">
 
-                        <strong>
-                            5K+
-                        </strong>
-
-                        <span>
-                            Products
+                        <span className="role-box-icon">
+                            🏪
                         </span>
 
-                    </div>
+                        <h3>
+                            Grow as a Seller
+                        </h3>
 
+                        <p>
+                            Create your store, manage
+                            products, track orders and
+                            grow your business with DeluLu Cart.
+                        </p>
 
-                    <div className="stat-item">
-
-                        <strong>
-                            500+
-                        </strong>
-
-                        <span>
-                            Trusted Sellers
-                        </span>
-
-                    </div>
-
-
-                    <div className="stat-item">
-
-                        <strong>
-                            24/7
-                        </strong>
-
-                        <span>
-                            Customer Support
-                        </span>
+                        <Link to="/register">
+                            Join as Seller →
+                        </Link>
 
                     </div>
 
@@ -711,149 +575,72 @@ function Home() {
             </section>
 
 
-            {/* ====================================
+            {/* =========================
                 CTA
-            ==================================== */}
+            ========================== */}
 
             <section className="cta-section">
 
                 <div>
 
                     <span>
-                        Ready to shop?
+                        ✨ Your shopping journey starts here
                     </span>
 
                     <h2>
-                        Your Next Favourite
+                        Ready to experience
                         <br />
-                        Product Is Waiting.
+                        DeluLu Cart?
                     </h2>
 
                     <p>
-                        Start exploring thousands of products
-                        at DeluLu Cart today.
+                        Create your account and discover
+                        a new way to shop online.
                     </p>
 
-                    <button
-                        onClick={handleExplore}
+                    <Link
+                        to="/register"
+                        className="cta-button"
                     >
-                        Start Shopping →
-                    </button>
+                        Create Your Account →
+                    </Link>
 
                 </div>
 
             </section>
 
 
-            {/* ====================================
+            {/* =========================
                 FOOTER
-            ==================================== */}
+            ========================== */}
 
             <footer className="home-footer">
 
-                <div className="footer-main">
+                <div className="footer-logo">
 
-                    <div className="footer-brand">
-
-                        <div className="home-logo">
-
-                            <div className="logo-icon">
-                                🛍️
-                            </div>
-
-                            <div className="logo-text">
-
-                                <span>
-                                    DeluLu
-                                </span>
-
-                                <strong>
-                                    Cart
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                        <p>
-                            Shop smarter. Live better.
-                            Everything you love, all in one place.
-                        </p>
-
-                    </div>
-
-
-                    <div className="footer-column">
-
-                        <h4>
-                            Quick Links
-                        </h4>
-
-                        <a href="#home">
-                            Home
-                        </a>
-
-                        <a href="#categories">
-                            Categories
-                        </a>
-
-                        <a href="#products">
-                            Products
-                        </a>
-
-                    </div>
-
-
-                    <div className="footer-column">
-
-                        <h4>
-                            Support
-                        </h4>
-
-                        <a href="#about">
-                            About Us
-                        </a>
-
-                        <a href="#about">
-                            Contact Us
-                        </a>
-
-                        <a href="#about">
-                            Help Center
-                        </a>
-
-                    </div>
-
-
-                    <div className="footer-column">
-
-                        <h4>
-                            Follow Us
-                        </h4>
-
-                        <div className="social-icons">
-
-                            <span>📘</span>
-                            <span>📸</span>
-                            <span>🐦</span>
-                            <span>▶️</span>
-
-                        </div>
-
-                    </div>
+                    🛍️ DeluLu Cart
 
                 </div>
 
+                <p>
+                    Shop. Discover. Enjoy.
+                </p>
 
-                <div className="footer-bottom">
+                <div className="footer-links">
 
-                    <p>
-                        © 2026 DeluLu Cart. All rights reserved.
-                    </p>
+                    <Link to="/login">
+                        Login
+                    </Link>
 
-                    <p>
-                        Made with ❤️ for happy shoppers.
-                    </p>
+                    <Link to="/register">
+                        Register
+                    </Link>
+
+                </div>
+
+                <div className="footer-copy">
+
+                    © 2026 DeluLu Cart. All rights reserved.
 
                 </div>
 
