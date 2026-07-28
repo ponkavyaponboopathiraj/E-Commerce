@@ -1,49 +1,38 @@
 import {
     BrowserRouter,
     Routes,
-    Route,
-    Navigate
+    Route
 } from "react-router-dom";
 
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import RoleTest from "./pages/RoleTest";
-import Home from "./pages/Home";
-import "./pages/Home.css";
 
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import "./App.css";
-
-
 function App() {
 
     return (
-        <BrowserRouter>
 
-            <Navbar />
+        <BrowserRouter>
 
             <Routes>
 
                 {/* =========================
-                    HOME
+                    PUBLIC HOME PAGE
                 ========================== */}
 
                 <Route
                     path="/"
-                    element={
-                        <ProtectedRoute>
-                            <Home />
-                        </ProtectedRoute>
-                    }
+                    element={<Home />}
                 />
 
 
                 {/* =========================
-                    PUBLIC ROUTES
+                    AUTH
                 ========================== */}
 
                 <Route
@@ -58,34 +47,15 @@ function App() {
 
 
                 {/* =========================
-                    PROTECTED ROUTES
+                    CUSTOMER
                 ========================== */}
 
                 <Route
-                    path="/role-test"
+                    path="/customer-dashboard"
                     element={
                         <ProtectedRoute>
-                            <RoleTest />
+                            <CustomerDashboard />
                         </ProtectedRoute>
-                    }
-                />
-
-<Route
-    path="/customer-dashboard"
-    element={
-        <ProtectedRoute>
-            <CustomerDashboard />
-        </ProtectedRoute>
-    }
-/>
-                {/* =========================
-                    UNKNOWN URL
-                ========================== */}
-
-                <Route
-                    path="*"
-                    element={
-                        <Navigate to="/" replace />
                     }
                 />
 
