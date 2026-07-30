@@ -19,6 +19,8 @@ import ecart.ecommerce.dto.request.ForgotPasswordRequest;
 import ecart.ecommerce.dto.request.ResetPasswordRequest;
 import ecart.ecommerce.dto.response.ForgotPasswordResponse;
 import ecart.ecommerce.dto.response.ResetPasswordResponse;
+import ecart.ecommerce.service.EmailService;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 @Service
@@ -27,14 +29,18 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
-    public AuthServiceImpl(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
-
+    public AuthServiceImpl(
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        JwtService jwtService,
+        EmailService emailService
+) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
+    this.emailService = emailService;
 }
 
     @Override
@@ -142,6 +148,11 @@ public ForgotPasswordResponse forgotPassword(
     user.setResetTokenExpiry(expiryTime);
 
     userRepository.save(user);
+      // Send email
+    emailService.sendPasswordResetEmail(
+            user.getEmail(),
+            resetToken
+    );
 
     ForgotPasswordResponse response =
             new ForgotPasswordResponse();

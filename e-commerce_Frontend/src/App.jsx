@@ -17,7 +17,7 @@ import AdminDashboard
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import Navbar
     from "./components/Navbar";
-
+import ForgotPassword from "./pages/ForgotPassword";
 import ProtectedRoute
     from "./components/ProtectedRoute";
 
@@ -61,7 +61,12 @@ function App() {
                         <Register />
                     }
                 />
-
+<Route
+    path="/forgot-password"
+    element={
+        <ForgotPassword />
+    }
+/>
 
                 {/* =========================
                     CUSTOMER DASHBOARD

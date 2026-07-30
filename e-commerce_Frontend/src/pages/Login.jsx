@@ -262,52 +262,57 @@ function Login() {
 
                             </div>
 
+<div className="form-group">
 
-                            <div className="form-group">
+    <label>
+        Password
+    </label>
 
-                                <label>
-                                    Password
-                                </label>
+    <div className="password-field">
 
-                                <div className="password-field">
+        <input
+            type={
+                showPassword
+                    ? "text"
+                    : "password"
+            }
+            name="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+        />
 
-                                    <input
-                                        type={
-                                            showPassword
-                                                ? "text"
-                                                : "password"
-                                        }
-                                        name="password"
-                                        placeholder="Enter your password"
-                                        value={
-                                            formData.password
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        required
-                                    />
+        <button
+            type="button"
+            onClick={() =>
+                setShowPassword(
+                    !showPassword
+                )
+            }
+        >
+            {
+                showPassword
+                    ? "🙈"
+                    : "👁️"
+            }
+        </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword(
-                                                !showPassword
-                                            )
-                                        }
-                                    >
+    </div>
 
-                                        {
-                                            showPassword
-                                                ? "🙈"
-                                                : "👁️"
-                                        }
 
-                                    </button>
+    {/* FORGOT PASSWORD */}
 
-                                </div>
+    <div className="forgot-password-link">
 
-                            </div>
+        <Link to="/forgot-password">
+            Forgot Password?
+        </Link>
+
+    </div>
+
+</div>
+
 
 
                             <button

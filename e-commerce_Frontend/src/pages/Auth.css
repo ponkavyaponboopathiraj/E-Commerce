@@ -1829,11 +1829,47 @@
     }
 
 }
+/* =========================================================
+   FORGOT PASSWORD LINK
+========================================================= */
+
+.forgot-password-link {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.forgot-password-link a {
+    color: #a855f7;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+
+.forgot-password-link a:hover {
+    color: #ec4899;
+    text-decoration: underline;
+}
 
 
 /* =========================================================
    SMALL MOBILE
 ========================================================= */
+
+@media (max-width: 600px) {
+
+    .forgot-password-link {
+        justify-content: flex-end;
+    }
+
+    .forgot-password-link a {
+        font-size: 12px;
+    }
+
+}
+
+
 
 @media (
     max-width:
