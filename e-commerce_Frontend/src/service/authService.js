@@ -28,3 +28,12 @@ export const logoutUser = () => {
 
     window.location.href = "/login";
 };
+export const resetPassword = async (data) => {
+
+    const response = await api.post(
+        "/auth/reset-password",
+        data
+    );
+
+    return response.data;
+};

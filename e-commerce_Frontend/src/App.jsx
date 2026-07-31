@@ -18,8 +18,10 @@ import SellerDashboard from "./pages/seller/SellerDashboard";
 import Navbar
     from "./components/Navbar";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute
     from "./components/ProtectedRoute";
+
 
 import "./App.css";
 
@@ -66,6 +68,11 @@ function App() {
     element={
         <ForgotPassword />
     }
+
+/>
+<Route
+    path="/reset-password"
+    element={<ResetPassword />}
 />
 
                 {/* =========================
