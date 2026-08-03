@@ -28,10 +28,13 @@ export const logoutUser = () => {
 
     window.location.href = "/login";
 };
-export const resetPassword = async (data) => {
+import axios from "axios";
 
-    const response = await api.post(
-        "/auth/reset-password",
+const API_URL = "http://localhost:8080/api/auth";
+
+export const resetPassword = async (data) => {
+    const response = await axios.post(
+        `${API_URL}/reset-password`,
         data
     );
 
