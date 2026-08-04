@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
-
+import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -112,4 +112,20 @@ public class AuthController {
                 .ok(response);
     }
     
+    @PutMapping(
+            "/admin/approve-seller/{sellerId}"
+    )
+    public ResponseEntity<String> approveSeller(
+            @PathVariable UUID sellerId
+    ) 
+    {
+
+        String response =
+                authService.approveSeller(
+                        sellerId
+                );
+
+        return ResponseEntity
+                .ok(response);
+    }
 }

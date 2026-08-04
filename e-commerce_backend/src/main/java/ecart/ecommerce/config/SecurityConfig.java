@@ -252,7 +252,15 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
+ // =================================================
+                           // APPROVE SELLER - ADMIN ONLY
+                           // =================================================
 
+
+                        .requestMatchers(
+                               "/api/auth/admin/**"
+                        )
+                        .hasRole("ADMIN")
                         // =================================================
                         // ALL OTHER APIs - JWT REQUIRED
                         // =================================================

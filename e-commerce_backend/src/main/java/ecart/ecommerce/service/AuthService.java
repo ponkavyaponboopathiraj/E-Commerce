@@ -10,6 +10,7 @@ import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.dto.response.RegisterResponse;
 import ecart.ecommerce.dto.response.ResetPasswordResponse;
 
+import java.util.UUID;
 
 public interface AuthService {
 
@@ -17,5 +18,6 @@ public interface AuthService {
     LoginResponse login(LoginRequest request);
     ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request);
     ResetPasswordResponse resetPassword( ResetPasswordRequest request);
+      String approveSeller(UUID sellerId);
 
 }
