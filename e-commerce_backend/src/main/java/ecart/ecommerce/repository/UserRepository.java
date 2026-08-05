@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
+import ecart.ecommerce.enums.Role;
+import ecart.ecommerce.enums.AccountStatus;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
@@ -12,4 +15,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByResetToken(String resetToken);
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
+      List<User> findByRoleAndStatus(
+            Role role,
+            AccountStatus status);
 }

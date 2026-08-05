@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
+import java.util.List;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -708,5 +708,13 @@ String token =
 
         return response;
     }
+    @Override
+public List<User> getPendingSellers() {
+
+    return userRepository.findByRoleAndStatus(
+            Role.SELLER,
+            AccountStatus.PENDING_APPROVAL
+    );
+}
 
 }

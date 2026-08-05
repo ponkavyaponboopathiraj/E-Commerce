@@ -9,7 +9,8 @@ import ecart.ecommerce.dto.response.ForgotPasswordResponse;
 import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.dto.response.RegisterResponse;
 import ecart.ecommerce.dto.response.ResetPasswordResponse;
-
+import ecart.ecommerce.entity.User;
+import java.util.List;
 import java.util.UUID;
 
 public interface AuthService {
@@ -19,5 +20,6 @@ public interface AuthService {
     ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request);
     ResetPasswordResponse resetPassword( ResetPasswordRequest request);
       String approveSeller(UUID sellerId);
+      List<User> getPendingSellers();
 
 }

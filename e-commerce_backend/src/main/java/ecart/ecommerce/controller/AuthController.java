@@ -16,7 +16,8 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import java.util.List;
+import ecart.ecommerce.entity.User;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 @RestController
@@ -128,4 +129,11 @@ public class AuthController {
         return ResponseEntity
                 .ok(response);
     }
+    @GetMapping("/admin/pending-sellers")
+public ResponseEntity<List<User>> getPendingSellers() {
+
+    return ResponseEntity.ok(
+            authService.getPendingSellers()
+    );
+}
 }
