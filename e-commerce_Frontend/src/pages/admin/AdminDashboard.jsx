@@ -932,11 +932,9 @@ function AdminDashboard() {
                     ========================================= */
 
                     <section className="module-placeholder">
-                        ) : activeMenu === "Seller Requests" ? (
 
     <PendingSellerRequests />
 
-) : (
 
     <section className="module-placeholder">
 
@@ -966,37 +964,8 @@ function AdminDashboard() {
 
     </section>
 
-)
-                        <div className="placeholder-icon">
-                            {menuItems.find(
-                                (item) =>
-                                    item.name ===
-                                    activeMenu
-                            )?.icon}
-                        </div>
 
-                        <h2>
-                            {activeMenu} Management
-                        </h2>
-
-                        <p>
-                            The {activeMenu.toLowerCase()}
-                            management module is ready
-                            to be connected with your
-                            backend API.
-                        </p>
-
-                        <button
-                            className="admin-primary-button"
-                            onClick={() =>
-                                setActiveMenu(
-                                    "Dashboard"
-                                )
-                            }
-                        >
-                            ← Back to Dashboard
-                        </button>
-
+                       
                     </section>
 
                 )}
