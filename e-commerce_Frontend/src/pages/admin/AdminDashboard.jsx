@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import PendingSellerRequests from "./PendingSellerRequests";
+//import { getPendingSellers } from "../../services/adminService";
+
 import "./AdminDashboard.css";
 
 function AdminDashboard() {
@@ -9,6 +13,7 @@ function AdminDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeMenu, setActiveMenu] = useState("Dashboard");
     const [search, setSearch] = useState("");
+    const [pendingCount, setPendingCount] = useState(0);
 
     const [stats] = useState([
         {
@@ -79,6 +84,10 @@ function AdminDashboard() {
             name: "Users",
             icon: "👥"
         },
+        {
+            name: "Seller Requests",
+            icon: "🔔"
+},
         {
             name: "Products",
             icon: "📦"
@@ -379,15 +388,24 @@ function AdminDashboard() {
 
                         </div>
 
+<button
+    className="notification-button"
+    onClick={() => setActiveMenu("Seller Requests")}
+>
 
-                        <button className="notification-button">
+    🔔
 
-                            🔔
+    {pendingCount > 0 && (
 
-                            <span className="notification-dot"></span>
+        <span className="notification-dot">
 
-                        </button>
+            {pendingCount}
 
+        </span>
+
+    )}
+
+</button>
 
                         <div className="header-avatar">
                             👑
@@ -914,7 +932,41 @@ function AdminDashboard() {
                     ========================================= */
 
                     <section className="module-placeholder">
+                        ) : activeMenu === "Seller Requests" ? (
 
+    <PendingSellerRequests />
+
+) : (
+
+    <section className="module-placeholder">
+
+        <div className="placeholder-icon">
+            {
+                menuItems.find(
+                    (item) => item.name === activeMenu
+                )?.icon
+            }
+        </div>
+
+        <h2>
+            {activeMenu} Management
+        </h2>
+
+        <p>
+            The {activeMenu.toLowerCase()} management module is ready
+            to be connected with your backend API.
+        </p>
+
+        <button
+            className="admin-primary-button"
+            onClick={() => setActiveMenu("Dashboard")}
+        >
+            ← Back to Dashboard
+        </button>
+
+    </section>
+
+)
                         <div className="placeholder-icon">
                             {menuItems.find(
                                 (item) =>
