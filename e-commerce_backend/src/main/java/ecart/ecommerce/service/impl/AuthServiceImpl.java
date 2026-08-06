@@ -238,6 +238,15 @@ String token =
                     + "Please contact the administrator."
             );
         }
+        if (user.getStatus() == AccountStatus.REJECTED) {
+
+    throw new IllegalStateException(
+
+            "Your seller application has been rejected by the administrator."
+
+    );
+
+}
 
         if (user.getStatus()
                 != AccountStatus.ACTIVE) {
@@ -319,7 +328,37 @@ String token =
 
         return "Seller approved successfully.";
     }
+@Override
+public String rejectSeller(
+        UUID sellerId
+) {
 
+    User seller =
+            userRepository.findById(sellerId)
+            .orElseThrow(() ->
+                    new UserNotFoundException(
+                            "Seller not found."
+                    )
+            );
+
+    seller.setStatus(
+            AccountStatus.REJECTED
+    );
+
+    userRepository.save(
+            seller
+    );
+
+    emailService.sendSellerRejectedEmail(
+
+            seller.getEmail(),
+
+            seller.getFirstName()
+
+    );
+
+    return "Seller rejected successfully.";
+}
 
     @Override
     public ForgotPasswordResponse forgotPassword(

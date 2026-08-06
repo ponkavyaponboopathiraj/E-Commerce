@@ -20,6 +20,7 @@ public interface AuthService {
     ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request);
     ResetPasswordResponse resetPassword( ResetPasswordRequest request);
       String approveSeller(UUID sellerId);
+      String rejectSeller(UUID sellerId);
       List<User> getPendingSellers();
       
 

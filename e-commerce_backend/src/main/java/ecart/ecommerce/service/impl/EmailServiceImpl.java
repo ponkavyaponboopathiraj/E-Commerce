@@ -97,4 +97,38 @@ public void sendSellerApprovalEmail(
 
     mailSender.send(message);
 }
+@Override
+public void sendSellerRejectedEmail(
+        String toEmail,
+        String firstName
+) {
+
+    SimpleMailMessage message =
+            new SimpleMailMessage();
+
+    message.setFrom(senderEmail);
+
+    message.setTo(toEmail);
+
+    message.setSubject(
+            "Seller Application Status"
+    );
+
+    message.setText(
+
+            "Hello " + firstName + ",\n\n"
+
+            + "Thank you for registering as a seller on DeluLu Cart.\n\n"
+
+            + "We regret to inform you that your seller application has been rejected.\n\n"
+
+            + "If you have any questions, please contact our support team.\n\n"
+
+            + "Regards,\n"
+
+            + "DeluLu Cart Team"
+    );
+
+    mailSender.send(message);
+}
 }

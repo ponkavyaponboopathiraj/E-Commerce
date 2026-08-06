@@ -10,4 +10,9 @@ public interface EmailService {
         String toEmail,
         String sellerName
 );
+   void sendSellerRejectedEmail(
+        String toEmail,
+        String firstName
+);
+
 }
