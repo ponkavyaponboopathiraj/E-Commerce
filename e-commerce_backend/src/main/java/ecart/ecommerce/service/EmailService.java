@@ -6,4 +6,8 @@ public interface EmailService {
             String toEmail,
             String resetToken
     );
+    public void sendSellerApprovalEmail(
+        String toEmail,
+        String sellerName
+);
 }

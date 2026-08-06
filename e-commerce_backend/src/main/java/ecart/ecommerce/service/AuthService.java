@@ -21,5 +21,6 @@ public interface AuthService {
     ResetPasswordResponse resetPassword( ResetPasswordRequest request);
       String approveSeller(UUID sellerId);
       List<User> getPendingSellers();
+      
 
 }

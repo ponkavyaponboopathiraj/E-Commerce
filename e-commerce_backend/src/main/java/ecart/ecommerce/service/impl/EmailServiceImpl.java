@@ -57,4 +57,44 @@ public class EmailServiceImpl implements EmailService {
 
         mailSender.send(message);
     }
+
+
+    @Override
+public void sendSellerApprovalEmail(
+        String toEmail,
+        String sellerName
+) {
+
+    SimpleMailMessage message =
+            new SimpleMailMessage();
+
+    message.setFrom(senderEmail);
+
+    message.setTo(toEmail);
+
+    message.setSubject(
+            "🎉 Seller Account Approved - DeluLu Cart"
+    );
+
+    message.setText(
+
+            "Hello " + sellerName + ",\n\n"
+
+            + "Congratulations!\n\n"
+
+            + "Your Seller Account has been approved by the Administrator.\n\n"
+
+            + "You can now login and start selling your products on DeluLu Cart.\n\n"
+
+            + "Login URL:\n"
+            + "http://localhost:5173/login\n\n"
+
+            + "Welcome to DeluLu Cart!\n\n"
+
+            + "Regards,\n"
+            + "DeluLu Cart Team"
+    );
+
+    mailSender.send(message);
+}
 }

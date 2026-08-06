@@ -132,8 +132,10 @@ public class AuthController {
     @GetMapping("/admin/pending-sellers")
 public ResponseEntity<List<User>> getPendingSellers() {
 
-    return ResponseEntity.ok(
-            authService.getPendingSellers()
-    );
+    List<User> sellers =
+            authService.getPendingSellers();
+
+    return ResponseEntity.ok(sellers);
 }
+    
 }
