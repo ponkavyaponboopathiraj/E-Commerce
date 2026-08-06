@@ -137,5 +137,27 @@ public ResponseEntity<List<User>> getPendingSellers() {
 
     return ResponseEntity.ok(sellers);
 }
-    
+    @PutMapping("/admin/reject-seller/{sellerId}")
+
+public ResponseEntity<String> rejectSeller(
+
+        @PathVariable UUID sellerId
+
+) {
+
+    String response =
+
+            authService.rejectSeller(
+
+                    sellerId
+
+            );
+
+    return ResponseEntity.ok(
+
+            response
+
+    );
+
+}
 }

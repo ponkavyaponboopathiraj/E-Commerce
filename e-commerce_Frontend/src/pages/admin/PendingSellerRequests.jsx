@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./PendingSellerRequests.css";
+import { approveSeller, rejectSeller } 
+from "../../service/adminService";
 
 const BASE_URL = "http://localhost:8080/api/auth";
 
@@ -279,6 +281,18 @@ function PendingSellerRequests() {
                                                 }
 
                                             </button>
+                                            <button
+
+    className="reject-btn"
+
+    onClick={() => handleReject(seller.id)}
+
+>
+
+    Reject
+
+</button>
+
 
                                         </td>
 

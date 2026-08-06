@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import api from "./api";
 // ==========================================
 // BASE URL
 // ==========================================
@@ -73,5 +73,14 @@ export const approveSeller = async (sellerId) => {
     );
 
     return response.data;
+
+};
+export const rejectSeller = (sellerId) => {
+
+    return api.put(
+
+        `/auth/admin/reject-seller/${sellerId}`
+
+    );
 
 };
