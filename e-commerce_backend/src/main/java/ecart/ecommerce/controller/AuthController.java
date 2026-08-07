@@ -1,19 +1,14 @@
 package ecart.ecommerce.controller;
-
 import ecart.ecommerce.dto.request.ForgotPasswordRequest;
 import ecart.ecommerce.dto.request.LoginRequest;
 import ecart.ecommerce.dto.request.RegisterRequest;
 import ecart.ecommerce.dto.request.ResetPasswordRequest;
-
 import ecart.ecommerce.dto.response.ForgotPasswordResponse;
 import ecart.ecommerce.dto.response.LoginResponse;
 import ecart.ecommerce.dto.response.RegisterResponse;
 import ecart.ecommerce.dto.response.ResetPasswordResponse;
-
 import ecart.ecommerce.service.AuthService;
-
 import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
@@ -25,21 +20,10 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
-
-
-    // =========================================================
-    // CONSTRUCTOR
-    // =========================================================
-
     public AuthController(AuthService authService) {
 
         this.authService = authService;
     }
-
-
-    // =========================================================
-    // REGISTER
-    // =========================================================
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
@@ -55,12 +39,6 @@ public class AuthController {
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
-
-
-    // =========================================================
-    // LOGIN
-    // =========================================================
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid
@@ -74,12 +52,6 @@ public class AuthController {
         return ResponseEntity
                 .ok(response);
     }
-
-
-    // =========================================================
-    // FORGOT PASSWORD
-    // =========================================================
-
     @PostMapping("/forgot-password")
     public ResponseEntity<ForgotPasswordResponse> forgotPassword(
             @Valid
@@ -93,11 +65,6 @@ public class AuthController {
         return ResponseEntity
                 .ok(response);
     }
-
-
-    // =========================================================
-    // RESET PASSWORD
-    // =========================================================
 
     @PostMapping("/reset-password")
     public ResponseEntity<ResetPasswordResponse> resetPassword(
@@ -143,8 +110,8 @@ public ResponseEntity<String> rejectSeller(
 
         @PathVariable UUID sellerId
 
-) {
-
+)
+ {
     String response =
 
             authService.rejectSeller(

@@ -97,7 +97,31 @@ function PendingSellerRequests() {
         }
 
     };
+const handleReject = async (sellerId) => {
 
+    try {
+
+        setProcessingId(sellerId);
+
+        await rejectSeller(sellerId);
+
+        alert("Seller rejected successfully!");
+
+        loadPendingSellers();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Failed to reject seller.");
+
+    } finally {
+
+        setProcessingId(null);
+
+    }
+
+};
 
     // ==========================================
     // INITIAL LOAD
@@ -281,16 +305,16 @@ function PendingSellerRequests() {
                                                 }
 
                                             </button>
-                                            <button
-
+                                           <button
     className="reject-btn"
-
+    disabled={processingId === seller.id}
     onClick={() => handleReject(seller.id)}
-
 >
-
-    Reject
-
+    {
+        processingId === seller.id
+            ? "Rejecting..."
+            : "Reject"
+    }
 </button>
 
 
