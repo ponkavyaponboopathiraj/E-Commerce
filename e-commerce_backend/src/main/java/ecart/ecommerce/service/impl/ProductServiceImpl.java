@@ -132,8 +132,8 @@ public class ProductServiceImpl
                 updatedProduct.getPrice()
         );
 
-        existingProduct.setStockQuantity(
-                updatedProduct.getStockQuantity()
+        existingProduct.setStock(
+                updatedProduct.getStock()
         );
 
         existingProduct.setAttributes(
