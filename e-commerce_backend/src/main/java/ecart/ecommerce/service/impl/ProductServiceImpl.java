@@ -2,6 +2,7 @@
 package ecart.ecommerce.service.impl;
 
 import ecart.ecommerce.entity.Product;
+import ecart.ecommerce.enums.ProductStatus;
 import ecart.ecommerce.repository.ProductRepository;
 import ecart.ecommerce.service.ProductService;
 
@@ -11,18 +12,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceImpl
+        implements ProductService {
 
     private final ProductRepository productRepository;
 
     public ProductServiceImpl(
             ProductRepository productRepository
     ) {
-        this.productRepository = productRepository;
+
+        this.productRepository =
+                productRepository;
     }
 
     @Override
-    public Product addProduct(Product product) {
+    public Product addProduct(
+            Product product
+    ) {
 
         LocalDateTime now =
                 LocalDateTime.now();
@@ -30,17 +36,10 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedAt(now);
         product.setUpdatedAt(now);
 
-        if (product.getStockQuantity() != null &&
-                product.getStockQuantity() > 0) {
+        if (product.getStatus() == null) {
 
             product.setStatus(
-                    ecart.ecommerce.enums.ProductStatus.IN_STOCK
-            );
-
-        } else {
-
-            product.setStatus(
-                    ecart.ecommerce.enums.ProductStatus.OUT_OF_STOCK
+                    ProductStatus.ACTIVE
             );
         }
 
@@ -52,7 +51,8 @@ public class ProductServiceImpl implements ProductService {
             String id
     ) {
 
-        return productRepository.findById(id)
+        return productRepository
+                .findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Product not found with id: "
@@ -60,7 +60,6 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
     }
-
     @Override
     public List<Product> getAllProducts() {
 
@@ -84,34 +83,23 @@ public class ProductServiceImpl implements ProductService {
         return productRepository
                 .findByCategory(category);
     }
-
     @Override
     public List<Product> getProductsByStatus(
-            String status
+            ProductStatus status
     ) {
 
-        ecart.ecommerce.enums.ProductStatus productStatus;
-
-        try {
-
-            productStatus =
-                    ecart.ecommerce.enums.ProductStatus
-                            .valueOf(
-                                    status.toUpperCase()
-                            );
-
-        } catch (IllegalArgumentException e) {
-
-            throw new IllegalArgumentException(
-                    "Invalid product status: "
-                            + status
-            );
-        }
-
         return productRepository
-                .findByStatus(productStatus);
+                .findByStatus(status);
     }
 
+    @Override
+    public List<Product> searchProductsByName(
+            String name
+    ) {
+
+        return productRepository
+                .findByNameContainingIgnoreCase(name);
+    }
     @Override
     public Product updateProduct(
             String id,
@@ -119,7 +107,8 @@ public class ProductServiceImpl implements ProductService {
     ) {
 
         Product existingProduct =
-                productRepository.findById(id)
+                productRepository
+                        .findById(id)
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Product not found with id: "
@@ -151,21 +140,12 @@ public class ProductServiceImpl implements ProductService {
                 updatedProduct.getAttributes()
         );
 
-
-        if (updatedProduct.getStockQuantity() != null &&
-                updatedProduct.getStockQuantity() > 0) {
+        if (updatedProduct.getStatus() != null) {
 
             existingProduct.setStatus(
-                    ecart.ecommerce.enums.ProductStatus.IN_STOCK
-            );
-
-        } else {
-
-            existingProduct.setStatus(
-                    ecart.ecommerce.enums.ProductStatus.OUT_OF_STOCK
+                    updatedProduct.getStatus()
             );
         }
-
         existingProduct.setUpdatedAt(
                 LocalDateTime.now()
         );
@@ -174,6 +154,30 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(
                 existingProduct
         );
+    }
+    @Override
+    public Product updateProductStatus(
+            String id,
+            ProductStatus status
+    ) {
+
+        Product product =
+                productRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Product not found with id: "
+                                                + id
+                                )
+                        );
+
+        product.setStatus(status);
+
+        product.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        return productRepository.save(product);
     }
 
     @Override
