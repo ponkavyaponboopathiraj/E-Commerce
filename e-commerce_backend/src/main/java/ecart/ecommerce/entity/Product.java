@@ -13,141 +13,23 @@ import java.util.Map;
 
 @Document(collection = "products")
 public class Product {
-
-    // =========================================================
-    // PRODUCT ID
-    // =========================================================
-
     @Id
     private String id;
-
-
-    // =========================================================
-    // SELLER ID
-    // =========================================================
-
-    /*
-     * This stores the PostgreSQL User UUID of the seller.
-     *
-     * MongoDB Product
-     *        ↓
-     * sellerId
-     *        ↓
-     * PostgreSQL users.id
-     */
-
     private String sellerId;
-
-
-    // =========================================================
-    // BASIC PRODUCT INFORMATION
-    // =========================================================
-
     private String name;
-
     private String description;
-
     private BigDecimal price;
-
     private String brand;
-
     private String category;
-
-
-    // =========================================================
-    // INVENTORY
-    // =========================================================
-
     private Integer stock;
-
-
-    // =========================================================
-    // PRODUCT STATUS
-    // =========================================================
-
-    /*
-     * ACTIVE
-     * INACTIVE
-     * DISCONTINUED
-     */
-
     private ProductStatus status;
-
-
-    // =========================================================
-    // PRODUCT IMAGES
-    // =========================================================
-
-    /*
-     * Multiple product images can be stored here.
-     *
-     * Example:
-     *
-     * [
-     *     "image1.jpg",
-     *     "image2.jpg",
-     *     "image3.jpg"
-     * ]
-     */
-
     private List<String> images = new ArrayList<>();
-
-
-    // =========================================================
-    // DYNAMIC PRODUCT ATTRIBUTES
-    // =========================================================
-
-    /*
-     * Different categories require different attributes.
-     *
-     * Dress:
-     * {
-     *     "size": "M",
-     *     "color": "Black",
-     *     "material": "Cotton",
-     *     "fit": "Regular"
-     * }
-     *
-     * Mobile:
-     * {
-     *     "ram": "8GB",
-     *     "storage": "128GB",
-     *     "processor": "Snapdragon",
-     *     "battery": "5000mAh"
-     * }
-     *
-     * Shoes:
-     * {
-     *     "size": "9",
-     *     "color": "White",
-     *     "material": "Leather",
-     *     "sole": "Rubber"
-     * }
-     */
-
     private Map<String, Object> attributes = new HashMap<>();
-
-
-    // =========================================================
-    // CREATED / UPDATED TIME
-    // =========================================================
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
-
-    // =========================================================
-    // CONSTRUCTOR
-    // =========================================================
-
+    
     public Product() {
     }
-
-
-    // =========================================================
-    // GETTERS AND SETTERS
-    // =========================================================
 
     public String getId() {
         return id;
