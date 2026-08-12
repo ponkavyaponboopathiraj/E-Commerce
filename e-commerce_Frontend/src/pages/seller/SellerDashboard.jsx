@@ -1,35 +1,37 @@
-import { useMemo, useState } from "react";
+
+import { useEffect,useMemo,useState} from "react";
 import { useNavigate } from "react-router-dom";
 import "./SellerDashboard.css";
-
+import {
+    addProduct,
+    getProductsBySeller
+} from "../../service/productService";
 function SellerDashboard() {
 
     const navigate = useNavigate();
 
-    // =====================================================
-    // CURRENT LOGGED-IN SELLER
-    // =====================================================
+ // =====================================================
+// CURRENT LOGGED-IN SELLER
+// =====================================================
 
-    const sellerEmail =
-        localStorage.getItem("email") ||
-        "seller@delulucart.com";
+const sellerEmail =
+    localStorage.getItem("email") ||
+    "seller@delulucart.com";
 
-    const storedSellerName =
-        localStorage.getItem("sellerName");
+const storedSellerName =
+    localStorage.getItem("sellerName");
 
-    const sellerName =
-        storedSellerName ||
-        sellerEmail
-            .split("@")[0]
-            .replace(/[._-]/g, " ")
-            .replace(/\b\w/g, (char) =>
-                char.toUpperCase()
-            );
+const sellerName =
+    storedSellerName ||
+    sellerEmail
+        .split("@")[0]
+        .replace(/[._-]/g, " ")
+        .replace(/\b\w/g, (char) =>
+            char.toUpperCase()
+        );
 
-    const sellerId =
-        localStorage.getItem("sellerId") ||
-        sellerEmail;
-
+const sellerId =
+    localStorage.getItem("sellerId");
 
     // =====================================================
     // STATES
@@ -174,7 +176,47 @@ function SellerDashboard() {
             }
 
         ]);
+    // =====================================================
+// LOAD PRODUCTS FROM BACKEND
+// =====================================================
 
+useEffect(() => {
+
+    const loadProducts = async () => {
+
+        try {
+
+            console.log(
+                "Loading products for seller:",
+                sellerId
+            );
+
+            const data =
+                await getProductsBySeller(
+                    sellerId
+                );
+
+            console.log(
+                "Products received from backend:",
+                data
+            );
+
+            setProducts(data);
+
+        } catch (error) {
+
+            console.error(
+                "Failed to load seller products:",
+                error
+            );
+        }
+    };
+
+    if (sellerId) {
+        loadProducts();
+    }
+
+}, [sellerId]);
 
     // =====================================================
     // CATEGORIES
@@ -317,97 +359,154 @@ function SellerDashboard() {
         setShowProductModal(true);
     };
 
+// =====================================================
+// ADD / UPDATE PRODUCT
+// =====================================================
 
-    // =====================================================
-    // ADD / UPDATE PRODUCT
-    // =====================================================
+const handleProductSubmit = async (event) => {
 
-    const handleProductSubmit = (event) => {
+    event.preventDefault();
 
-        event.preventDefault();
+    console.log(
+        "🔥 HANDLE PRODUCT SUBMIT CALLED"
+    );
 
-        if (
-            !productForm.name ||
-            !productForm.price ||
-            !productForm.stock
-        ) {
+    if (
+        !productForm.name ||
+        !productForm.price ||
+        !productForm.stock
+    ) {
+
+        showToast(
+            "Please fill all required fields"
+        );
+
+        return;
+    }
+
+    try {
+
+        // =================================================
+        // UPDATE EXISTING PRODUCT
+        // =================================================
+
+        if (editingProduct) {
 
             showToast(
-                "Please fill all required fields"
+                "Product update will be connected next ✨"
             );
 
             return;
         }
 
+        // =================================================
+        // CREATE NEW PRODUCT
+        // =================================================
 
-        if (editingProduct) {
+        const productData = {
 
-            setProducts(
-                products.map((product) =>
+            sellerId: sellerId,
 
-                    product.id ===
-                    editingProduct.id
+            name: productForm.name,
 
-                        ? {
-                            ...product,
-                            ...productForm,
-                            price:
-                                Number(
-                                    productForm.price
-                                ),
-                            stock:
-                                Number(
-                                    productForm.stock
-                                )
-                        }
+            description:
+                productForm.description,
 
-                        : product
-                )
+            price:
+                Number(productForm.price),
+
+            category:
+                productForm.category,
+
+            stock:
+                Number(productForm.stock),
+
+            status: "ACTIVE",
+
+            images:
+                productForm.image
+                    ? [productForm.image]
+                    : [],
+
+            attributes: {}
+
+        };
+
+        console.log(
+            "🔥 Sending product to backend:",
+            productData
+        );
+
+        // =================================================
+        // SAVE TO MONGODB THROUGH BACKEND
+        // =================================================
+
+        const savedProduct =
+            await addProduct(
+                productData
             );
 
-            showToast(
-                "Product updated successfully ✨"
-            );
+        console.log(
+            "🔥 Product saved successfully:",
+            savedProduct
+        );
 
-        } else {
+        // =================================================
+        // UPDATE FRONTEND STATE
+        // =================================================
 
-            const newProduct = {
+        setProducts((previousProducts) => [
 
-                id:
-                    Date.now(),
+            savedProduct,
 
-                ...productForm,
+            ...previousProducts
 
-                price:
-                    Number(
-                        productForm.price
-                    ),
+        ]);
 
-                stock:
-                    Number(
-                        productForm.stock
-                    ),
+        // =================================================
+        // CLEAR FORM
+        // =================================================
 
-                sellerId:
-                    sellerId,
+        setProductForm({
 
-                sellerName:
-                    sellerName
+            name: "",
 
-            };
+            category: "Fashion",
 
-            setProducts([
-                newProduct,
-                ...products
-            ]);
+            price: "",
 
-            showToast(
-                "Product added successfully 🎉"
-            );
-        }
+            stock: "",
+
+            image: "",
+
+            description: ""
+
+        });
 
         setShowProductModal(false);
-    };
+
+        showToast(
+            "Product added successfully 🎉"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "🔥 PRODUCT SAVE ERROR:",
+            error
+        );
+
+        console.error(
+            "Backend response:",
+            error.response?.data
+        );
+
+        showToast(
+            error.response?.data?.message ||
+            "Failed to add product"
+        );
+    }
+};
 
 
     // =====================================================
@@ -1951,7 +2050,64 @@ function ProductSection({
 
     );
 }
+const handleProductSubmit = async (event) => {
 
+    event.preventDefault();
+
+    try {
+
+        const savedProduct = await addProduct({
+
+            sellerId: sellerId,
+
+            name: productForm.name,
+
+            category: productForm.category,
+
+            price: Number(productForm.price),
+
+            stock: Number(productForm.stock),
+
+            images: productForm.image
+                ? [productForm.image]
+                : [],
+
+            description: productForm.description,
+
+            status: "ACTIVE",
+
+            attributes: {}
+        });
+
+        setProducts((prevProducts) => [
+            savedProduct,
+            ...prevProducts
+        ]);
+
+        setProductForm({
+            name: "",
+            category: "",
+            price: "",
+            stock: "",
+            image: "",
+            description: ""
+        });
+
+        alert("Product added successfully!");
+
+    } catch (error) {
+
+        console.error(
+            "Product creation failed:",
+            error
+        );
+
+        alert(
+            error.response?.data?.message ||
+            "Failed to add product."
+        );
+    }
+};
 
 // =============================================================
 // PRODUCT CARD COMPONENT
