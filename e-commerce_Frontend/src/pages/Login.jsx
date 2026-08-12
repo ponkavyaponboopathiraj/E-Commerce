@@ -60,6 +60,14 @@ function Login() {
                 "token",
                 response.token
             );
+             if (response.id) {
+
+    localStorage.setItem(
+        "sellerId",
+        response.id
+    );
+
+}
 
 
             const userRole =
