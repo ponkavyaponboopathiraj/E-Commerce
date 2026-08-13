@@ -1,37 +1,40 @@
-
-import { useEffect,useMemo,useState} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SellerDashboard.css";
+
 import {
     addProduct,
     getProductsBySeller
 } from "../../service/productService";
+
+
 function SellerDashboard() {
 
     const navigate = useNavigate();
 
- // =====================================================
-// CURRENT LOGGED-IN SELLER
-// =====================================================
+    // =====================================================
+    // CURRENT LOGGED-IN SELLER
+    // =====================================================
 
-const sellerEmail =
-    localStorage.getItem("email") ||
-    "seller@delulucart.com";
+    const sellerEmail =
+        localStorage.getItem("email") ||
+        "seller@delulucart.com";
 
-const storedSellerName =
-    localStorage.getItem("sellerName");
+    const storedSellerName =
+        localStorage.getItem("sellerName");
 
-const sellerName =
-    storedSellerName ||
-    sellerEmail
-        .split("@")[0]
-        .replace(/[._-]/g, " ")
-        .replace(/\b\w/g, (char) =>
-            char.toUpperCase()
-        );
+    const sellerName =
+        storedSellerName ||
+        sellerEmail
+            .split("@")[0]
+            .replace(/[._-]/g, " ")
+            .replace(/\b\w/g, (char) =>
+                char.toUpperCase()
+            );
 
-const sellerId =
-    localStorage.getItem("sellerId");
+    const sellerId =
+        localStorage.getItem("sellerId");
+
 
     // =====================================================
     // STATES
@@ -45,6 +48,9 @@ const sellerId =
 
     const [selectedCategory, setSelectedCategory] =
         useState("All");
+
+    const [products, setProducts] =
+        useState([]);
 
     const [showProductModal, setShowProductModal] =
         useState(false);
@@ -67,6 +73,9 @@ const sellerId =
     const [toast, setToast] =
         useState("");
 
+    const [loadingProducts, setLoadingProducts] =
+        useState(false);
+
 
     // =====================================================
     // PRODUCT FORM
@@ -84,100 +93,6 @@ const sellerId =
 
 
     // =====================================================
-    // DEMO PRODUCTS
-    // sellerId identifies product owner
-    // =====================================================
-
-    const [products, setProducts] =
-        useState([
-
-            {
-                id: 1,
-                name: "Premium Sneakers",
-                category: "Fashion",
-                price: 89.99,
-                stock: 20,
-                image:
-                    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
-                description:
-                    "Premium stylish sneakers designed for everyday comfort.",
-                sellerId: "other-seller-1",
-                sellerName: "Arun Fashion"
-            },
-
-            {
-                id: 2,
-                name: "Wireless Headphones",
-                category: "Electronics",
-                price: 129.99,
-                stock: 15,
-                image:
-                    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
-                description:
-                    "High quality wireless headphones with immersive sound.",
-                sellerId: "other-seller-2",
-                sellerName: "Tech World"
-            },
-
-            {
-                id: 3,
-                name: "Smart Watch",
-                category: "Electronics",
-                price: 199.99,
-                stock: 10,
-                image:
-                    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
-                description:
-                    "Smart watch with fitness tracking and modern design.",
-                sellerId: "other-seller-3",
-                sellerName: "Smart Store"
-            },
-
-            {
-                id: 4,
-                name: "Leather Handbag",
-                category: "Fashion",
-                price: 79.99,
-                stock: 12,
-                image:
-                    "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800",
-                description:
-                    "Elegant leather handbag for modern fashion lovers.",
-                sellerId: sellerId,
-                sellerName: sellerName
-            },
-
-            {
-                id: 5,
-                name: "Modern Chair",
-                category: "Home",
-                price: 149.99,
-                stock: 8,
-                image:
-                    "https://images.unsplash.com/photo-1503602642458-232111445657?w=800",
-                description:
-                    "Modern comfortable chair for your beautiful home.",
-                sellerId: "other-seller-4",
-                sellerName: "Home Decor"
-            },
-
-            {
-                id: 6,
-                name: "Minimal Lamp",
-                category: "Home",
-                price: 49.99,
-                stock: 25,
-                image:
-                    "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800",
-                description:
-                    "Minimal decorative lamp for a stylish interior.",
-                sellerId: sellerId,
-                sellerName: sellerName
-            }
-
-        ]);
-
-    // =====================================================
     // CATEGORIES
     // =====================================================
 
@@ -192,36 +107,82 @@ const sellerId =
 
 
     // =====================================================
-    // FILTER PRODUCTS
+    // LOAD PRODUCTS FROM MONGODB
     // =====================================================
 
-    const filteredProducts = useMemo(() => {
+    const loadSellerProducts = async () => {
 
-        return products.filter((product) => {
+        if (!sellerId) {
 
-            const searchMatch =
-                product.name
-                    .toLowerCase()
-                    .includes(
-                        search.toLowerCase()
-                    );
-
-            const categoryMatch =
-                selectedCategory === "All" ||
-                product.category ===
-                selectedCategory;
-
-            return (
-                searchMatch &&
-                categoryMatch
+            console.error(
+                "❌ Seller ID not found in localStorage"
             );
-        });
 
-    }, [
-        products,
-        search,
-        selectedCategory
-    ]);
+            showToast(
+                "Seller ID not found. Please login again."
+            );
+
+            return;
+        }
+
+        try {
+
+            setLoadingProducts(true);
+
+            console.log(
+                "🔥 Loading products for seller:",
+                sellerId
+            );
+
+            const data =
+                await getProductsBySeller(
+                    sellerId
+                );
+
+            console.log(
+                "🔥 Products received from MongoDB:",
+                data
+            );
+
+            setProducts(
+                Array.isArray(data)
+                    ? data
+                    : []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "❌ Failed to load seller products:",
+                error
+            );
+
+            console.error(
+                "Backend response:",
+                error.response?.data
+            );
+
+            showToast(
+                error.response?.data?.message ||
+                "Failed to load products"
+            );
+
+        } finally {
+
+            setLoadingProducts(false);
+        }
+    };
+
+
+    // =====================================================
+    // LOAD PRODUCTS WHEN DASHBOARD OPENS
+    // =====================================================
+
+    useEffect(() => {
+
+        loadSellerProducts();
+
+    }, [sellerId]);
 
 
     // =====================================================
@@ -231,8 +192,51 @@ const sellerId =
     const myProducts =
         products.filter(
             (product) =>
-                product.sellerId === sellerId
+                String(product.sellerId).trim() ===
+                String(sellerId).trim()
         );
+
+
+    // =====================================================
+    // FILTER PRODUCTS
+    // =====================================================
+
+    const filteredProducts =
+        useMemo(() => {
+
+            return products.filter(
+                (product) => {
+
+                    const productName =
+                        product.name || "";
+
+                    const productCategory =
+                        product.category || "";
+
+                    const searchMatch =
+                        productName
+                            .toLowerCase()
+                            .includes(
+                                search.toLowerCase()
+                            );
+
+                    const categoryMatch =
+                        selectedCategory === "All" ||
+                        productCategory ===
+                        selectedCategory;
+
+                    return (
+                        searchMatch &&
+                        categoryMatch
+                    );
+                }
+            );
+
+        }, [
+            products,
+            search,
+            selectedCategory
+        ]);
 
 
     // =====================================================
@@ -244,9 +248,7 @@ const sellerId =
         setToast(message);
 
         setTimeout(() => {
-
             setToast("");
-
         }, 2500);
     };
 
@@ -263,11 +265,25 @@ const sellerId =
         } = event.target;
 
         setProductForm({
-
             ...productForm,
-
             [name]: value
+        });
+    };
 
+
+    // =====================================================
+    // RESET PRODUCT FORM
+    // =====================================================
+
+    const resetProductForm = () => {
+
+        setProductForm({
+            name: "",
+            category: "Fashion",
+            price: "",
+            stock: "",
+            image: "",
+            description: ""
         });
     };
 
@@ -280,23 +296,14 @@ const sellerId =
 
         setEditingProduct(null);
 
-        setProductForm({
-
-            name: "",
-            category: "Fashion",
-            price: "",
-            stock: "",
-            image: "",
-            description: ""
-
-        });
+        resetProductForm();
 
         setShowProductModal(true);
     };
 
 
     // =====================================================
-    // OPEN UPDATE PRODUCT
+    // OPEN EDIT PRODUCT
     // =====================================================
 
     const openEditProduct = (product) => {
@@ -304,196 +311,200 @@ const sellerId =
         setEditingProduct(product);
 
         setProductForm({
-
-            name: product.name,
-            category: product.category,
-            price: product.price,
-            stock: product.stock,
-            image: product.image,
+            name: product.name || "",
+            category: product.category || "Fashion",
+            price: product.price ?? "",
+            stock: product.stock ?? "",
+            image:
+                product.images?.[0] ||
+                product.image ||
+                "",
             description:
-                product.description
-
+                product.description || ""
         });
 
         setShowProductModal(true);
     };
 
-// =====================================================
-// ADD / UPDATE PRODUCT
-// =====================================================
 
-const handleProductSubmit = async (event) => {
+    // =====================================================
+    // ADD PRODUCT
+    // =====================================================
 
-    event.preventDefault();
+    const handleProductSubmit =
+        async (event) => {
 
-    console.log(
-        "🔥 HANDLE PRODUCT SUBMIT CALLED"
-    );
+            event.preventDefault();
 
-    if (
-        !productForm.name ||
-        !productForm.price ||
-        !productForm.stock
-    ) {
-
-        showToast(
-            "Please fill all required fields"
-        );
-
-        return;
-    }
-
-    try {
-
-        // =================================================
-        // UPDATE EXISTING PRODUCT
-        // =================================================
-
-        if (editingProduct) {
-
-            showToast(
-                "Product update will be connected next ✨"
+            console.log(
+                "🔥 HANDLE PRODUCT SUBMIT"
             );
 
-            return;
-        }
 
-        // =================================================
-        // CREATE NEW PRODUCT
-        // =================================================
+            // -------------------------------------------------
+            // VALIDATION
+            // -------------------------------------------------
 
-        const productData = {
+            if (!sellerId) {
 
-            sellerId: sellerId,
+                showToast(
+                    "Seller ID not found. Please login again."
+                );
 
-            name: productForm.name,
+                return;
+            }
 
-            description:
-                productForm.description,
 
-            price:
-                Number(productForm.price),
+            if (
+                !productForm.name.trim() ||
+                productForm.price === "" ||
+                productForm.stock === ""
+            ) {
 
-            category:
-                productForm.category,
+                showToast(
+                    "Please fill all required fields"
+                );
 
-            stock:
-                Number(productForm.stock),
+                return;
+            }
 
-            status: "ACTIVE",
 
-            images:
-                productForm.image
-                    ? [productForm.image]
-                    : [],
+            try {
 
-            attributes: {}
+                // -------------------------------------------------
+                // UPDATE IS NOT CONNECTED YET
+                // -------------------------------------------------
 
+                if (editingProduct) {
+
+                    showToast(
+                        "Edit API will be connected next."
+                    );
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // PRODUCT DATA
+                // -------------------------------------------------
+
+                const productData = {
+
+                    sellerId: sellerId,
+
+                    name:
+                        productForm.name.trim(),
+
+                    description:
+                        productForm.description.trim(),
+
+                    price:
+                        Number(
+                            productForm.price
+                        ),
+
+                    category:
+                        productForm.category,
+
+                    stock:
+                        Number(
+                            productForm.stock
+                        ),
+
+                    status:
+                        "ACTIVE",
+
+                    images:
+                        productForm.image.trim()
+                            ? [
+                                productForm.image.trim()
+                            ]
+                            : [],
+
+                    attributes: {}
+                };
+
+
+                console.log(
+                    "🔥 Sending product to backend:",
+                    productData
+                );
+
+
+                // -------------------------------------------------
+                // SAVE TO MONGODB
+                // -------------------------------------------------
+
+                const savedProduct =
+                    await addProduct(
+                        productData
+                    );
+
+
+                console.log(
+                    "✅ Product saved successfully:",
+                    savedProduct
+                );
+
+
+                // -------------------------------------------------
+                // IMPORTANT
+                // DO NOT DIRECTLY PUSH savedProduct
+                //
+                // MongoDB is our source of truth.
+                // -------------------------------------------------
+
+                await loadSellerProducts();
+
+
+                // -------------------------------------------------
+                // CLEAR FORM
+                // -------------------------------------------------
+
+                resetProductForm();
+
+                setEditingProduct(null);
+
+                setShowProductModal(false);
+
+
+                showToast(
+                    "Product added successfully 🎉"
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "❌ PRODUCT SAVE ERROR:",
+                    error
+                );
+
+                console.error(
+                    "Backend response:",
+                    error.response?.data
+                );
+
+                showToast(
+                    error.response?.data?.message ||
+                    "Failed to add product"
+                );
+            }
         };
-
-        console.log(
-            "🔥 Sending product to backend:",
-            productData
-        );
-
-        // =================================================
-        // SAVE TO MONGODB THROUGH BACKEND
-        // =================================================
-
-        const savedProduct =
-            await addProduct(
-                productData
-            );
-
-        console.log(
-            "🔥 Product saved successfully:",
-            savedProduct
-        );
-
-        // =================================================
-        // UPDATE FRONTEND STATE
-        // =================================================
-
-        setProducts((previousProducts) => [
-
-            savedProduct,
-
-            ...previousProducts
-
-        ]);
-
-        // =================================================
-        // CLEAR FORM
-        // =================================================
-
-        setProductForm({
-
-            name: "",
-
-            category: "Fashion",
-
-            price: "",
-
-            stock: "",
-
-            image: "",
-
-            description: ""
-
-        });
-
-        setShowProductModal(false);
-
-        showToast(
-            "Product added successfully 🎉"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "🔥 PRODUCT SAVE ERROR:",
-            error
-        );
-
-        console.error(
-            "Backend response:",
-            error.response?.data
-        );
-
-        showToast(
-            error.response?.data?.message ||
-            "Failed to add product"
-        );
-    }
-};
 
 
     // =====================================================
     // DELETE PRODUCT
     // =====================================================
+    // NOTE:
+    // Current productService only confirmed add/get methods.
+    // So we DON'T fake a MongoDB delete here.
+    // =====================================================
 
-    const handleDeleteProduct = (productId) => {
-
-        const confirmDelete =
-            window.confirm(
-                "Are you sure you want to delete this product?"
-            );
-
-        if (!confirmDelete) {
-            return;
-        }
-
-        setProducts(
-
-            products.filter(
-                (product) =>
-                    product.id !== productId
-            )
-
-        );
+    const handleDeleteProduct = () => {
 
         showToast(
-            "Product deleted successfully 🗑️"
+            "Delete API will be connected next."
         );
     };
 
@@ -505,7 +516,8 @@ const handleProductSubmit = async (event) => {
     const addToCart = (product) => {
 
         if (
-            product.sellerId === sellerId
+            String(product.sellerId).trim() ===
+            String(sellerId).trim()
         ) {
 
             showToast(
@@ -538,6 +550,7 @@ const handleProductSubmit = async (event) => {
             product
         ]);
 
+
         showToast(
             "Added to cart 🛒"
         );
@@ -551,7 +564,8 @@ const handleProductSubmit = async (event) => {
     const buyNow = (product) => {
 
         if (
-            product.sellerId === sellerId
+            String(product.sellerId).trim() ===
+            String(sellerId).trim()
         ) {
 
             showToast(
@@ -564,17 +578,14 @@ const handleProductSubmit = async (event) => {
 
         const newOrder = {
 
-            id:
-                Date.now(),
+            id: Date.now(),
 
-            product:
-                product,
+            product: product,
 
-            quantity:
-                1,
+            quantity: 1,
 
             total:
-                product.price,
+                Number(product.price) || 0,
 
             date:
                 new Date()
@@ -582,9 +593,7 @@ const handleProductSubmit = async (event) => {
                         "en-US"
                     ),
 
-            status:
-                "Confirmed"
-
+            status: "Confirmed"
         };
 
 
@@ -616,13 +625,11 @@ const handleProductSubmit = async (event) => {
         if (exists) {
 
             setWishlist(
-
                 wishlist.filter(
                     (item) =>
                         item.id !==
                         product.id
                 )
-
             );
 
             showToast(
@@ -665,6 +672,10 @@ const handleProductSubmit = async (event) => {
             "sellerName"
         );
 
+        localStorage.removeItem(
+            "sellerId"
+        );
+
         navigate("/login");
     };
 
@@ -676,19 +687,21 @@ const handleProductSubmit = async (event) => {
     const totalProducts =
         myProducts.length;
 
+
     const totalStock =
         myProducts.reduce(
             (total, product) =>
                 total +
-                Number(product.stock),
+                Number(product.stock || 0),
             0
         );
+
 
     const totalSales =
         orders.reduce(
             (total, order) =>
                 total +
-                Number(order.total),
+                Number(order.total || 0),
             0
         );
 
@@ -700,7 +713,6 @@ const handleProductSubmit = async (event) => {
     return (
 
         <div className="seller-dashboard">
-
 
             {/* =================================================
                 SIDEBAR
@@ -715,7 +727,6 @@ const handleProductSubmit = async (event) => {
                     </div>
 
                     <div>
-
                         <h2>
                             DeluLu
                         </h2>
@@ -723,7 +734,6 @@ const handleProductSubmit = async (event) => {
                         <span>
                             Cart
                         </span>
-
                     </div>
 
                 </div>
@@ -737,8 +747,7 @@ const handleProductSubmit = async (event) => {
 
                         {sellerName
                             .charAt(0)
-                            .toUpperCase()
-                        }
+                            .toUpperCase()}
 
                     </div>
 
@@ -867,15 +876,10 @@ const handleProductSubmit = async (event) => {
                         🛒
                         Cart
 
-                        {cart.length >
-                            0 && (
-
+                        {cart.length > 0 && (
                             <span className="menu-count">
-
                                 {cart.length}
-
                             </span>
-
                         )}
 
                     </button>
@@ -889,10 +893,8 @@ const handleProductSubmit = async (event) => {
                         handleLogout
                     }
                 >
-
                     🚪
                     Logout
-
                 </button>
 
             </aside>
@@ -903,7 +905,6 @@ const handleProductSubmit = async (event) => {
             ================================================= */}
 
             <main className="seller-main">
-
 
                 {/* TOP BAR */}
 
@@ -935,13 +936,10 @@ const handleProductSubmit = async (event) => {
 
                             🛒
 
-                            {cart.length >
-                                0 && (
-
+                            {cart.length > 0 && (
                                 <span>
                                     {cart.length}
                                 </span>
-
                             )}
 
                         </button>
@@ -951,8 +949,7 @@ const handleProductSubmit = async (event) => {
 
                             {sellerName
                                 .charAt(0)
-                                .toUpperCase()
-                            }
+                                .toUpperCase()}
 
                         </div>
 
@@ -999,12 +996,11 @@ const handleProductSubmit = async (event) => {
 
                             </div>
 
-                            <div className="hero-art">
 
+                            <div className="hero-art">
                                 🛍️
                                 📦
                                 ✨
-
                             </div>
 
                         </section>
@@ -1121,6 +1117,12 @@ const handleProductSubmit = async (event) => {
                         sellerId={
                             sellerId
                         }
+                        loading={
+                            loadingProducts
+                        }
+                        onRefresh={
+                            loadSellerProducts
+                        }
                         onAdd={
                             openAddProduct
                         }
@@ -1179,6 +1181,12 @@ const handleProductSubmit = async (event) => {
                         }
                         sellerId={
                             sellerId
+                        }
+                        loading={
+                            loadingProducts
+                        }
+                        onRefresh={
+                            loadSellerProducts
                         }
                         onAdd={
                             openAddProduct
@@ -1250,8 +1258,7 @@ const handleProductSubmit = async (event) => {
                         </div>
 
 
-                        {orders.length ===
-                            0 ? (
+                        {orders.length === 0 ? (
 
                             <div className="empty-state">
 
@@ -1278,70 +1285,65 @@ const handleProductSubmit = async (event) => {
                                 {orders.map(
                                     (order) => (
 
-                                    <div
-                                        className="order-card"
-                                        key={
-                                            order.id
-                                        }
-                                    >
-
-                                        <img
-                                            src={
-                                                order
-                                                    .product
-                                                    .image
+                                        <div
+                                            className="order-card"
+                                            key={
+                                                order.id
                                             }
-                                            alt={
-                                                order
-                                                    .product
-                                                    .name
-                                            }
-                                        />
+                                        >
 
-                                        <div>
-
-                                            <h3>
-                                                {
+                                            <img
+                                                src={
+                                                    getProductImage(
+                                                        order.product
+                                                    )
+                                                }
+                                                alt={
                                                     order
                                                         .product
                                                         .name
                                                 }
-                                            </h3>
+                                            />
 
-                                            <p>
-                                                Seller:
-                                                {" "}
-                                                {
-                                                    order
-                                                        .product
-                                                        .sellerName
-                                                }
-                                            </p>
+                                            <div>
 
-                                            <small>
-                                                Ordered on:
-                                                {" "}
+                                                <h3>
+                                                    {
+                                                        order
+                                                            .product
+                                                            .name
+                                                    }
+                                                </h3>
+
+                                                <small>
+                                                    Ordered on:
+                                                    {" "}
+                                                    {
+                                                        order.date
+                                                    }
+                                                </small>
+
+                                            </div>
+
+                                            <strong>
+                                                $
+                                                {Number(
+                                                    order.total
+                                                ).toFixed(
+                                                    2
+                                                )}
+                                            </strong>
+
+                                            <span className="order-status">
                                                 {
-                                                    order.date
+                                                    order.status
                                                 }
-                                            </small>
+                                            </span>
 
                                         </div>
 
-                                        <strong>
-                                            $
-                                            {order.total.toFixed(
-                                                2
-                                            )}
-                                        </strong>
-
-                                        <span className="order-status">
-                                            {order.status}
-                                        </span>
-
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1378,8 +1380,7 @@ const handleProductSubmit = async (event) => {
                         </div>
 
 
-                        {wishlist.length ===
-                            0 ? (
+                        {wishlist.length === 0 ? (
 
                             <div className="empty-state">
 
@@ -1404,40 +1405,41 @@ const handleProductSubmit = async (event) => {
                                 {wishlist.map(
                                     (product) => (
 
-                                    <ProductCard
-                                        key={
-                                            product.id
-                                        }
-                                        product={
-                                            product
-                                        }
-                                        sellerId={
-                                            sellerId
-                                        }
-                                        onView={
-                                            setViewProduct
-                                        }
-                                        onWishlist={
-                                            toggleWishlist
-                                        }
-                                        wishlist={
-                                            wishlist
-                                        }
-                                        onCart={
-                                            addToCart
-                                        }
-                                        onBuy={
-                                            buyNow
-                                        }
-                                        onEdit={
-                                            openEditProduct
-                                        }
-                                        onDelete={
-                                            handleDeleteProduct
-                                        }
-                                    />
+                                        <ProductCard
+                                            key={
+                                                product.id
+                                            }
+                                            product={
+                                                product
+                                            }
+                                            sellerId={
+                                                sellerId
+                                            }
+                                            onView={
+                                                setViewProduct
+                                            }
+                                            onWishlist={
+                                                toggleWishlist
+                                            }
+                                            wishlist={
+                                                wishlist
+                                            }
+                                            onCart={
+                                                addToCart
+                                            }
+                                            onBuy={
+                                                buyNow
+                                            }
+                                            onEdit={
+                                                openEditProduct
+                                            }
+                                            onDelete={
+                                                handleDeleteProduct
+                                            }
+                                        />
 
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1474,8 +1476,7 @@ const handleProductSubmit = async (event) => {
                         </div>
 
 
-                        {cart.length ===
-                            0 ? (
+                        {cart.length === 0 ? (
 
                             <div className="empty-state">
 
@@ -1501,60 +1502,57 @@ const handleProductSubmit = async (event) => {
                                 {cart.map(
                                     (product) => (
 
-                                    <div
-                                        className="cart-item"
-                                        key={
-                                            product.id
-                                        }
-                                    >
-
-                                        <img
-                                            src={
-                                                product.image
+                                        <div
+                                            className="cart-item"
+                                            key={
+                                                product.id
                                             }
-                                            alt={
-                                                product.name
-                                            }
-                                        />
+                                        >
 
-                                        <div>
-
-                                            <h3>
-                                                {
+                                            <img
+                                                src={
+                                                    getProductImage(
+                                                        product
+                                                    )
+                                                }
+                                                alt={
                                                     product.name
                                                 }
-                                            </h3>
+                                            />
 
-                                            <p>
-                                                Seller:
-                                                {" "}
-                                                {
-                                                    product.sellerName
+                                            <div>
+
+                                                <h3>
+                                                    {
+                                                        product.name
+                                                    }
+                                                </h3>
+
+                                                <strong>
+                                                    $
+                                                    {Number(
+                                                        product.price
+                                                    ).toFixed(
+                                                        2
+                                                    )}
+                                                </strong>
+
+                                            </div>
+
+                                            <button
+                                                onClick={() =>
+                                                    buyNow(
+                                                        product
+                                                    )
                                                 }
-                                            </p>
-
-                                            <strong>
-                                                $
-                                                {product.price.toFixed(
-                                                    2
-                                                )}
-                                            </strong>
+                                            >
+                                                Buy Now
+                                            </button>
 
                                         </div>
 
-                                        <button
-                                            onClick={() =>
-                                                buyNow(
-                                                    product
-                                                )
-                                            }
-                                        >
-                                            Buy Now
-                                        </button>
-
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1588,12 +1586,13 @@ const handleProductSubmit = async (event) => {
                             ×
                         </button>
 
+
                         <h2>
                             {editingProduct
                                 ? "Update Product"
-                                : "Add New Product"
-                            }
+                                : "Add New Product"}
                         </h2>
+
 
                         <p>
                             Add your product details
@@ -1630,20 +1629,23 @@ const handleProductSubmit = async (event) => {
                                 }
                             >
 
-                            {categories
-    .filter(
-        (cat) => cat !== "All"
-    )
-    .map(
-        (cat) => (
-            <option
-                key={cat}
-                value={cat}
-            >
-                {cat}
-            </option>
-        )
-    )}
+                                {categories
+                                    .filter(
+                                        (cat) =>
+                                            cat !== "All"
+                                    )
+                                    .map(
+                                        (cat) => (
+
+                                            <option
+                                                key={cat}
+                                                value={cat}
+                                            >
+                                                {cat}
+                                            </option>
+
+                                        )
+                                    )}
 
                             </select>
 
@@ -1709,8 +1711,7 @@ const handleProductSubmit = async (event) => {
                             >
                                 {editingProduct
                                     ? "Update Product"
-                                    : "Add Product"
-                                }
+                                    : "Add Product"}
                             </button>
 
                         </form>
@@ -1743,14 +1744,18 @@ const handleProductSubmit = async (event) => {
                             ×
                         </button>
 
+
                         <img
                             src={
-                                viewProduct.image
+                                getProductImage(
+                                    viewProduct
+                                )
                             }
                             alt={
                                 viewProduct.name
                             }
                         />
+
 
                         <div>
 
@@ -1774,24 +1779,28 @@ const handleProductSubmit = async (event) => {
 
                             <h3>
                                 $
-                                {
-                                    viewProduct.price.toFixed(
-                                        2
-                                    )
-                                }
+                                {Number(
+                                    viewProduct.price
+                                ).toFixed(
+                                    2
+                                )}
                             </h3>
 
                             <p>
-                                Seller:
+                                Stock:
                                 {" "}
                                 {
-                                    viewProduct.sellerName
+                                    viewProduct.stock
                                 }
                             </p>
 
 
-                            {viewProduct.sellerId !==
-                                sellerId && (
+                            {String(
+                                viewProduct.sellerId
+                            ).trim() !==
+                                String(
+                                    sellerId
+                                ).trim() && (
 
                                 <div className="view-actions">
 
@@ -1835,28 +1844,48 @@ const handleProductSubmit = async (event) => {
             {toast && (
 
                 <div className="toast-message">
-
                     {toast}
-
                 </div>
 
             )}
 
         </div>
-
     );
 }
 
 
 // =============================================================
-// PRODUCT SECTION COMPONENT
+// PRODUCT IMAGE HELPER
+// =============================================================
+
+function getProductImage(product) {
+
+    if (
+        product?.images &&
+        Array.isArray(product.images) &&
+        product.images.length > 0
+    ) {
+        return product.images[0];
+    }
+
+    if (product?.image) {
+        return product.image;
+    }
+
+    return "https://via.placeholder.com/600x500?text=DeluLu+Cart";
+}
+
+
+// =============================================================
+// PRODUCT SECTION
 // =============================================================
 
 function ProductSection({
-
     title,
     products,
     sellerId,
+    loading,
+    onRefresh,
     onAdd,
     onEdit,
     onDelete,
@@ -1870,8 +1899,43 @@ function ProductSection({
     selectedCategory,
     setSelectedCategory,
     categories
-
 }) {
+
+    const [localSearch, setLocalSearch] =
+        useState(search);
+
+
+    useEffect(() => {
+        setLocalSearch(search);
+    }, [search]);
+
+
+    const displayedProducts =
+        products.filter((product) => {
+
+            const name =
+                product.name || "";
+
+            const category =
+                product.category || "";
+
+            const matchesSearch =
+                name
+                    .toLowerCase()
+                    .includes(
+                        localSearch.toLowerCase()
+                    );
+
+            const matchesCategory =
+                selectedCategory === "All" ||
+                category === selectedCategory;
+
+            return (
+                matchesSearch &&
+                matchesCategory
+            );
+        });
+
 
     return (
 
@@ -1891,17 +1955,35 @@ function ProductSection({
 
                 </div>
 
-                <button
-                    className="add-product-button"
-                    onClick={onAdd}
-                >
-                    + Add Product
-                </button>
+
+                <div>
+
+                    <button
+                        className="add-product-button"
+                        onClick={onAdd}
+                    >
+                        + Add Product
+                    </button>
+
+                    <button
+                        className="add-product-button"
+                        onClick={onRefresh}
+                        disabled={loading}
+                        style={{
+                            marginLeft: "10px"
+                        }}
+                    >
+                        {loading
+                            ? "Refreshing..."
+                            : "↻ Refresh"}
+                    </button>
+
+                </div>
 
             </div>
 
 
-            {/* SEARCH FILTER */}
+            {/* SEARCH */}
 
             <div className="product-toolbar">
 
@@ -1911,12 +1993,20 @@ function ProductSection({
 
                     <input
                         placeholder="Search products..."
-                        value={search}
-                        onChange={(event) =>
+                        value={
+                            localSearch
+                        }
+                        onChange={(event) => {
+
+                            setLocalSearch(
+                                event.target.value
+                            );
+
                             setSearch(
                                 event.target.value
-                            )
-                        }
+                            );
+
+                        }}
                     />
 
                 </div>
@@ -1927,153 +2017,126 @@ function ProductSection({
                     {categories.map(
                         (category) => (
 
-                        <button
-                            key={
-                                category
-                            }
-                            className={
-                                selectedCategory ===
-                                category
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setSelectedCategory(
+                            <button
+                                key={
                                     category
-                                )
-                            }
-                        >
+                                }
+                                className={
+                                    selectedCategory ===
+                                    category
+                                        ? "active"
+                                        : ""
+                                }
+                                onClick={() =>
+                                    setSelectedCategory(
+                                        category
+                                    )
+                                }
+                            >
+                                {category}
+                            </button>
 
-                            {category}
-
-                        </button>
-
-                    ))}
+                        )
+                    )}
 
                 </div>
 
             </div>
 
 
-              <div className="product-grid">
+            {/* PRODUCTS */}
 
-    {filteredProducts.length > 0 ? (
+            <div className="product-grid">
 
-        filteredProducts.map((product) => (
+                {loading ? (
 
-            <div
-                className="product-card"
-                key={product.id}
-            >
+                    <div className="empty-state">
 
-                <img
-                    src={product.image}
-                    alt={product.name}
-                />
+                        <div>
+                            ⏳
+                        </div>
 
-                <h3>
-                    {product.name}
-                </h3>
+                        <h3>
+                            Loading products...
+                        </h3>
 
-                <p>
-                    ${product.price}
-                </p>
+                    </div>
+
+                ) : displayedProducts.length >
+                  0 ? (
+
+                    displayedProducts.map(
+                        (product) => (
+
+                            <ProductCard
+                                key={
+                                    product.id
+                                }
+                                product={
+                                    product
+                                }
+                                sellerId={
+                                    sellerId
+                                }
+                                onView={
+                                    onView
+                                }
+                                onWishlist={
+                                    onWishlist
+                                }
+                                wishlist={
+                                    wishlist
+                                }
+                                onCart={
+                                    onCart
+                                }
+                                onBuy={
+                                    onBuy
+                                }
+                                onEdit={
+                                    onEdit
+                                }
+                                onDelete={
+                                    onDelete
+                                }
+                            />
+
+                        )
+                    )
+
+                ) : (
+
+                    <div className="empty-state">
+
+                        <div>
+                            📦
+                        </div>
+
+                        <h3>
+                            No products found
+                        </h3>
+
+                        <p>
+                            Add your first product
+                            to DeluLu Cart.
+                        </p>
+
+                    </div>
+
+                )}
 
             </div>
 
-        ))
-
-    ) : (
-
-        <div className="empty-state">
-
-            <div>
-                🔍
-            </div>
-
-            <h3>
-                No products found
-            </h3>
-
-            <p>
-                Try another search or category.
-            </p>
-
-        </div>
-
-    )}
-
-</div>
-
-            </section>
-
+        </section>
     );
 }
-const handleProductSubmit = async (event) => {
 
-    event.preventDefault();
-
-    try {
-
-        const savedProduct = await addProduct({
-
-            sellerId: sellerId,
-
-            name: productForm.name,
-
-            category: productForm.category,
-
-            price: Number(productForm.price),
-
-            stock: Number(productForm.stock),
-
-            images: productForm.image
-                ? [productForm.image]
-                : [],
-
-            description: productForm.description,
-
-            status: "ACTIVE",
-
-            attributes: {}
-        });
-
-        setProducts((prevProducts) => [
-            savedProduct,
-            ...prevProducts
-        ]);
-
-        setProductForm({
-            name: "",
-            category: "",
-            price: "",
-            stock: "",
-            image: "",
-            description: ""
-        });
-
-        alert("Product added successfully!");
-
-    } catch (error) {
-
-        console.error(
-            "Product creation failed:",
-            error
-        );
-
-        alert(
-            error.response?.data?.message ||
-            "Failed to add product."
-        );
-    }
-};
 
 // =============================================================
-// PRODUCT CARD COMPONENT
+// PRODUCT CARD
 // =============================================================
 
 function ProductCard({
-
     product,
     sellerId,
     onView,
@@ -2083,12 +2146,12 @@ function ProductCard({
     onBuy,
     onEdit,
     onDelete
-
 }) {
 
     const isOwnProduct =
-        product.sellerId ===
-        sellerId;
+        String(product.sellerId).trim() ===
+        String(sellerId).trim();
+
 
     const isWishlisted =
         wishlist.some(
@@ -2105,11 +2168,13 @@ function ProductCard({
 
                 <img
                     src={
-                        product.image ||
-                        "https://via.placeholder.com/600x500?text=DeluLu+Cart"
+                        getProductImage(
+                            product
+                        )
                     }
                     alt={
-                        product.name
+                        product.name ||
+                        "Product"
                     }
                 />
 
@@ -2128,8 +2193,7 @@ function ProductCard({
                 >
                     {isWishlisted
                         ? "♥"
-                        : "♡"
-                    }
+                        : "♡"}
                 </button>
 
 
@@ -2148,24 +2212,35 @@ function ProductCard({
 
                 <span className="product-category">
                     {
-                        product.category
+                        product.category ||
+                        "Uncategorized"
                     }
                 </span>
 
+
                 <h3>
                     {
-                        product.name
+                        product.name ||
+                        "Unnamed Product"
                     }
                 </h3>
 
+
                 <p className="seller-name">
+
                     Sold by:
+
                     {" "}
+
                     <strong>
-                        {
-                            product.sellerName
-                        }
+                        {isOwnProduct
+                            ? "You"
+                            : (
+                                product.sellerName ||
+                                "Seller"
+                            )}
                     </strong>
+
                 </p>
 
 
@@ -2173,18 +2248,18 @@ function ProductCard({
 
                     <strong>
                         $
-                        {
-                            Number(
-                                product.price
-                            ).toFixed(2)
-                        }
+                        {Number(
+                            product.price || 0
+                        ).toFixed(2)}
                     </strong>
+
 
                     <span>
                         Stock:
                         {" "}
                         {
-                            product.stock
+                            product.stock ??
+                            0
                         }
                     </span>
 
@@ -2220,6 +2295,7 @@ function ProductCard({
                                 ✏️ Edit
                             </button>
 
+
                             <button
                                 className="delete-button"
                                 onClick={() =>
@@ -2248,6 +2324,7 @@ function ProductCard({
                                 🛒
                             </button>
 
+
                             <button
                                 className="buy-action"
                                 onClick={() =>
@@ -2268,7 +2345,6 @@ function ProductCard({
             </div>
 
         </article>
-
     );
 }
 

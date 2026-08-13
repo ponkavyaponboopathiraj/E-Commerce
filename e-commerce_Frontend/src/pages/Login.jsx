@@ -22,6 +22,10 @@ function Login() {
         useState(false);
 
 
+    // =====================================================
+    // HANDLE INPUT CHANGE
+    // =====================================================
+
     const handleChange = (event) => {
 
         const {
@@ -37,6 +41,10 @@ function Login() {
         setMessage("");
     };
 
+
+    // =====================================================
+    // LOGIN
+    // =====================================================
 
     const handleSubmit = async (event) => {
 
@@ -56,19 +64,19 @@ function Login() {
             );
 
 
+            // =================================================
+            // SAVE JWT TOKEN
+            // =================================================
+
             localStorage.setItem(
                 "token",
                 response.token
             );
-             if (response.id) {
 
-    localStorage.setItem(
-        "sellerId",
-        response.id
-    );
 
-}
-
+            // =================================================
+            // GET USER ROLE
+            // =================================================
 
             const userRole =
                 response.role?.toUpperCase();
@@ -83,16 +91,66 @@ function Login() {
             }
 
 
+            // =================================================
+            // SAVE EMAIL
+            // =================================================
+
             localStorage.setItem(
                 "email",
-                formData.email
+                response.email || formData.email
             );
 
+
+            // =================================================
+            // SAVE SELLER ID
+            // =================================================
+            // IMPORTANT:
+            // Backend response field is userId,
+            // NOT id.
+            // =================================================
+
+            if (userRole === "SELLER") {
+
+                if (!response.userId) {
+
+                    console.error(
+                        "❌ Seller ID missing from login response:",
+                        response
+                    );
+
+                    setMessage(
+                        "Seller ID not received from server. Please try again."
+                    );
+
+                    return;
+                }
+
+
+                localStorage.setItem(
+                    "sellerId",
+                    response.userId
+                );
+
+
+                console.log(
+                    "✅ Seller ID saved:",
+                    response.userId
+                );
+            }
+
+
+            // =================================================
+            // LOGIN SUCCESS
+            // =================================================
 
             setMessage(
                 "Welcome back to DeluLu Cart! 🎉"
             );
 
+
+            // =================================================
+            // REDIRECT BASED ON ROLE
+            // =================================================
 
             setTimeout(() => {
 
@@ -153,6 +211,10 @@ function Login() {
     };
 
 
+    // =====================================================
+    // UI
+    // =====================================================
+
     return (
 
         <div className="auth-page">
@@ -165,7 +227,9 @@ function Login() {
             <div className="auth-wrapper">
 
 
-                {/* LEFT */}
+                {/* =================================================
+                    LEFT SHOWCASE
+                ================================================= */}
 
                 <div className="auth-showcase">
 
@@ -183,19 +247,26 @@ function Login() {
                             ✨ WELCOME BACK
                         </span>
 
+
                         <h1>
+
                             Your shopping
                             journey continues
+
                             <strong>
                                 here.
                             </strong>
+
                         </h1>
 
+
                         <p>
+
                             Sign in to discover
                             products, manage your
                             cart and enjoy a smarter
                             shopping experience.
+
                         </p>
 
                     </div>
@@ -206,8 +277,10 @@ function Login() {
                         🛒
 
                         <span>
+
                             Shop smarter.
                             Live better.
+
                         </span>
 
                     </div>
@@ -215,7 +288,9 @@ function Login() {
                 </div>
 
 
-                {/* FORM */}
+                {/* =================================================
+                    LOGIN FORM
+                ================================================= */}
 
                 <div className="auth-form-container">
 
@@ -232,11 +307,16 @@ function Login() {
                         <div className="auth-header">
 
                             <h2>
+
                                 Welcome Back 👋
+
                             </h2>
 
+
                             <p>
+
                                 Login to your account
+
                             </p>
 
                         </div>
@@ -249,106 +329,171 @@ function Login() {
                         >
 
 
+                            {/* =================================================
+                                EMAIL
+                            ================================================= */}
+
                             <div className="form-group">
 
                                 <label>
+
                                     Email Address
+
                                 </label>
 
+
                                 <input
+
                                     type="email"
+
                                     name="email"
+
                                     placeholder="you@example.com"
+
                                     value={
                                         formData.email
                                     }
+
                                     onChange={
                                         handleChange
                                     }
+
                                     required
+
                                 />
 
                             </div>
 
-<div className="form-group">
 
-    <label>
-        Password
-    </label>
+                            {/* =================================================
+                                PASSWORD
+                            ================================================= */}
 
-    <div className="password-field">
+                            <div className="form-group">
 
-        <input
-            type={
-                showPassword
-                    ? "text"
-                    : "password"
-            }
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-        />
+                                <label>
 
-        <button
-            type="button"
-            onClick={() =>
-                setShowPassword(
-                    !showPassword
-                )
-            }
-        >
-            {
-                showPassword
-                    ? "🙈"
-                    : "👁️"
-            }
-        </button>
+                                    Password
 
-    </div>
+                                </label>
 
 
-    {/* FORGOT PASSWORD */}
-
-    <div className="forgot-password-link">
-
-        <Link to="/forgot-password">
-            Forgot Password?
-        </Link>
-
-    </div>
-
-</div>
+                                <div className="password-field">
 
 
+                                    <input
+
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+
+                                        name="password"
+
+                                        placeholder="Enter your password"
+
+                                        value={
+                                            formData.password
+                                        }
+
+                                        onChange={
+                                            handleChange
+                                        }
+
+                                        required
+
+                                    />
+
+
+                                    <button
+
+                                        type="button"
+
+                                        onClick={() =>
+                                            setShowPassword(
+                                                !showPassword
+                                            )
+                                        }
+
+                                    >
+
+                                        {
+                                            showPassword
+                                                ? "🙈"
+                                                : "👁️"
+                                        }
+
+                                    </button>
+
+
+                                </div>
+
+
+                                {/* =================================================
+                                    FORGOT PASSWORD
+                                ================================================= */}
+
+                                <div className="forgot-password-link">
+
+                                    <Link to="/forgot-password">
+
+                                        Forgot Password?
+
+                                    </Link>
+
+                                </div>
+
+
+                            </div>
+
+
+                            {/* =================================================
+                                LOGIN BUTTON
+                            ================================================= */}
 
                             <button
+
                                 type="submit"
+
                                 className="auth-submit"
+
                                 disabled={loading}
+
                             >
 
-                                {loading
-                                    ? "Signing In..."
-                                    : "Sign In →"
+                                {
+                                    loading
+                                        ? "Signing In..."
+                                        : "Sign In →"
                                 }
 
                             </button>
 
+
                         </form>
 
+
+                        {/* =================================================
+                            MESSAGE
+                        ================================================= */}
 
                         {message && (
 
                             <div
+
                                 className={
+
                                     message.includes(
                                         "Welcome"
                                     )
+
                                         ? "auth-message success"
+
                                         : "auth-message error"
+
                                 }
+
                             >
 
                                 {message}
@@ -358,18 +503,31 @@ function Login() {
                         )}
 
 
+                        {/* =================================================
+                            REGISTER
+                        ================================================= */}
+
                         <div className="auth-footer">
 
                             <span>
+
                                 Don't have an account?
+
                             </span>
 
+
                             <Link to="/register">
+
                                 Create Account
+
                             </Link>
 
                         </div>
 
+
+                        {/* =================================================
+                            SECURITY
+                        ================================================= */}
 
                         <div className="security-note">
 
@@ -377,6 +535,7 @@ function Login() {
                             authentication
 
                         </div>
+
 
                     </div>
 
