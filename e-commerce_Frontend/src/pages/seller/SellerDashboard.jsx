@@ -176,47 +176,6 @@ const sellerId =
             }
 
         ]);
-    // =====================================================
-// LOAD PRODUCTS FROM BACKEND
-// =====================================================
-
-useEffect(() => {
-
-    const loadProducts = async () => {
-
-        try {
-
-            console.log(
-                "Loading products for seller:",
-                sellerId
-            );
-
-            const data =
-                await getProductsBySeller(
-                    sellerId
-                );
-
-            console.log(
-                "Products received from backend:",
-                data
-            );
-
-            setProducts(data);
-
-        } catch (error) {
-
-            console.error(
-                "Failed to load seller products:",
-                error
-            );
-        }
-    };
-
-    if (sellerId) {
-        loadProducts();
-    }
-
-}, [sellerId]);
 
     // =====================================================
     // CATEGORIES
