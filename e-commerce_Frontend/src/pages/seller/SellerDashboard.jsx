@@ -4,7 +4,10 @@ import "./SellerDashboard.css";
 
 import {
     addProduct,
-    getProductsBySeller
+    getProductsBySeller,
+    updateProduct,
+    updateProductStatus,
+    deleteProduct
 } from "../../service/productService";
 
 
@@ -52,6 +55,9 @@ function SellerDashboard() {
     const [products, setProducts] =
         useState([]);
 
+    const [loadingProducts, setLoadingProducts] =
+        useState(false);
+
     const [showProductModal, setShowProductModal] =
         useState(false);
 
@@ -72,9 +78,6 @@ function SellerDashboard() {
 
     const [toast, setToast] =
         useState("");
-
-    const [loadingProducts, setLoadingProducts] =
-        useState(false);
 
 
     // =====================================================
@@ -107,7 +110,21 @@ function SellerDashboard() {
 
 
     // =====================================================
-    // LOAD PRODUCTS FROM MONGODB
+    // TOAST
+    // =====================================================
+
+    const showToast = (message) => {
+
+        setToast(message);
+
+        setTimeout(() => {
+            setToast("");
+        }, 2500);
+    };
+
+
+    // =====================================================
+    // LOAD SELLER PRODUCTS
     // =====================================================
 
     const loadSellerProducts = async () => {
@@ -115,7 +132,7 @@ function SellerDashboard() {
         if (!sellerId) {
 
             console.error(
-                "❌ Seller ID not found in localStorage"
+                "Seller ID not found in localStorage"
             );
 
             showToast(
@@ -130,7 +147,7 @@ function SellerDashboard() {
             setLoadingProducts(true);
 
             console.log(
-                "🔥 Loading products for seller:",
+                "Loading products for seller:",
                 sellerId
             );
 
@@ -140,7 +157,7 @@ function SellerDashboard() {
                 );
 
             console.log(
-                "🔥 Products received from MongoDB:",
+                "Products received:",
                 data
             );
 
@@ -153,7 +170,7 @@ function SellerDashboard() {
         } catch (error) {
 
             console.error(
-                "❌ Failed to load seller products:",
+                "Failed to load products:",
                 error
             );
 
@@ -198,7 +215,7 @@ function SellerDashboard() {
 
 
     // =====================================================
-    // FILTER PRODUCTS
+    // FILTERED PRODUCTS
     // =====================================================
 
     const filteredProducts =
@@ -240,20 +257,6 @@ function SellerDashboard() {
 
 
     // =====================================================
-    // SHOW TOAST
-    // =====================================================
-
-    const showToast = (message) => {
-
-        setToast(message);
-
-        setTimeout(() => {
-            setToast("");
-        }, 2500);
-    };
-
-
-    // =====================================================
     // FORM CHANGE
     // =====================================================
 
@@ -264,15 +267,17 @@ function SellerDashboard() {
             value
         } = event.target;
 
-        setProductForm({
-            ...productForm,
-            [name]: value
-        });
+        setProductForm(
+            (previousForm) => ({
+                ...previousForm,
+                [name]: value
+            })
+        );
     };
 
 
     // =====================================================
-    // RESET PRODUCT FORM
+    // RESET FORM
     // =====================================================
 
     const resetProductForm = () => {
@@ -289,7 +294,7 @@ function SellerDashboard() {
 
 
     // =====================================================
-    // OPEN ADD PRODUCT
+    // OPEN ADD PRODUCT MODAL
     // =====================================================
 
     const openAddProduct = () => {
@@ -303,7 +308,7 @@ function SellerDashboard() {
 
 
     // =====================================================
-    // OPEN EDIT PRODUCT
+    // OPEN EDIT PRODUCT MODAL
     // =====================================================
 
     const openEditProduct = (product) => {
@@ -311,14 +316,25 @@ function SellerDashboard() {
         setEditingProduct(product);
 
         setProductForm({
-            name: product.name || "",
-            category: product.category || "Fashion",
-            price: product.price ?? "",
-            stock: product.stock ?? "",
+
+            name:
+                product.name || "",
+
+            category:
+                product.category ||
+                "Fashion",
+
+            price:
+                product.price ?? "",
+
+            stock:
+                product.stock ?? "",
+
             image:
                 product.images?.[0] ||
                 product.image ||
                 "",
+
             description:
                 product.description || ""
         });
@@ -328,7 +344,21 @@ function SellerDashboard() {
 
 
     // =====================================================
-    // ADD PRODUCT
+    // CLOSE PRODUCT MODAL
+    // =====================================================
+
+    const closeProductModal = () => {
+
+        setShowProductModal(false);
+
+        setEditingProduct(null);
+
+        resetProductForm();
+    };
+
+
+    // =====================================================
+    // ADD / UPDATE PRODUCT
     // =====================================================
 
     const handleProductSubmit =
@@ -336,13 +366,8 @@ function SellerDashboard() {
 
             event.preventDefault();
 
-            console.log(
-                "🔥 HANDLE PRODUCT SUBMIT"
-            );
-
-
             // -------------------------------------------------
-            // VALIDATION
+            // SELLER ID VALIDATION
             // -------------------------------------------------
 
             if (!sellerId) {
@@ -354,6 +379,10 @@ function SellerDashboard() {
                 return;
             }
 
+
+            // -------------------------------------------------
+            // FORM VALIDATION
+            // -------------------------------------------------
 
             if (
                 !productForm.name.trim() ||
@@ -369,29 +398,136 @@ function SellerDashboard() {
             }
 
 
+            const price =
+                Number(productForm.price);
+
+            const stock =
+                Number(productForm.stock);
+
+
+            if (
+                Number.isNaN(price) ||
+                price < 0
+            ) {
+
+                showToast(
+                    "Please enter a valid price"
+                );
+
+                return;
+            }
+
+
+            if (
+                Number.isNaN(stock) ||
+                stock < 0
+            ) {
+
+                showToast(
+                    "Please enter a valid stock quantity"
+                );
+
+                return;
+            }
+
+
             try {
 
-                // -------------------------------------------------
-                // UPDATE IS NOT CONNECTED YET
-                // -------------------------------------------------
+                // =================================================
+                // UPDATE EXISTING PRODUCT
+                // =================================================
 
                 if (editingProduct) {
 
+                    const updatedProductData = {
+
+                        sellerId:
+                            editingProduct.sellerId,
+
+                        name:
+                            productForm.name.trim(),
+
+                        description:
+                            productForm.description.trim(),
+
+                        price:
+                            price,
+
+                        category:
+                            productForm.category,
+
+                        stock:
+                            stock,
+
+                        status:
+                            editingProduct.status ||
+                            "ACTIVE",
+
+                        images:
+                            productForm.image.trim()
+                                ? [
+                                    productForm.image.trim()
+                                ]
+                                : [],
+
+                        attributes:
+                            editingProduct.attributes ||
+                            {}
+                    };
+
+
+                    console.log(
+                        "Updating product:",
+                        editingProduct.id
+                    );
+
+
+                    const updatedProduct =
+                        await updateProduct(
+                            editingProduct.id,
+                            updatedProductData
+                        );
+
+
+                    console.log(
+                        "Product updated:",
+                        updatedProduct
+                    );
+
+
+                    // Update frontend immediately
+
+                    setProducts(
+                        (previousProducts) =>
+                            previousProducts.map(
+                                (product) =>
+                                    product.id ===
+                                    editingProduct.id
+                                        ? updatedProduct
+                                        : product
+                            )
+                    );
+
+
+                    closeProductModal();
+
+
                     showToast(
-                        "Edit API will be connected next."
+                        "Product updated successfully ✨"
                     );
 
                     return;
                 }
 
 
-                // -------------------------------------------------
-                // PRODUCT DATA
-                // -------------------------------------------------
+                // =================================================
+                // ADD NEW PRODUCT
+                // =================================================
 
                 const productData = {
 
-                    sellerId: sellerId,
+                    sellerId:
+                        sellerId,
 
                     name:
                         productForm.name.trim(),
@@ -400,17 +536,13 @@ function SellerDashboard() {
                         productForm.description.trim(),
 
                     price:
-                        Number(
-                            productForm.price
-                        ),
+                        price,
 
                     category:
                         productForm.category,
 
                     stock:
-                        Number(
-                            productForm.stock
-                        ),
+                        stock,
 
                     status:
                         "ACTIVE",
@@ -422,19 +554,16 @@ function SellerDashboard() {
                             ]
                             : [],
 
-                    attributes: {}
+                    attributes:
+                        {}
                 };
 
 
                 console.log(
-                    "🔥 Sending product to backend:",
+                    "Adding product:",
                     productData
                 );
 
-
-                // -------------------------------------------------
-                // SAVE TO MONGODB
-                // -------------------------------------------------
 
                 const savedProduct =
                     await addProduct(
@@ -443,40 +572,33 @@ function SellerDashboard() {
 
 
                 console.log(
-                    "✅ Product saved successfully:",
+                    "Product saved:",
                     savedProduct
                 );
 
 
-                // -------------------------------------------------
-                // IMPORTANT
-                // DO NOT DIRECTLY PUSH savedProduct
-                //
-                // MongoDB is our source of truth.
-                // -------------------------------------------------
+                // Add directly to UI
 
-                await loadSellerProducts();
+                setProducts(
+                    (previousProducts) => [
+                        savedProduct,
+                        ...previousProducts
+                    ]
+                );
 
 
-                // -------------------------------------------------
-                // CLEAR FORM
-                // -------------------------------------------------
-
-                resetProductForm();
-
-                setEditingProduct(null);
-
-                setShowProductModal(false);
+                closeProductModal();
 
 
                 showToast(
                     "Product added successfully 🎉"
                 );
 
+
             } catch (error) {
 
                 console.error(
-                    "❌ PRODUCT SAVE ERROR:",
+                    "Product save/update error:",
                     error
                 );
 
@@ -487,7 +609,7 @@ function SellerDashboard() {
 
                 showToast(
                     error.response?.data?.message ||
-                    "Failed to add product"
+                    "Failed to save product"
                 );
             }
         };
@@ -496,17 +618,119 @@ function SellerDashboard() {
     // =====================================================
     // DELETE PRODUCT
     // =====================================================
-    // NOTE:
-    // Current productService only confirmed add/get methods.
-    // So we DON'T fake a MongoDB delete here.
+
+    const handleDeleteProduct =
+        async (productId) => {
+
+            const confirmed =
+                window.confirm(
+                    "Are you sure you want to delete this product?"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                await deleteProduct(
+                    productId
+                );
+
+
+                setProducts(
+                    (previousProducts) =>
+                        previousProducts.filter(
+                            (product) =>
+                                product.id !==
+                                productId
+                        )
+                );
+
+
+                showToast(
+                    "Product deleted successfully 🗑️"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Delete product failed:",
+                    error
+                );
+
+                console.error(
+                    "Backend response:",
+                    error.response?.data
+                );
+
+                showToast(
+                    error.response?.data?.message ||
+                    "Failed to delete product"
+                );
+            }
+        };
+
+
+    // =====================================================
+    // UPDATE PRODUCT STATUS
     // =====================================================
 
-    const handleDeleteProduct = () => {
+    const handleStatusChange =
+        async (
+            productId,
+            status
+        ) => {
 
-        showToast(
-            "Delete API will be connected next."
-        );
-    };
+            try {
+
+                const updatedProduct =
+                    await updateProductStatus(
+                        productId,
+                        status
+                    );
+
+
+                setProducts(
+                    (previousProducts) =>
+                        previousProducts.map(
+                            (product) =>
+                                product.id ===
+                                productId
+                                    ? updatedProduct
+                                    : product
+                        )
+                );
+
+
+                showToast(
+                    status === "ACTIVE"
+                        ? "Product activated successfully ✅"
+                        : "Product deactivated successfully"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Status update failed:",
+                    error
+                );
+
+                console.error(
+                    "Backend response:",
+                    error.response?.data
+                );
+
+                showToast(
+                    error.response?.data?.message ||
+                    "Failed to update product status"
+                );
+            }
+        };
 
 
     // =====================================================
@@ -528,10 +752,36 @@ function SellerDashboard() {
         }
 
 
+        if (
+            product.status &&
+            product.status !== "ACTIVE"
+        ) {
+
+            showToast(
+                "This product is currently inactive"
+            );
+
+            return;
+        }
+
+
+        if (
+            Number(product.stock || 0) <= 0
+        ) {
+
+            showToast(
+                "This product is out of stock"
+            );
+
+            return;
+        }
+
+
         const alreadyInCart =
             cart.some(
                 (item) =>
-                    item.id === product.id
+                    item.id ===
+                    product.id
             );
 
 
@@ -545,10 +795,12 @@ function SellerDashboard() {
         }
 
 
-        setCart([
-            ...cart,
-            product
-        ]);
+        setCart(
+            (previousCart) => [
+                ...previousCart,
+                product
+            ]
+        );
 
 
         showToast(
@@ -576,13 +828,28 @@ function SellerDashboard() {
         }
 
 
+        if (
+            Number(product.stock || 0) <= 0
+        ) {
+
+            showToast(
+                "This product is out of stock"
+            );
+
+            return;
+        }
+
+
         const newOrder = {
 
-            id: Date.now(),
+            id:
+                Date.now(),
 
-            product: product,
+            product:
+                product,
 
-            quantity: 1,
+            quantity:
+                1,
 
             total:
                 Number(product.price) || 0,
@@ -593,14 +860,17 @@ function SellerDashboard() {
                         "en-US"
                     ),
 
-            status: "Confirmed"
+            status:
+                "Confirmed"
         };
 
 
-        setOrders([
-            newOrder,
-            ...orders
-        ]);
+        setOrders(
+            (previousOrders) => [
+                newOrder,
+                ...previousOrders
+            ]
+        );
 
 
         showToast(
@@ -613,41 +883,48 @@ function SellerDashboard() {
     // WISHLIST
     // =====================================================
 
-    const toggleWishlist = (product) => {
+    const toggleWishlist =
+        (product) => {
 
-        const exists =
-            wishlist.some(
-                (item) =>
-                    item.id === product.id
-            );
-
-
-        if (exists) {
-
-            setWishlist(
-                wishlist.filter(
+            const exists =
+                wishlist.some(
                     (item) =>
-                        item.id !==
+                        item.id ===
                         product.id
-                )
-            );
+                );
 
-            showToast(
-                "Removed from wishlist"
-            );
 
-        } else {
+            if (exists) {
 
-            setWishlist([
-                ...wishlist,
-                product
-            ]);
+                setWishlist(
+                    (previousWishlist) =>
+                        previousWishlist.filter(
+                            (item) =>
+                                item.id !==
+                                product.id
+                        )
+                );
 
-            showToast(
-                "Added to wishlist ❤️"
-            );
-        }
-    };
+
+                showToast(
+                    "Removed from wishlist"
+                );
+
+            } else {
+
+                setWishlist(
+                    (previousWishlist) => [
+                        ...previousWishlist,
+                        product
+                    ]
+                );
+
+
+                showToast(
+                    "Added to wishlist ❤️"
+                );
+            }
+        };
 
 
     // =====================================================
@@ -692,7 +969,9 @@ function SellerDashboard() {
         myProducts.reduce(
             (total, product) =>
                 total +
-                Number(product.stock || 0),
+                Number(
+                    product.stock || 0
+                ),
             0
         );
 
@@ -701,7 +980,9 @@ function SellerDashboard() {
         orders.reduce(
             (total, order) =>
                 total +
-                Number(order.total || 0),
+                Number(
+                    order.total || 0
+                ),
             0
         );
 
@@ -783,8 +1064,7 @@ function SellerDashboard() {
                             )
                         }
                     >
-                        📊
-                        Dashboard
+                        📊 Dashboard
                     </button>
 
 
@@ -801,8 +1081,7 @@ function SellerDashboard() {
                             )
                         }
                     >
-                        📦
-                        My Products
+                        📦 My Products
                     </button>
 
 
@@ -819,8 +1098,7 @@ function SellerDashboard() {
                             )
                         }
                     >
-                        🛍️
-                        Shop Products
+                        🛍️ Shop Products
                     </button>
 
 
@@ -837,8 +1115,7 @@ function SellerDashboard() {
                             )
                         }
                     >
-                        🚚
-                        My Orders
+                        🚚 My Orders
                     </button>
 
 
@@ -855,8 +1132,7 @@ function SellerDashboard() {
                             )
                         }
                     >
-                        ❤️
-                        Wishlist
+                        ❤️ Wishlist
                     </button>
 
 
@@ -873,8 +1149,7 @@ function SellerDashboard() {
                             )
                         }
                     >
-                        🛒
-                        Cart
+                        🛒 Cart
 
                         {cart.length > 0 && (
                             <span className="menu-count">
@@ -893,8 +1168,7 @@ function SellerDashboard() {
                         handleLogout
                     }
                 >
-                    🚪
-                    Logout
+                    🚪 Logout
                 </button>
 
             </aside>
@@ -933,7 +1207,6 @@ function SellerDashboard() {
                                 )
                             }
                         >
-
                             🛒
 
                             {cart.length > 0 && (
@@ -998,15 +1271,11 @@ function SellerDashboard() {
 
 
                             <div className="hero-art">
-                                🛍️
-                                📦
-                                ✨
+                                🛍️ 📦 ✨
                             </div>
 
                         </section>
 
-
-                        {/* STATS */}
 
                         <section className="stats-grid">
 
@@ -1086,7 +1355,7 @@ function SellerDashboard() {
                                     </p>
 
                                     <h2>
-                                        $
+                                        ₹
                                         {totalSales.toFixed(
                                             2
                                         )}
@@ -1131,6 +1400,9 @@ function SellerDashboard() {
                         }
                         onDelete={
                             handleDeleteProduct
+                        }
+                        onStatusChange={
+                            handleStatusChange
                         }
                         onView={
                             setViewProduct
@@ -1196,6 +1468,9 @@ function SellerDashboard() {
                         }
                         onDelete={
                             handleDeleteProduct
+                        }
+                        onStatusChange={
+                            handleStatusChange
                         }
                         onView={
                             setViewProduct
@@ -1285,65 +1560,62 @@ function SellerDashboard() {
                                 {orders.map(
                                     (order) => (
 
-                                        <div
-                                            className="order-card"
-                                            key={
-                                                order.id
+                                    <div
+                                        className="order-card"
+                                        key={
+                                            order.id
+                                        }
+                                    >
+
+                                        <img
+                                            src={
+                                                getProductImage(
+                                                    order.product
+                                                )
                                             }
-                                        >
+                                            alt={
+                                                order.product
+                                                    ?.name
+                                            }
+                                        />
 
-                                            <img
-                                                src={
-                                                    getProductImage(
-                                                        order.product
-                                                    )
-                                                }
-                                                alt={
-                                                    order
-                                                        .product
-                                                        .name
-                                                }
-                                            />
+                                        <div>
 
-                                            <div>
-
-                                                <h3>
-                                                    {
-                                                        order
-                                                            .product
-                                                            .name
-                                                    }
-                                                </h3>
-
-                                                <small>
-                                                    Ordered on:
-                                                    {" "}
-                                                    {
-                                                        order.date
-                                                    }
-                                                </small>
-
-                                            </div>
-
-                                            <strong>
-                                                $
-                                                {Number(
-                                                    order.total
-                                                ).toFixed(
-                                                    2
-                                                )}
-                                            </strong>
-
-                                            <span className="order-status">
+                                            <h3>
                                                 {
-                                                    order.status
+                                                    order.product
+                                                        ?.name
                                                 }
-                                            </span>
+                                            </h3>
+
+                                            <small>
+                                                Ordered on:
+                                                {" "}
+                                                {
+                                                    order.date
+                                                }
+                                            </small>
 
                                         </div>
 
-                                    )
-                                )}
+                                        <strong>
+                                            ₹
+                                            {Number(
+                                                order.total
+                                            ).toFixed(
+                                                2
+                                            )}
+                                        </strong>
+
+                                        <span className="order-status">
+                                            {
+                                                order.status
+                                            }
+                                        </span>
+
+                                    </div>
+
+                                ))}
 
                             </div>
 
@@ -1405,41 +1677,43 @@ function SellerDashboard() {
                                 {wishlist.map(
                                     (product) => (
 
-                                        <ProductCard
-                                            key={
-                                                product.id
-                                            }
-                                            product={
-                                                product
-                                            }
-                                            sellerId={
-                                                sellerId
-                                            }
-                                            onView={
-                                                setViewProduct
-                                            }
-                                            onWishlist={
-                                                toggleWishlist
-                                            }
-                                            wishlist={
-                                                wishlist
-                                            }
-                                            onCart={
-                                                addToCart
-                                            }
-                                            onBuy={
-                                                buyNow
-                                            }
-                                            onEdit={
-                                                openEditProduct
-                                            }
-                                            onDelete={
-                                                handleDeleteProduct
-                                            }
-                                        />
+                                    <ProductCard
+                                        key={
+                                            product.id
+                                        }
+                                        product={
+                                            product
+                                        }
+                                        sellerId={
+                                            sellerId
+                                        }
+                                        onView={
+                                            setViewProduct
+                                        }
+                                        onWishlist={
+                                            toggleWishlist
+                                        }
+                                        wishlist={
+                                            wishlist
+                                        }
+                                        onCart={
+                                            addToCart
+                                        }
+                                        onBuy={
+                                            buyNow
+                                        }
+                                        onEdit={
+                                            openEditProduct
+                                        }
+                                        onDelete={
+                                            handleDeleteProduct
+                                        }
+                                        onStatusChange={
+                                            handleStatusChange
+                                        }
+                                    />
 
-                                    )
-                                )}
+                                ))}
 
                             </div>
 
@@ -1502,57 +1776,56 @@ function SellerDashboard() {
                                 {cart.map(
                                     (product) => (
 
-                                        <div
-                                            className="cart-item"
-                                            key={
-                                                product.id
-                                            }
-                                        >
+                                    <div
+                                        className="cart-item"
+                                        key={
+                                            product.id
+                                        }
+                                    >
 
-                                            <img
-                                                src={
-                                                    getProductImage(
-                                                        product
-                                                    )
-                                                }
-                                                alt={
+                                        <img
+                                            src={
+                                                getProductImage(
+                                                    product
+                                                )
+                                            }
+                                            alt={
+                                                product.name
+                                            }
+                                        />
+
+                                        <div>
+
+                                            <h3>
+                                                {
                                                     product.name
                                                 }
-                                            />
+                                            </h3>
 
-                                            <div>
-
-                                                <h3>
-                                                    {
-                                                        product.name
-                                                    }
-                                                </h3>
-
-                                                <strong>
-                                                    $
-                                                    {Number(
-                                                        product.price
-                                                    ).toFixed(
-                                                        2
-                                                    )}
-                                                </strong>
-
-                                            </div>
-
-                                            <button
-                                                onClick={() =>
-                                                    buyNow(
-                                                        product
-                                                    )
-                                                }
-                                            >
-                                                Buy Now
-                                            </button>
+                                            <strong>
+                                                ₹
+                                                {Number(
+                                                    product.price
+                                                ).toFixed(
+                                                    2
+                                                )}
+                                            </strong>
 
                                         </div>
 
-                                    )
-                                )}
+                                        <button
+                                            onClick={() =>
+                                                buyNow(
+                                                    product
+                                                )
+                                            }
+                                        >
+                                            Buy Now
+                                        </button>
+
+                                    </div>
+
+                                ))}
 
                             </div>
 
@@ -1566,7 +1839,7 @@ function SellerDashboard() {
 
 
             {/* =================================================
-                PRODUCT MODAL
+                ADD / EDIT PRODUCT MODAL
             ================================================= */}
 
             {showProductModal && (
@@ -1577,10 +1850,9 @@ function SellerDashboard() {
 
                         <button
                             className="modal-close"
-                            onClick={() =>
-                                setShowProductModal(
-                                    false
-                                )
+                            type="button"
+                            onClick={
+                                closeProductModal
                             }
                         >
                             ×
@@ -1589,14 +1861,15 @@ function SellerDashboard() {
 
                         <h2>
                             {editingProduct
-                                ? "Update Product"
+                                ? "Edit Product"
                                 : "Add New Product"}
                         </h2>
 
 
                         <p>
-                            Add your product details
-                            to DeluLu Cart.
+                            {editingProduct
+                                ? "Update your product details."
+                                : "Add your product details to DeluLu Cart."}
                         </p>
 
 
@@ -1631,21 +1904,27 @@ function SellerDashboard() {
 
                                 {categories
                                     .filter(
-                                        (cat) =>
-                                            cat !== "All"
+                                        (category) =>
+                                            category !==
+                                            "All"
                                     )
                                     .map(
-                                        (cat) => (
+                                        (category) => (
 
-                                            <option
-                                                key={cat}
-                                                value={cat}
-                                            >
-                                                {cat}
-                                            </option>
+                                        <option
+                                            key={
+                                                category
+                                            }
+                                            value={
+                                                category
+                                            }
+                                        >
+                                            {
+                                                category
+                                            }
+                                        </option>
 
-                                        )
-                                    )}
+                                    ))}
 
                             </select>
 
@@ -1706,13 +1985,27 @@ function SellerDashboard() {
                             />
 
 
-                            <button
-                                type="submit"
-                            >
-                                {editingProduct
-                                    ? "Update Product"
-                                    : "Add Product"}
-                            </button>
+                            <div className="modal-actions">
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        closeProductModal
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+
+                                <button
+                                    type="submit"
+                                >
+                                    {editingProduct
+                                        ? "Update Product"
+                                        : "Add Product"}
+                                </button>
+
+                            </div>
 
                         </form>
 
@@ -1735,6 +2028,7 @@ function SellerDashboard() {
 
                         <button
                             className="modal-close"
+                            type="button"
                             onClick={() =>
                                 setViewProduct(
                                     null
@@ -1778,7 +2072,7 @@ function SellerDashboard() {
                             </p>
 
                             <h3>
-                                $
+                                ₹
                                 {Number(
                                     viewProduct.price
                                 ).toFixed(
@@ -1790,7 +2084,17 @@ function SellerDashboard() {
                                 Stock:
                                 {" "}
                                 {
-                                    viewProduct.stock
+                                    viewProduct.stock ??
+                                    0
+                                }
+                            </p>
+
+                            <p>
+                                Status:
+                                {" "}
+                                {
+                                    viewProduct.status ||
+                                    "ACTIVE"
                                 }
                             </p>
 
@@ -1813,6 +2117,7 @@ function SellerDashboard() {
                                     >
                                         🛒 Add to Cart
                                     </button>
+
 
                                     <button
                                         onClick={() =>
@@ -1868,9 +2173,11 @@ function getProductImage(product) {
         return product.images[0];
     }
 
+
     if (product?.image) {
         return product.image;
     }
+
 
     return "https://via.placeholder.com/600x500?text=DeluLu+Cart";
 }
@@ -1889,6 +2196,7 @@ function ProductSection({
     onAdd,
     onEdit,
     onDelete,
+    onStatusChange,
     onView,
     onWishlist,
     wishlist,
@@ -1900,42 +2208,6 @@ function ProductSection({
     setSelectedCategory,
     categories
 }) {
-
-    const [localSearch, setLocalSearch] =
-        useState(search);
-
-
-    useEffect(() => {
-        setLocalSearch(search);
-    }, [search]);
-
-
-    const displayedProducts =
-        products.filter((product) => {
-
-            const name =
-                product.name || "";
-
-            const category =
-                product.category || "";
-
-            const matchesSearch =
-                name
-                    .toLowerCase()
-                    .includes(
-                        localSearch.toLowerCase()
-                    );
-
-            const matchesCategory =
-                selectedCategory === "All" ||
-                category === selectedCategory;
-
-            return (
-                matchesSearch &&
-                matchesCategory
-            );
-        });
-
 
     return (
 
@@ -1965,6 +2237,7 @@ function ProductSection({
                         + Add Product
                     </button>
 
+
                     <button
                         className="add-product-button"
                         onClick={onRefresh}
@@ -1993,20 +2266,12 @@ function ProductSection({
 
                     <input
                         placeholder="Search products..."
-                        value={
-                            localSearch
-                        }
-                        onChange={(event) => {
-
-                            setLocalSearch(
-                                event.target.value
-                            );
-
+                        value={search}
+                        onChange={(event) =>
                             setSearch(
                                 event.target.value
-                            );
-
-                        }}
+                            )
+                        }
                     />
 
                 </div>
@@ -2017,27 +2282,26 @@ function ProductSection({
                     {categories.map(
                         (category) => (
 
-                            <button
-                                key={
+                        <button
+                            key={
+                                category
+                            }
+                            className={
+                                selectedCategory ===
+                                category
+                                    ? "active"
+                                    : ""
+                            }
+                            onClick={() =>
+                                setSelectedCategory(
                                     category
-                                }
-                                className={
-                                    selectedCategory ===
-                                    category
-                                        ? "active"
-                                        : ""
-                                }
-                                onClick={() =>
-                                    setSelectedCategory(
-                                        category
-                                    )
-                                }
-                            >
-                                {category}
-                            </button>
+                                )
+                            }
+                        >
+                            {category}
+                        </button>
 
-                        )
-                    )}
+                    ))}
 
                 </div>
 
@@ -2062,47 +2326,48 @@ function ProductSection({
 
                     </div>
 
-                ) : displayedProducts.length >
-                  0 ? (
+                ) : products.length > 0 ? (
 
-                    displayedProducts.map(
+                    products.map(
                         (product) => (
 
-                            <ProductCard
-                                key={
-                                    product.id
-                                }
-                                product={
-                                    product
-                                }
-                                sellerId={
-                                    sellerId
-                                }
-                                onView={
-                                    onView
-                                }
-                                onWishlist={
-                                    onWishlist
-                                }
-                                wishlist={
-                                    wishlist
-                                }
-                                onCart={
-                                    onCart
-                                }
-                                onBuy={
-                                    onBuy
-                                }
-                                onEdit={
-                                    onEdit
-                                }
-                                onDelete={
-                                    onDelete
-                                }
-                            />
+                        <ProductCard
+                            key={
+                                product.id
+                            }
+                            product={
+                                product
+                            }
+                            sellerId={
+                                sellerId
+                            }
+                            onView={
+                                onView
+                            }
+                            onWishlist={
+                                onWishlist
+                            }
+                            wishlist={
+                                wishlist
+                            }
+                            onCart={
+                                onCart
+                            }
+                            onBuy={
+                                onBuy
+                            }
+                            onEdit={
+                                onEdit
+                            }
+                            onDelete={
+                                onDelete
+                            }
+                            onStatusChange={
+                                onStatusChange
+                            }
+                        />
 
-                        )
-                    )
+                    ))
 
                 ) : (
 
@@ -2145,24 +2410,44 @@ function ProductCard({
     onCart,
     onBuy,
     onEdit,
-    onDelete
+    onDelete,
+    onStatusChange
 }) {
 
     const isOwnProduct =
-        String(product.sellerId).trim() ===
-        String(sellerId).trim();
+        String(
+            product.sellerId
+        ).trim() ===
+        String(
+            sellerId
+        ).trim();
 
 
     const isWishlisted =
         wishlist.some(
             (item) =>
-                item.id === product.id
+                item.id ===
+                product.id
+        );
+
+
+    const isActive =
+        !product.status ||
+        product.status ===
+        "ACTIVE";
+
+
+    const stock =
+        Number(
+            product.stock || 0
         );
 
 
     return (
 
         <article className="product-card">
+
+            {/* IMAGE */}
 
             <div className="product-image-wrapper">
 
@@ -2208,6 +2493,8 @@ function ProductCard({
             </div>
 
 
+            {/* INFO */}
+
             <div className="product-info">
 
                 <span className="product-category">
@@ -2233,23 +2520,34 @@ function ProductCard({
                     {" "}
 
                     <strong>
+
                         {isOwnProduct
                             ? "You"
                             : (
                                 product.sellerName ||
                                 "Seller"
                             )}
+
                     </strong>
 
+                </p>
+
+
+                <p>
+                    {
+                        product.description ||
+                        "No description available."
+                    }
                 </p>
 
 
                 <div className="product-price-row">
 
                     <strong>
-                        $
+                        ₹
                         {Number(
-                            product.price || 0
+                            product.price ||
+                            0
                         ).toFixed(2)}
                     </strong>
 
@@ -2257,14 +2555,31 @@ function ProductCard({
                     <span>
                         Stock:
                         {" "}
-                        {
-                            product.stock ??
-                            0
-                        }
+                        {stock}
                     </span>
 
                 </div>
 
+
+                {/* STATUS */}
+
+                <div className="product-status-row">
+
+                    <span>
+                        Status:
+                    </span>
+
+                    <strong>
+                        {
+                            product.status ||
+                            "ACTIVE"
+                        }
+                    </strong>
+
+                </div>
+
+
+                {/* ACTIONS */}
 
                 <div className="product-actions">
 
@@ -2284,6 +2599,8 @@ function ProductCard({
 
                         <>
 
+                            {/* EDIT */}
+
                             <button
                                 className="edit-button"
                                 onClick={() =>
@@ -2296,6 +2613,27 @@ function ProductCard({
                             </button>
 
 
+                            {/* ACTIVE / INACTIVE */}
+
+                            <button
+                                className="status-button"
+                                onClick={() =>
+                                    onStatusChange(
+                                        product.id,
+                                        isActive
+                                            ? "INACTIVE"
+                                            : "ACTIVE"
+                                    )
+                                }
+                            >
+                                {isActive
+                                    ? "⏸ Deactivate"
+                                    : "▶ Activate"}
+                            </button>
+
+
+                            {/* DELETE */}
+
                             <button
                                 className="delete-button"
                                 onClick={() =>
@@ -2304,7 +2642,7 @@ function ProductCard({
                                     )
                                 }
                             >
-                                🗑️
+                                🗑️ Delete
                             </button>
 
                         </>
@@ -2315,6 +2653,10 @@ function ProductCard({
 
                             <button
                                 className="cart-action"
+                                disabled={
+                                    !isActive ||
+                                    stock <= 0
+                                }
                                 onClick={() =>
                                     onCart(
                                         product
@@ -2327,6 +2669,10 @@ function ProductCard({
 
                             <button
                                 className="buy-action"
+                                disabled={
+                                    !isActive ||
+                                    stock <= 0
+                                }
                                 onClick={() =>
                                     onBuy(
                                         product
