@@ -1,4 +1,3 @@
-
 package ecart.ecommerce.service.impl;
 
 import ecart.ecommerce.entity.Product;
@@ -12,54 +11,42 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class ProductServiceImpl
-        implements ProductService {
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
 
     public ProductServiceImpl(
             ProductRepository productRepository
     ) {
-
-        this.productRepository =
-                productRepository;
+        this.productRepository = productRepository;
     }
-
     @Override
-    public Product addProduct(
-            Product product
-    ) {
+    public Product addProduct(Product product) {
 
-        LocalDateTime now =
-                LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
         product.setCreatedAt(now);
         product.setUpdatedAt(now);
 
-        if (product.getStatus() == null) {
-
-            product.setStatus(
-                    ProductStatus.ACTIVE
-            );
-        }
+        product.setStatus(
+                getAutomaticStatus(product.getStock())
+        );
 
         return productRepository.save(product);
     }
 
     @Override
-    public Product getProductById(
-            String id
-    ) {
+    public Product getProductById(String id) {
 
         return productRepository
                 .findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Product not found with id: "
-                                        + id
+                                "Product not found with id: " + id
                         )
                 );
     }
+
     @Override
     public List<Product> getAllProducts() {
 
@@ -83,6 +70,7 @@ public class ProductServiceImpl
         return productRepository
                 .findByCategory(category);
     }
+
     @Override
     public List<Product> getProductsByStatus(
             ProductStatus status
@@ -100,6 +88,7 @@ public class ProductServiceImpl
         return productRepository
                 .findByNameContainingIgnoreCase(name);
     }
+
     @Override
     public Product updateProduct(
             String id,
@@ -140,21 +129,21 @@ public class ProductServiceImpl
                 updatedProduct.getAttributes()
         );
 
-        if (updatedProduct.getStatus() != null) {
+        existingProduct.setStatus(
+                getAutomaticStatus(
+                        updatedProduct.getStock()
+                )
+        );
 
-            existingProduct.setStatus(
-                    updatedProduct.getStatus()
-            );
-        }
         existingProduct.setUpdatedAt(
                 LocalDateTime.now()
         );
-
 
         return productRepository.save(
                 existingProduct
         );
     }
+
     @Override
     public Product updateProductStatus(
             String id,
@@ -171,7 +160,17 @@ public class ProductServiceImpl
                                 )
                         );
 
-        product.setStatus(status);
+        if (product.getStock() != null
+                && product.getStock() <= 0) {
+
+            product.setStatus(
+                    ProductStatus.INACTIVE
+            );
+
+        } else {
+
+            product.setStatus(status);
+        }
 
         product.setUpdatedAt(
                 LocalDateTime.now()
@@ -181,19 +180,31 @@ public class ProductServiceImpl
     }
 
     @Override
-    public void deleteProduct(
-            String id
-    ) {
+    public void deleteProduct(String id) {
 
         if (!productRepository.existsById(id)) {
 
             throw new RuntimeException(
-                    "Product not found with id: "
-                            + id
+                    "Product not found with id: " + id
             );
         }
 
         productRepository.deleteById(id);
     }
-}
 
+    private ProductStatus getAutomaticStatus(
+            Integer stock
+    ) {
+
+        if (stock == null) {
+
+            return ProductStatus.INACTIVE;
+        }
+        if (stock <= 0) {
+
+            return ProductStatus.INACTIVE;
+        }
+
+        return ProductStatus.ACTIVE;
+    }
+}

@@ -11,13 +11,10 @@ public interface ProductRepository
     List<Product> findByCategory(String category);
 
     List<Product> findByStatus(
-            ecart.ecommerce.enums.ProductStatus status
-    );
-
+            ecart.ecommerce.enums.ProductStatus status);
     List<Product> findBySellerIdAndStatus(
             String sellerId,
-            ecart.ecommerce.enums.ProductStatus status
-    );
+            ecart.ecommerce.enums.ProductStatus status);
     List<Product> findByNameContainingIgnoreCase(
             String name
     );
