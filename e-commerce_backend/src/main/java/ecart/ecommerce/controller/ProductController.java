@@ -4,7 +4,8 @@ package ecart.ecommerce.controller;
 import ecart.ecommerce.entity.Product;
 import ecart.ecommerce.enums.ProductStatus;
 import ecart.ecommerce.service.ProductService;
-
+import ecart.ecommerce.entity.Notification;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +17,11 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
-    public ProductController(
-            ProductService productService
-    ) {
+    private final MongoTemplate mongoTemplate;
+    public ProductController(ProductService productService, MongoTemplate mongoTemplate )
+   {
         this.productService = productService;
+         this.mongoTemplate = mongoTemplate;
     }
 
     @PostMapping
@@ -135,5 +137,31 @@ public class ProductController {
                 "Product deleted successfully."
         );
     }
+    @GetMapping("/notifications/{sellerId}")
+public ResponseEntity<List<Notification>> getSellerNotifications(
+        @PathVariable String sellerId
+) {
+
+    Query query = new Query(
+            Criteria.where("sellerId").is(sellerId)
+    );
+
+    query.with(
+            Sort.by(
+                    Sort.Direction.DESC,
+                    "createdAt"
+            )
+    );
+
+    List<Notification> notifications =
+            mongoTemplate.find(
+                    query,
+                    Notification.class
+            );
+
+    return ResponseEntity.ok(
+            notifications
+    );
+}
 }
 
