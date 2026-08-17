@@ -20,10 +20,10 @@ export const getUnreadNotifications = async (sellerId) => {
     return response.data;
 };
 
-// Mark one notification as read
-export const markNotificationAsRead = async (notificationId) => {
+// Mark single notification as read
+export const markNotificationAsRead = async (id) => {
     const response = await axios.patch(
-        `${API_URL}/${notificationId}/read`
+        `${API_URL}/${id}/read`
     );
 
     return response.data;

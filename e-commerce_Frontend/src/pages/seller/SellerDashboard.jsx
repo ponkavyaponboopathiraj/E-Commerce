@@ -11,13 +11,25 @@ import {
 } from "../../service/productService";
 
 
+// =============================================================
+// CONSTANT
+// =============================================================
+
+const API_BASE_URL = "http://localhost:8080";
+
+
+// =============================================================
+// MAIN SELLER DASHBOARD
+// =============================================================
+
 function SellerDashboard() {
 
     const navigate = useNavigate();
 
-    // =====================================================
-    // CURRENT LOGGED-IN SELLER
-    // =====================================================
+
+    // =========================================================
+    // LOGGED-IN SELLER
+    // =========================================================
 
     const sellerEmail =
         localStorage.getItem("email") ||
@@ -39,9 +51,9 @@ function SellerDashboard() {
         localStorage.getItem("sellerId");
 
 
-    // =====================================================
-    // STATES
-    // =====================================================
+    // =========================================================
+    // DASHBOARD STATES
+    // =========================================================
 
     const [activeMenu, setActiveMenu] =
         useState("dashboard");
@@ -51,6 +63,11 @@ function SellerDashboard() {
 
     const [selectedCategory, setSelectedCategory] =
         useState("All");
+
+
+    // =========================================================
+    // PRODUCT STATES
+    // =========================================================
 
     const [products, setProducts] =
         useState([]);
@@ -67,6 +84,11 @@ function SellerDashboard() {
     const [viewProduct, setViewProduct] =
         useState(null);
 
+
+    // =========================================================
+    // OTHER STATES
+    // =========================================================
+
     const [cart, setCart] =
         useState([]);
 
@@ -80,9 +102,23 @@ function SellerDashboard() {
         useState("");
 
 
-    // =====================================================
+    // =========================================================
+    // NOTIFICATION STATES
+    // =========================================================
+
+    const [notifications, setNotifications] =
+        useState([]);
+
+    const [showNotifications, setShowNotifications] =
+        useState(false);
+
+    const [loadingNotifications, setLoadingNotifications] =
+        useState(false);
+
+
+    // =========================================================
     // PRODUCT FORM
-    // =====================================================
+    // =========================================================
 
     const [productForm, setProductForm] =
         useState({
@@ -95,9 +131,9 @@ function SellerDashboard() {
         });
 
 
-    // =====================================================
+    // =========================================================
     // CATEGORIES
-    // =====================================================
+    // =========================================================
 
     const categories = [
         "All",
@@ -109,9 +145,9 @@ function SellerDashboard() {
     ];
 
 
-    // =====================================================
+    // =========================================================
     // TOAST
-    // =====================================================
+    // =========================================================
 
     const showToast = (message) => {
 
@@ -123,9 +159,9 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
+    // =========================================================
     // LOAD SELLER PRODUCTS
-    // =====================================================
+    // =========================================================
 
     const loadSellerProducts = async () => {
 
@@ -142,6 +178,7 @@ function SellerDashboard() {
             return;
         }
 
+
         try {
 
             setLoadingProducts(true);
@@ -151,15 +188,18 @@ function SellerDashboard() {
                 sellerId
             );
 
+
             const data =
                 await getProductsBySeller(
                     sellerId
                 );
 
+
             console.log(
                 "Products received:",
                 data
             );
+
 
             setProducts(
                 Array.isArray(data)
@@ -167,10 +207,11 @@ function SellerDashboard() {
                     : []
             );
 
+
         } catch (error) {
 
             console.error(
-                "Failed to load products:",
+                "Failed to load seller products:",
                 error
             );
 
@@ -179,10 +220,12 @@ function SellerDashboard() {
                 error.response?.data
             );
 
+
             showToast(
                 error.response?.data?.message ||
                 "Failed to load products"
             );
+
 
         } finally {
 
@@ -191,20 +234,250 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
-    // LOAD PRODUCTS WHEN DASHBOARD OPENS
-    // =====================================================
+    // =========================================================
+    // LOAD NOTIFICATIONS
+    // =========================================================
+
+    const loadNotifications = async () => {
+
+        if (!sellerId) {
+            return;
+        }
+
+
+        try {
+
+            setLoadingNotifications(true);
+
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/notifications/seller/${sellerId}`
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to load notifications"
+                );
+            }
+
+
+            const data =
+                await response.json();
+
+
+            console.log(
+                "Seller notifications:",
+                data
+            );
+
+
+            setNotifications(
+                Array.isArray(data)
+                    ? data
+                    : []
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Notification loading failed:",
+                error
+            );
+
+        } finally {
+
+            setLoadingNotifications(false);
+        }
+    };
+
+
+    // =========================================================
+    // INITIAL PRODUCT LOAD
+    // =========================================================
 
     useEffect(() => {
+
+        if (!sellerId) {
+            return;
+        }
 
         loadSellerProducts();
 
     }, [sellerId]);
 
 
-    // =====================================================
+    // =========================================================
+    // NOTIFICATION AUTO REFRESH
+    // =========================================================
+
+    useEffect(() => {
+
+        if (!sellerId) {
+            return;
+        }
+
+
+        loadNotifications();
+
+
+        const interval =
+            setInterval(() => {
+
+                loadNotifications();
+
+            }, 10000);
+
+
+        return () => {
+
+            clearInterval(interval);
+
+        };
+
+    }, [sellerId]);
+
+
+    // =========================================================
+    // MARK SINGLE NOTIFICATION AS READ
+    // =========================================================
+
+    const markNotificationAsRead =
+        async (notification) => {
+
+            if (!notification?.id) {
+                return;
+            }
+
+
+            // Already read
+            if (notification.read) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/notifications/${notification.id}/read`,
+                        {
+                            method: "PATCH"
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Failed to mark notification as read"
+                    );
+                }
+
+
+                setNotifications(
+                    (previousNotifications) =>
+                        previousNotifications.map(
+                            (item) =>
+                                item.id ===
+                                notification.id
+                                    ? {
+                                        ...item,
+                                        read: true
+                                    }
+                                    : item
+                        )
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Mark notification read failed:",
+                    error
+                );
+            }
+        };
+
+
+    // =========================================================
+    // MARK ALL NOTIFICATIONS AS READ
+    // =========================================================
+
+    const markAllNotificationsAsRead =
+        async () => {
+
+            if (!sellerId) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/notifications/seller/${sellerId}/read-all`,
+                        {
+                            method: "PATCH"
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Failed to mark all notifications as read"
+                    );
+                }
+
+
+                setNotifications(
+                    (previousNotifications) =>
+                        previousNotifications.map(
+                            (notification) => ({
+                                ...notification,
+                                read: true
+                            })
+                        )
+                );
+
+
+                showToast(
+                    "All notifications marked as read ✅"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Mark all notifications failed:",
+                    error
+                );
+
+                showToast(
+                    "Failed to mark notifications as read"
+                );
+            }
+        };
+
+
+    // =========================================================
+    // UNREAD NOTIFICATION COUNT
+    // =========================================================
+
+    const unreadNotifications =
+        notifications.filter(
+            (notification) =>
+                notification.read === false
+        ).length;
+
+
+    // =========================================================
     // MY PRODUCTS
-    // =====================================================
+    // =========================================================
 
     const myProducts =
         products.filter(
@@ -214,9 +487,9 @@ function SellerDashboard() {
         );
 
 
-    // =====================================================
+    // =========================================================
     // FILTERED PRODUCTS
-    // =====================================================
+    // =========================================================
 
     const filteredProducts =
         useMemo(() => {
@@ -230,6 +503,7 @@ function SellerDashboard() {
                     const productCategory =
                         product.category || "";
 
+
                     const searchMatch =
                         productName
                             .toLowerCase()
@@ -237,10 +511,12 @@ function SellerDashboard() {
                                 search.toLowerCase()
                             );
 
+
                     const categoryMatch =
                         selectedCategory === "All" ||
                         productCategory ===
                         selectedCategory;
+
 
                     return (
                         searchMatch &&
@@ -256,9 +532,9 @@ function SellerDashboard() {
         ]);
 
 
-    // =====================================================
+    // =========================================================
     // FORM CHANGE
-    // =====================================================
+    // =========================================================
 
     const handleFormChange = (event) => {
 
@@ -266,6 +542,7 @@ function SellerDashboard() {
             name,
             value
         } = event.target;
+
 
         setProductForm(
             (previousForm) => ({
@@ -276,9 +553,9 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
+    // =========================================================
     // RESET FORM
-    // =====================================================
+    // =========================================================
 
     const resetProductForm = () => {
 
@@ -293,9 +570,9 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
-    // OPEN ADD PRODUCT MODAL
-    // =====================================================
+    // =========================================================
+    // OPEN ADD PRODUCT
+    // =========================================================
 
     const openAddProduct = () => {
 
@@ -307,13 +584,14 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
-    // OPEN EDIT PRODUCT MODAL
-    // =====================================================
+    // =========================================================
+    // OPEN EDIT PRODUCT
+    // =========================================================
 
     const openEditProduct = (product) => {
 
         setEditingProduct(product);
+
 
         setProductForm({
 
@@ -339,13 +617,14 @@ function SellerDashboard() {
                 product.description || ""
         });
 
+
         setShowProductModal(true);
     };
 
 
-    // =====================================================
+    // =========================================================
     // CLOSE PRODUCT MODAL
-    // =====================================================
+    // =========================================================
 
     const closeProductModal = () => {
 
@@ -357,18 +636,19 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
+    // =========================================================
     // ADD / UPDATE PRODUCT
-    // =====================================================
+    // =========================================================
 
     const handleProductSubmit =
         async (event) => {
 
             event.preventDefault();
 
-            // -------------------------------------------------
-            // SELLER ID VALIDATION
-            // -------------------------------------------------
+
+            // -----------------------------------------------
+            // SELLER ID
+            // -----------------------------------------------
 
             if (!sellerId) {
 
@@ -380,9 +660,9 @@ function SellerDashboard() {
             }
 
 
-            // -------------------------------------------------
-            // FORM VALIDATION
-            // -------------------------------------------------
+            // -----------------------------------------------
+            // VALIDATION
+            // -----------------------------------------------
 
             if (
                 !productForm.name.trim() ||
@@ -495,8 +775,6 @@ function SellerDashboard() {
                     );
 
 
-                    // Update frontend immediately
-
                     setProducts(
                         (previousProducts) =>
                             previousProducts.map(
@@ -512,9 +790,15 @@ function SellerDashboard() {
                     closeProductModal();
 
 
+                    // Reload notifications because
+                    // stock update can create notification
+                    await loadNotifications();
+
+
                     showToast(
                         "Product updated successfully ✨"
                     );
+
 
                     return;
                 }
@@ -545,7 +829,9 @@ function SellerDashboard() {
                         stock,
 
                     status:
-                        "ACTIVE",
+                        stock > 0
+                            ? "ACTIVE"
+                            : "INACTIVE",
 
                     images:
                         productForm.image.trim()
@@ -577,8 +863,6 @@ function SellerDashboard() {
                 );
 
 
-                // Add directly to UI
-
                 setProducts(
                     (previousProducts) => [
                         savedProduct,
@@ -588,6 +872,11 @@ function SellerDashboard() {
 
 
                 closeProductModal();
+
+
+                // New product with stock 0 can
+                // create OUT_OF_STOCK notification
+                await loadNotifications();
 
 
                 showToast(
@@ -607,6 +896,7 @@ function SellerDashboard() {
                     error.response?.data
                 );
 
+
                 showToast(
                     error.response?.data?.message ||
                     "Failed to save product"
@@ -615,9 +905,9 @@ function SellerDashboard() {
         };
 
 
-    // =====================================================
+    // =========================================================
     // DELETE PRODUCT
-    // =====================================================
+    // =========================================================
 
     const handleDeleteProduct =
         async (productId) => {
@@ -662,10 +952,6 @@ function SellerDashboard() {
                     error
                 );
 
-                console.error(
-                    "Backend response:",
-                    error.response?.data
-                );
 
                 showToast(
                     error.response?.data?.message ||
@@ -675,9 +961,9 @@ function SellerDashboard() {
         };
 
 
-    // =====================================================
+    // =========================================================
     // UPDATE PRODUCT STATUS
-    // =====================================================
+    // =========================================================
 
     const handleStatusChange =
         async (
@@ -706,8 +992,12 @@ function SellerDashboard() {
                 );
 
 
+                await loadNotifications();
+
+
                 showToast(
-                    status === "ACTIVE"
+                    updatedProduct.status ===
+                    "ACTIVE"
                         ? "Product activated successfully ✅"
                         : "Product deactivated successfully"
                 );
@@ -720,10 +1010,6 @@ function SellerDashboard() {
                     error
                 );
 
-                console.error(
-                    "Backend response:",
-                    error.response?.data
-                );
 
                 showToast(
                     error.response?.data?.message ||
@@ -733,9 +1019,9 @@ function SellerDashboard() {
         };
 
 
-    // =====================================================
+    // =========================================================
     // ADD TO CART
-    // =====================================================
+    // =========================================================
 
     const addToCart = (product) => {
 
@@ -809,9 +1095,9 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
+    // =========================================================
     // BUY NOW
-    // =====================================================
+    // =========================================================
 
     const buyNow = (product) => {
 
@@ -822,6 +1108,19 @@ function SellerDashboard() {
 
             showToast(
                 "You cannot buy your own product"
+            );
+
+            return;
+        }
+
+
+        if (
+            product.status &&
+            product.status !== "ACTIVE"
+        ) {
+
+            showToast(
+                "This product is currently inactive"
             );
 
             return;
@@ -879,9 +1178,9 @@ function SellerDashboard() {
     };
 
 
-    // =====================================================
+    // =========================================================
     // WISHLIST
-    // =====================================================
+    // =========================================================
 
     const toggleWishlist =
         (product) => {
@@ -910,6 +1209,7 @@ function SellerDashboard() {
                     "Removed from wishlist"
                 );
 
+
             } else {
 
                 setWishlist(
@@ -927,39 +1227,30 @@ function SellerDashboard() {
         };
 
 
-    // =====================================================
+    // =========================================================
     // LOGOUT
-    // =====================================================
+    // =========================================================
 
     const handleLogout = () => {
 
-        localStorage.removeItem(
-            "token"
-        );
+        localStorage.removeItem("token");
 
-        localStorage.removeItem(
-            "role"
-        );
+        localStorage.removeItem("role");
 
-        localStorage.removeItem(
-            "email"
-        );
+        localStorage.removeItem("email");
 
-        localStorage.removeItem(
-            "sellerName"
-        );
+        localStorage.removeItem("sellerName");
 
-        localStorage.removeItem(
-            "sellerId"
-        );
+        localStorage.removeItem("sellerId");
+
 
         navigate("/login");
     };
 
 
-    // =====================================================
+    // =========================================================
     // DASHBOARD STATS
-    // =====================================================
+    // =========================================================
 
     const totalProducts =
         myProducts.length;
@@ -987,13 +1278,14 @@ function SellerDashboard() {
         );
 
 
-    // =====================================================
+    // =========================================================
     // RENDER
-    // =====================================================
+    // =========================================================
 
     return (
 
         <div className="seller-dashboard">
+
 
             {/* =================================================
                 SIDEBAR
@@ -1008,6 +1300,7 @@ function SellerDashboard() {
                     </div>
 
                     <div>
+
                         <h2>
                             DeluLu
                         </h2>
@@ -1015,6 +1308,7 @@ function SellerDashboard() {
                         <span>
                             Cart
                         </span>
+
                     </div>
 
                 </div>
@@ -1031,6 +1325,7 @@ function SellerDashboard() {
                             .toUpperCase()}
 
                     </div>
+
 
                     <div>
 
@@ -1149,12 +1444,15 @@ function SellerDashboard() {
                             )
                         }
                     >
+
                         🛒 Cart
 
                         {cart.length > 0 && (
+
                             <span className="menu-count">
                                 {cart.length}
                             </span>
+
                         )}
 
                     </button>
@@ -1180,6 +1478,7 @@ function SellerDashboard() {
 
             <main className="seller-main">
 
+
                 {/* TOP BAR */}
 
                 <header className="seller-topbar">
@@ -1199,6 +1498,401 @@ function SellerDashboard() {
 
                     <div className="top-actions">
 
+
+                        {/* =================================================
+                            NOTIFICATION
+                        ================================================= */}
+
+                        <div
+                            className="notification-wrapper"
+                            style={{
+                                position:
+                                    "relative"
+                            }}
+                        >
+
+                            <button
+                                type="button"
+                                className="notification-button"
+                                onClick={() =>
+                                    setShowNotifications(
+                                        (previous) =>
+                                            !previous
+                                    )
+                                }
+                                style={{
+                                    position:
+                                        "relative",
+                                    border:
+                                        "none",
+                                    background:
+                                        "transparent",
+                                    cursor:
+                                        "pointer",
+                                    fontSize:
+                                        "24px"
+                                }}
+                            >
+
+                                🔔
+
+
+                                {unreadNotifications >
+                                    0 && (
+
+                                    <span
+                                        style={{
+                                            position:
+                                                "absolute",
+                                            top:
+                                                "-4px",
+                                            right:
+                                                "-4px",
+                                            minWidth:
+                                                "20px",
+                                            height:
+                                                "20px",
+                                            borderRadius:
+                                                "50%",
+                                            background:
+                                                "#ef4444",
+                                            color:
+                                                "#fff",
+                                            fontSize:
+                                                "11px",
+                                            fontWeight:
+                                                "700",
+                                            display:
+                                                "flex",
+                                            alignItems:
+                                                "center",
+                                            justifyContent:
+                                                "center",
+                                            padding:
+                                                "0 4px"
+                                        }}
+                                    >
+
+                                        {unreadNotifications >
+                                            99
+                                            ? "99+"
+                                            : unreadNotifications}
+
+                                    </span>
+                                )}
+
+                            </button>
+
+
+                            {/* NOTIFICATION DROPDOWN */}
+
+                            {showNotifications && (
+
+                                <div
+                                    className="notification-dropdown"
+                                    style={{
+                                        position:
+                                            "absolute",
+                                        top:
+                                            "48px",
+                                        right:
+                                            "0",
+                                        width:
+                                            "380px",
+                                        maxHeight:
+                                            "500px",
+                                        overflowY:
+                                            "auto",
+                                        background:
+                                            "#ffffff",
+                                        borderRadius:
+                                            "16px",
+                                        boxShadow:
+                                            "0 15px 40px rgba(0,0,0,0.18)",
+                                        zIndex:
+                                            9999,
+                                        padding:
+                                            "14px"
+                                    }}
+                                >
+
+                                    {/* HEADER */}
+
+                                    <div
+                                        style={{
+                                            display:
+                                                "flex",
+                                            justifyContent:
+                                                "space-between",
+                                            alignItems:
+                                                "center",
+                                            marginBottom:
+                                                "12px"
+                                        }}
+                                    >
+
+                                        <h3>
+                                            🔔 Notifications
+                                        </h3>
+
+
+                                        <div
+                                            style={{
+                                                display:
+                                                    "flex",
+                                                gap:
+                                                    "8px"
+                                            }}
+                                        >
+
+                                            <button
+                                                type="button"
+                                                onClick={
+                                                    loadNotifications
+                                                }
+                                                disabled={
+                                                    loadingNotifications
+                                                }
+                                                style={{
+                                                    border:
+                                                        "none",
+                                                    background:
+                                                        "transparent",
+                                                    cursor:
+                                                        "pointer"
+                                                }}
+                                            >
+                                                ↻
+                                            </button>
+
+
+                                            {unreadNotifications >
+                                                0 && (
+
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        markAllNotificationsAsRead
+                                                    }
+                                                    style={{
+                                                        border:
+                                                            "none",
+                                                        background:
+                                                            "transparent",
+                                                        cursor:
+                                                            "pointer",
+                                                        fontSize:
+                                                            "12px",
+                                                        fontWeight:
+                                                            "600"
+                                                    }}
+                                                >
+                                                    Mark all read
+                                                </button>
+
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {/* NOTIFICATION LIST */}
+
+                                    {loadingNotifications ? (
+
+                                        <div
+                                            style={{
+                                                padding:
+                                                    "30px",
+                                                textAlign:
+                                                    "center"
+                                            }}
+                                        >
+                                            Loading notifications...
+                                        </div>
+
+                                    ) : notifications.length ===
+                                      0 ? (
+
+                                        <div
+                                            style={{
+                                                padding:
+                                                    "30px 10px",
+                                                textAlign:
+                                                    "center",
+                                                color:
+                                                    "#777"
+                                            }}
+                                        >
+
+                                            <div
+                                                style={{
+                                                    fontSize:
+                                                        "35px"
+                                                }}
+                                            >
+                                                🎉
+                                            </div>
+
+                                            <p>
+                                                No notifications yet.
+                                            </p>
+
+                                        </div>
+
+                                    ) : (
+
+                                        notifications.map(
+                                            (notification) => (
+
+                                                <div
+                                                    key={
+                                                        notification.id
+                                                    }
+                                                    onClick={() =>
+                                                        markNotificationAsRead(
+                                                            notification
+                                                        )
+                                                    }
+                                                    style={{
+                                                        padding:
+                                                            "12px",
+                                                        marginBottom:
+                                                            "8px",
+                                                        borderRadius:
+                                                            "12px",
+                                                        cursor:
+                                                            notification.read
+                                                                ? "default"
+                                                                : "pointer",
+                                                        background:
+                                                            notification.read
+                                                                ? "#f8fafc"
+                                                                : "#fff4f4",
+                                                        border:
+                                                            notification.read
+                                                                ? "1px solid #e5e7eb"
+                                                                : "1px solid #fecaca"
+                                                    }}
+                                                >
+
+                                                    <div
+                                                        style={{
+                                                            display:
+                                                                "flex",
+                                                            gap:
+                                                                "10px"
+                                                        }}
+                                                    >
+
+                                                        <div
+                                                            style={{
+                                                                fontSize:
+                                                                    "22px"
+                                                            }}
+                                                        >
+
+                                                            {notification.type ===
+                                                                "OUT_OF_STOCK"
+                                                                ? "🚨"
+                                                                : notification.type ===
+                                                                    "LOW_STOCK"
+                                                                    ? "⚠️"
+                                                                    : notification.type ===
+                                                                        "BACK_IN_STOCK"
+                                                                        ? "✅"
+                                                                        : "🔔"}
+
+                                                        </div>
+
+
+                                                        <div
+                                                            style={{
+                                                                flex:
+                                                                    1
+                                                            }}
+                                                        >
+
+                                                            <strong>
+                                                                {
+                                                                    notification.productName ||
+                                                                    "Product"
+                                                                }
+                                                            </strong>
+
+
+                                                            <p
+                                                                style={{
+                                                                    margin:
+                                                                        "4px 0",
+                                                                    fontSize:
+                                                                        "13px"
+                                                                }}
+                                                            >
+                                                                {
+                                                                    notification.message
+                                                                }
+                                                            </p>
+
+
+                                                            <small
+                                                                style={{
+                                                                    color:
+                                                                        "#888"
+                                                                }}
+                                                            >
+                                                                {
+                                                                    notification.createdAt
+                                                                        ? new Date(
+                                                                            notification.createdAt
+                                                                        ).toLocaleString()
+                                                                        : ""
+                                                                }
+                                                            </small>
+
+                                                        </div>
+
+
+                                                        {!notification.read && (
+
+                                                            <span
+                                                                style={{
+                                                                    width:
+                                                                        "8px",
+                                                                    height:
+                                                                        "8px",
+                                                                    background:
+                                                                        "#ef4444",
+                                                                    borderRadius:
+                                                                        "50%",
+                                                                    marginTop:
+                                                                        "5px",
+                                                                    flexShrink:
+                                                                        0
+                                                                }}
+                                                            />
+
+                                                        )}
+
+                                                    </div>
+
+                                                </div>
+
+                                            )
+                                        )
+
+                                    )}
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+
+                        {/* CART */}
+
                         <button
                             className="top-cart"
                             onClick={() =>
@@ -1207,6 +1901,7 @@ function SellerDashboard() {
                                 )
                             }
                         >
+
                             🛒
 
                             {cart.length > 0 && (
@@ -1217,6 +1912,8 @@ function SellerDashboard() {
 
                         </button>
 
+
+                        {/* AVATAR */}
 
                         <div className="top-avatar">
 
@@ -1345,20 +2042,17 @@ function SellerDashboard() {
                             <div className="stat-card">
 
                                 <span>
-                                    💰
+                                    🔔
                                 </span>
 
                                 <div>
 
                                     <p>
-                                        Shopping Total
+                                        Unread Notifications
                                     </p>
 
                                     <h2>
-                                        ₹
-                                        {totalSales.toFixed(
-                                            2
-                                        )}
+                                        {unreadNotifications}
                                     </h2>
 
                                 </div>
@@ -1368,6 +2062,7 @@ function SellerDashboard() {
                         </section>
 
                     </>
+
                 )}
 
 
@@ -1560,62 +2255,66 @@ function SellerDashboard() {
                                 {orders.map(
                                     (order) => (
 
-                                    <div
-                                        className="order-card"
-                                        key={
-                                            order.id
-                                        }
-                                    >
-
-                                        <img
-                                            src={
-                                                getProductImage(
-                                                    order.product
-                                                )
+                                        <div
+                                            className="order-card"
+                                            key={
+                                                order.id
                                             }
-                                            alt={
-                                                order.product
-                                                    ?.name
-                                            }
-                                        />
+                                        >
 
-                                        <div>
-
-                                            <h3>
-                                                {
+                                            <img
+                                                src={
+                                                    getProductImage(
+                                                        order.product
+                                                    )
+                                                }
+                                                alt={
                                                     order.product
                                                         ?.name
                                                 }
-                                            </h3>
+                                            />
 
-                                            <small>
-                                                Ordered on:
-                                                {" "}
+
+                                            <div>
+
+                                                <h3>
+                                                    {
+                                                        order.product
+                                                            ?.name
+                                                    }
+                                                </h3>
+
+                                                <small>
+                                                    Ordered on:
+                                                    {" "}
+                                                    {
+                                                        order.date
+                                                    }
+                                                </small>
+
+                                            </div>
+
+
+                                            <strong>
+                                                ₹
+                                                {Number(
+                                                    order.total
+                                                ).toFixed(
+                                                    2
+                                                )}
+                                            </strong>
+
+
+                                            <span className="order-status">
                                                 {
-                                                    order.date
+                                                    order.status
                                                 }
-                                            </small>
+                                            </span>
 
                                         </div>
 
-                                        <strong>
-                                            ₹
-                                            {Number(
-                                                order.total
-                                            ).toFixed(
-                                                2
-                                            )}
-                                        </strong>
-
-                                        <span className="order-status">
-                                            {
-                                                order.status
-                                            }
-                                        </span>
-
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1677,43 +2376,44 @@ function SellerDashboard() {
                                 {wishlist.map(
                                     (product) => (
 
-                                    <ProductCard
-                                        key={
-                                            product.id
-                                        }
-                                        product={
-                                            product
-                                        }
-                                        sellerId={
-                                            sellerId
-                                        }
-                                        onView={
-                                            setViewProduct
-                                        }
-                                        onWishlist={
-                                            toggleWishlist
-                                        }
-                                        wishlist={
-                                            wishlist
-                                        }
-                                        onCart={
-                                            addToCart
-                                        }
-                                        onBuy={
-                                            buyNow
-                                        }
-                                        onEdit={
-                                            openEditProduct
-                                        }
-                                        onDelete={
-                                            handleDeleteProduct
-                                        }
-                                        onStatusChange={
-                                            handleStatusChange
-                                        }
-                                    />
+                                        <ProductCard
+                                            key={
+                                                product.id
+                                            }
+                                            product={
+                                                product
+                                            }
+                                            sellerId={
+                                                sellerId
+                                            }
+                                            onView={
+                                                setViewProduct
+                                            }
+                                            onWishlist={
+                                                toggleWishlist
+                                            }
+                                            wishlist={
+                                                wishlist
+                                            }
+                                            onCart={
+                                                addToCart
+                                            }
+                                            onBuy={
+                                                buyNow
+                                            }
+                                            onEdit={
+                                                openEditProduct
+                                            }
+                                            onDelete={
+                                                handleDeleteProduct
+                                            }
+                                            onStatusChange={
+                                                handleStatusChange
+                                            }
+                                        />
 
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1776,56 +2476,59 @@ function SellerDashboard() {
                                 {cart.map(
                                     (product) => (
 
-                                    <div
-                                        className="cart-item"
-                                        key={
-                                            product.id
-                                        }
-                                    >
-
-                                        <img
-                                            src={
-                                                getProductImage(
-                                                    product
-                                                )
+                                        <div
+                                            className="cart-item"
+                                            key={
+                                                product.id
                                             }
-                                            alt={
-                                                product.name
-                                            }
-                                        />
+                                        >
 
-                                        <div>
-
-                                            <h3>
-                                                {
+                                            <img
+                                                src={
+                                                    getProductImage(
+                                                        product
+                                                    )
+                                                }
+                                                alt={
                                                     product.name
                                                 }
-                                            </h3>
+                                            />
 
-                                            <strong>
-                                                ₹
-                                                {Number(
-                                                    product.price
-                                                ).toFixed(
-                                                    2
-                                                )}
-                                            </strong>
+
+                                            <div>
+
+                                                <h3>
+                                                    {
+                                                        product.name
+                                                    }
+                                                </h3>
+
+                                                <strong>
+                                                    ₹
+                                                    {Number(
+                                                        product.price
+                                                    ).toFixed(
+                                                        2
+                                                    )}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <button
+                                                onClick={() =>
+                                                    buyNow(
+                                                        product
+                                                    )
+                                                }
+                                            >
+                                                Buy Now
+                                            </button>
 
                                         </div>
 
-                                        <button
-                                            onClick={() =>
-                                                buyNow(
-                                                    product
-                                                )
-                                            }
-                                        >
-                                            Buy Now
-                                        </button>
-
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1911,20 +2614,21 @@ function SellerDashboard() {
                                     .map(
                                         (category) => (
 
-                                        <option
-                                            key={
-                                                category
-                                            }
-                                            value={
-                                                category
-                                            }
-                                        >
-                                            {
-                                                category
-                                            }
-                                        </option>
+                                            <option
+                                                key={
+                                                    category
+                                                }
+                                                value={
+                                                    category
+                                                }
+                                            >
+                                                {
+                                                    category
+                                                }
+                                            </option>
 
-                                    ))}
+                                        )
+                                    )}
 
                             </select>
 
@@ -2059,17 +2763,20 @@ function SellerDashboard() {
                                 }
                             </span>
 
+
                             <h2>
                                 {
                                     viewProduct.name
                                 }
                             </h2>
 
+
                             <p>
                                 {
                                     viewProduct.description
                                 }
                             </p>
+
 
                             <h3>
                                 ₹
@@ -2080,6 +2787,7 @@ function SellerDashboard() {
                                 )}
                             </h3>
 
+
                             <p>
                                 Stock:
                                 {" "}
@@ -2088,6 +2796,7 @@ function SellerDashboard() {
                                     0
                                 }
                             </p>
+
 
                             <p>
                                 Status:
@@ -2170,11 +2879,13 @@ function getProductImage(product) {
         Array.isArray(product.images) &&
         product.images.length > 0
     ) {
+
         return product.images[0];
     }
 
 
     if (product?.image) {
+
         return product.image;
     }
 
@@ -2232,7 +2943,9 @@ function ProductSection({
 
                     <button
                         className="add-product-button"
-                        onClick={onAdd}
+                        onClick={
+                            onAdd
+                        }
                     >
                         + Add Product
                     </button>
@@ -2240,10 +2953,15 @@ function ProductSection({
 
                     <button
                         className="add-product-button"
-                        onClick={onRefresh}
-                        disabled={loading}
+                        onClick={
+                            onRefresh
+                        }
+                        disabled={
+                            loading
+                        }
                         style={{
-                            marginLeft: "10px"
+                            marginLeft:
+                                "10px"
                         }}
                     >
                         {loading
@@ -2266,11 +2984,14 @@ function ProductSection({
 
                     <input
                         placeholder="Search products..."
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(
-                                event.target.value
-                            )
+                        value={
+                            search
+                        }
+                        onChange={
+                            (event) =>
+                                setSearch(
+                                    event.target.value
+                                )
                         }
                     />
 
@@ -2282,26 +3003,27 @@ function ProductSection({
                     {categories.map(
                         (category) => (
 
-                        <button
-                            key={
-                                category
-                            }
-                            className={
-                                selectedCategory ===
-                                category
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setSelectedCategory(
+                            <button
+                                key={
                                     category
-                                )
-                            }
-                        >
-                            {category}
-                        </button>
+                                }
+                                className={
+                                    selectedCategory ===
+                                    category
+                                        ? "active"
+                                        : ""
+                                }
+                                onClick={() =>
+                                    setSelectedCategory(
+                                        category
+                                    )
+                                }
+                            >
+                                {category}
+                            </button>
 
-                    ))}
+                        )
+                    )}
 
                 </div>
 
@@ -2331,43 +3053,44 @@ function ProductSection({
                     products.map(
                         (product) => (
 
-                        <ProductCard
-                            key={
-                                product.id
-                            }
-                            product={
-                                product
-                            }
-                            sellerId={
-                                sellerId
-                            }
-                            onView={
-                                onView
-                            }
-                            onWishlist={
-                                onWishlist
-                            }
-                            wishlist={
-                                wishlist
-                            }
-                            onCart={
-                                onCart
-                            }
-                            onBuy={
-                                onBuy
-                            }
-                            onEdit={
-                                onEdit
-                            }
-                            onDelete={
-                                onDelete
-                            }
-                            onStatusChange={
-                                onStatusChange
-                            }
-                        />
+                            <ProductCard
+                                key={
+                                    product.id
+                                }
+                                product={
+                                    product
+                                }
+                                sellerId={
+                                    sellerId
+                                }
+                                onView={
+                                    onView
+                                }
+                                onWishlist={
+                                    onWishlist
+                                }
+                                wishlist={
+                                    wishlist
+                                }
+                                onCart={
+                                    onCart
+                                }
+                                onBuy={
+                                    onBuy
+                                }
+                                onEdit={
+                                    onEdit
+                                }
+                                onDelete={
+                                    onDelete
+                                }
+                                onStatusChange={
+                                    onStatusChange
+                                }
+                            />
 
-                    ))
+                        )
+                    )
 
                 ) : (
 
@@ -2432,9 +3155,9 @@ function ProductCard({
 
 
     const isActive =
-        !product.status ||
         product.status ===
-        "ACTIVE";
+            "ACTIVE" ||
+        !product.status;
 
 
     const stock =
@@ -2443,9 +3166,14 @@ function ProductCard({
         );
 
 
+    const isOutOfStock =
+        stock <= 0;
+
+
     return (
 
         <article className="product-card">
+
 
             {/* IMAGE */}
 
@@ -2498,18 +3226,22 @@ function ProductCard({
             <div className="product-info">
 
                 <span className="product-category">
+
                     {
                         product.category ||
                         "Uncategorized"
                     }
+
                 </span>
 
 
                 <h3>
+
                     {
                         product.name ||
                         "Unnamed Product"
                     }
+
                 </h3>
 
 
@@ -2534,31 +3266,82 @@ function ProductCard({
 
 
                 <p>
+
                     {
                         product.description ||
                         "No description available."
                     }
+
                 </p>
 
 
                 <div className="product-price-row">
 
                     <strong>
+
                         ₹
                         {Number(
                             product.price ||
                             0
                         ).toFixed(2)}
+
                     </strong>
 
 
                     <span>
+
                         Stock:
                         {" "}
                         {stock}
+
                     </span>
 
                 </div>
+
+
+                {/* STOCK WARNING */}
+
+                {isOwnProduct &&
+                    stock > 0 &&
+                    stock <= 5 && (
+
+                    <div
+                        style={{
+                            color:
+                                "#d97706",
+                            fontSize:
+                                "13px",
+                            fontWeight:
+                                "600",
+                            marginTop:
+                                "6px"
+                        }}
+                    >
+                        ⚠️ Low stock
+                    </div>
+
+                )}
+
+
+                {isOwnProduct &&
+                    isOutOfStock && (
+
+                    <div
+                        style={{
+                            color:
+                                "#dc2626",
+                            fontSize:
+                                "13px",
+                            fontWeight:
+                                "600",
+                            marginTop:
+                                "6px"
+                        }}
+                    >
+                        🚨 Out of stock
+                    </div>
+
+                )}
 
 
                 {/* STATUS */}
@@ -2569,11 +3352,18 @@ function ProductCard({
                         Status:
                     </span>
 
+
                     <strong>
+
                         {
-                            product.status ||
-                            "ACTIVE"
+                            isOutOfStock
+                                ? "INACTIVE"
+                                : (
+                                    product.status ||
+                                    "ACTIVE"
+                                )
                         }
+
                     </strong>
 
                 </div>
@@ -2582,6 +3372,7 @@ function ProductCard({
                 {/* ACTIONS */}
 
                 <div className="product-actions">
+
 
                     <button
                         className="view-button"
@@ -2617,6 +3408,9 @@ function ProductCard({
 
                             <button
                                 className="status-button"
+                                disabled={
+                                    isOutOfStock
+                                }
                                 onClick={() =>
                                     onStatusChange(
                                         product.id,
@@ -2626,9 +3420,13 @@ function ProductCard({
                                     )
                                 }
                             >
-                                {isActive
-                                    ? "⏸ Deactivate"
-                                    : "▶ Activate"}
+
+                                {isOutOfStock
+                                    ? "🚨 Out of Stock"
+                                    : isActive
+                                        ? "⏸ Deactivate"
+                                        : "▶ Activate"}
+
                             </button>
 
 
