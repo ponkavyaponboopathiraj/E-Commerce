@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping({"/api/orders", "/api/orders/"})
 public class OrderController {
 
     private final OrderService orderService;
@@ -24,7 +24,7 @@ public class OrderController {
     // PLACE ORDER
     // =====================================================
 
-    @PostMapping
+    @PostMapping({"", "/"})
     public ResponseEntity<Order> placeOrder(
             @RequestBody Order order) {
 
@@ -34,6 +34,18 @@ public class OrderController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(savedOrder);
+    }
+
+    // =====================================================
+    // GET ALL ORDERS
+    // =====================================================
+
+    @GetMapping({"", "/"})
+    public ResponseEntity<List<Order>> getAllOrders() {
+
+        return ResponseEntity.ok(
+                orderService.getAllOrders()
+        );
     }
 
     // =====================================================
@@ -50,18 +62,6 @@ public class OrderController {
     }
 
     // =====================================================
-    // GET ALL ORDERS
-    // =====================================================
-
-    @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-
-        return ResponseEntity.ok(
-                orderService.getAllOrders()
-        );
-    }
-
-    // =====================================================
     // GET CUSTOMER ORDERS
     // =====================================================
 
@@ -70,9 +70,7 @@ public class OrderController {
             @PathVariable String customerId) {
 
         return ResponseEntity.ok(
-                orderService.getOrdersByCustomer(
-                        customerId
-                )
+                orderService.getOrdersByCustomer(customerId)
         );
     }
 
@@ -85,9 +83,7 @@ public class OrderController {
             @PathVariable String sellerId) {
 
         return ResponseEntity.ok(
-                orderService.getOrdersBySeller(
-                        sellerId
-                )
+                orderService.getOrdersBySeller(sellerId)
         );
     }
 
@@ -120,8 +116,6 @@ public class OrderController {
         Order cancelledOrder =
                 orderService.cancelOrder(orderId);
 
-        return ResponseEntity.ok(
-                cancelledOrder
-        );
+        return ResponseEntity.ok(cancelledOrder);
     }
 }
