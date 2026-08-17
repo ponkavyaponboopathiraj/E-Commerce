@@ -1,5 +1,7 @@
 package ecart.ecommerce.entity;
 
+import ecart.ecommerce.enums.OrderStatus;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
