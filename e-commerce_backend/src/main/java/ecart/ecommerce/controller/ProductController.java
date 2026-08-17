@@ -1,13 +1,18 @@
-
 package ecart.ecommerce.controller;
 
+import ecart.ecommerce.entity.Notification;
 import ecart.ecommerce.entity.Product;
 import ecart.ecommerce.enums.ProductStatus;
 import ecart.ecommerce.service.ProductService;
-import ecart.ecommerce.entity.Notification;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,12 +22,27 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
     private final MongoTemplate mongoTemplate;
-    public ProductController(ProductService productService, MongoTemplate mongoTemplate )
-   {
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public ProductController(
+            ProductService productService,
+            MongoTemplate mongoTemplate
+    ) {
+
         this.productService = productService;
-         this.mongoTemplate = mongoTemplate;
+        this.mongoTemplate = mongoTemplate;
     }
+
+
+    // =====================================================
+    // ADD PRODUCT
+    // =====================================================
 
     @PostMapping
     public ResponseEntity<Product> addProduct(
@@ -37,6 +57,11 @@ public class ProductController {
                 .body(savedProduct);
     }
 
+
+    // =====================================================
+    // GET ALL PRODUCTS
+    // =====================================================
+
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
 
@@ -44,6 +69,11 @@ public class ProductController {
                 productService.getAllProducts()
         );
     }
+
+
+    // =====================================================
+    // GET PRODUCT BY ID
+    // =====================================================
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(
@@ -55,15 +85,27 @@ public class ProductController {
         );
     }
 
+
+    // =====================================================
+    // GET PRODUCTS BY SELLER
+    // =====================================================
+
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<List<Product>> getProductsBySeller(
             @PathVariable String sellerId
     ) {
 
         return ResponseEntity.ok(
-                productService.getProductsBySeller(sellerId)
+                productService.getProductsBySeller(
+                        sellerId
+                )
         );
     }
+
+
+    // =====================================================
+    // GET PRODUCTS BY CATEGORY
+    // =====================================================
 
     @GetMapping("/category/{category}")
     public ResponseEntity<List<Product>> getProductsByCategory(
@@ -71,9 +113,16 @@ public class ProductController {
     ) {
 
         return ResponseEntity.ok(
-                productService.getProductsByCategory(category)
+                productService.getProductsByCategory(
+                        category
+                )
         );
     }
+
+
+    // =====================================================
+    // GET PRODUCTS BY STATUS
+    // =====================================================
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Product>> getProductsByStatus(
@@ -81,18 +130,33 @@ public class ProductController {
     ) {
 
         return ResponseEntity.ok(
-                productService.getProductsByStatus(status)
+                productService.getProductsByStatus(
+                        status
+                )
         );
     }
+
+
+    // =====================================================
+    // SEARCH PRODUCTS
+    // =====================================================
+
     @GetMapping("/search")
     public ResponseEntity<List<Product>> searchProducts(
             @RequestParam String name
     ) {
 
         return ResponseEntity.ok(
-                productService.searchProductsByName(name)
+                productService.searchProductsByName(
+                        name
+                )
         );
     }
+
+
+    // =====================================================
+    // UPDATE PRODUCT
+    // =====================================================
 
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(
@@ -110,6 +174,12 @@ public class ProductController {
                 updatedProduct
         );
     }
+
+
+    // =====================================================
+    // UPDATE PRODUCT STATUS
+    // =====================================================
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<Product> updateProductStatus(
             @PathVariable String id,
@@ -126,6 +196,12 @@ public class ProductController {
                 updatedProduct
         );
     }
+
+
+    // =====================================================
+    // DELETE PRODUCT
+    // =====================================================
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProduct(
             @PathVariable String id
@@ -137,31 +213,41 @@ public class ProductController {
                 "Product deleted successfully."
         );
     }
+
+
+    // =====================================================
+    // GET SELLER NOTIFICATIONS
+    // =====================================================
+
     @GetMapping("/notifications/{sellerId}")
-public ResponseEntity<List<Notification>> getSellerNotifications(
-        @PathVariable String sellerId
-) {
+    public ResponseEntity<List<Notification>>
+    getSellerNotifications(
+            @PathVariable String sellerId
+    ) {
 
-    Query query = new Query(
-            Criteria.where("sellerId").is(sellerId)
-    );
+        Query query = new Query(
+                Criteria.where("sellerId")
+                        .is(sellerId)
+        );
 
-    query.with(
-            Sort.by(
-                    Sort.Direction.DESC,
-                    "createdAt"
-            )
-    );
 
-    List<Notification> notifications =
-            mongoTemplate.find(
-                    query,
-                    Notification.class
-            );
+        query.with(
+                Sort.by(
+                        Sort.Direction.DESC,
+                        "createdAt"
+                )
+        );
 
-    return ResponseEntity.ok(
-            notifications
-    );
+
+        List<Notification> notifications =
+                mongoTemplate.find(
+                        query,
+                        Notification.class
+                );
+
+
+        return ResponseEntity.ok(
+                notifications
+        );
+    }
 }
-}
-

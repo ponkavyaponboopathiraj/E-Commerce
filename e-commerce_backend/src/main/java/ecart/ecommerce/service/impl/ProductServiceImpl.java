@@ -16,25 +16,22 @@ import java.util.List;
 @Service
 public class ProductServiceImpl implements ProductService {
 
+    private static final int LOW_STOCK_LIMIT = 5;
+
     private final ProductRepository productRepository;
-
     private final MongoTemplate mongoTemplate;
-
-    // CONSTRUCTOR
-
 
     public ProductServiceImpl(
             ProductRepository productRepository,
             MongoTemplate mongoTemplate
     ) {
-
         this.productRepository = productRepository;
         this.mongoTemplate = mongoTemplate;
     }
 
-
-    
+    // =====================================================
     // ADD PRODUCT
+    // =====================================================
 
     @Override
     public Product addProduct(Product product) {
@@ -44,31 +41,27 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedAt(now);
         product.setUpdatedAt(now);
 
-        Integer stock = product.getStock();
-
-        ProductStatus automaticStatus =
-                getAutomaticStatus(stock);
-
-        product.setStatus(automaticStatus);
+        // Automatic status based on stock
+        product.setStatus(
+                getAutomaticStatus(product.getStock())
+        );
 
         Product savedProduct =
                 productRepository.save(product);
 
-
-
-        // Notification
+        // Create notification if required
         createStockNotification(
                 savedProduct,
                 null,
-                stock
+                savedProduct.getStock()
         );
-
 
         return savedProduct;
     }
 
+    // =====================================================
     // GET PRODUCT BY ID
-   
+    // =====================================================
 
     @Override
     public Product getProductById(String id) {
@@ -82,10 +75,9 @@ public class ProductServiceImpl implements ProductService {
                 );
     }
 
-
-    
+    // =====================================================
     // GET ALL PRODUCTS
-    
+    // =====================================================
 
     @Override
     public List<Product> getAllProducts() {
@@ -93,8 +85,9 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll();
     }
 
-
+    // =====================================================
     // GET PRODUCTS BY SELLER
+    // =====================================================
 
     @Override
     public List<Product> getProductsBySeller(
@@ -105,7 +98,9 @@ public class ProductServiceImpl implements ProductService {
                 .findBySellerId(sellerId);
     }
 
+    // =====================================================
     // GET PRODUCTS BY CATEGORY
+    // =====================================================
 
     @Override
     public List<Product> getProductsByCategory(
@@ -116,8 +111,9 @@ public class ProductServiceImpl implements ProductService {
                 .findByCategory(category);
     }
 
+    // =====================================================
     // GET PRODUCTS BY STATUS
-
+    // =====================================================
 
     @Override
     public List<Product> getProductsByStatus(
@@ -128,9 +124,10 @@ public class ProductServiceImpl implements ProductService {
                 .findByStatus(status);
     }
 
-
+    // =====================================================
     // SEARCH PRODUCTS
-   
+    // =====================================================
+
     @Override
     public List<Product> searchProductsByName(
             String name
@@ -140,10 +137,9 @@ public class ProductServiceImpl implements ProductService {
                 .findByNameContainingIgnoreCase(name);
     }
 
-
-    
+    // =====================================================
     // UPDATE PRODUCT
-    
+    // =====================================================
 
     @Override
     public Product updateProduct(
@@ -161,19 +157,18 @@ public class ProductServiceImpl implements ProductService {
                                 )
                         );
 
-
-        // Previous stock
+        // Keep previous stock
         Integer oldStock =
                 existingProduct.getStock();
-
 
         // New stock
         Integer newStock =
                 updatedProduct.getStock();
 
+        // -------------------------------------------------
+        // Update product details
+        // -------------------------------------------------
 
-        // Update basic details
-       
         existingProduct.setName(
                 updatedProduct.getName()
         );
@@ -198,34 +193,38 @@ public class ProductServiceImpl implements ProductService {
                 updatedProduct.getImages()
         );
 
-        existingProduct.setStock(
-                newStock
-        );
-
         existingProduct.setAttributes(
                 updatedProduct.getAttributes()
         );
 
-        // Automatic stock status
-        
+        existingProduct.setStock(
+                newStock
+        );
+
+        // -------------------------------------------------
+        // Automatic ACTIVE / INACTIVE
+        // -------------------------------------------------
 
         existingProduct.setStatus(
                 getAutomaticStatus(newStock)
         );
 
-
         existingProduct.setUpdatedAt(
                 LocalDateTime.now()
         );
 
+        // -------------------------------------------------
+        // Save product
+        // -------------------------------------------------
 
         Product savedProduct =
                 productRepository.save(
                         existingProduct
                 );
 
-        // Stock Notification
-      
+        // -------------------------------------------------
+        // Create stock notification
+        // -------------------------------------------------
 
         createStockNotification(
                 savedProduct,
@@ -233,12 +232,12 @@ public class ProductServiceImpl implements ProductService {
                 newStock
         );
 
-
         return savedProduct;
     }
 
+    // =====================================================
     // UPDATE PRODUCT STATUS
-   
+    // =====================================================
 
     @Override
     public Product updateProductStatus(
@@ -256,12 +255,13 @@ public class ProductServiceImpl implements ProductService {
                                 )
                         );
 
-        // Stock = 0
-        // Force INACTIVE
-        
+        /*
+         * If stock is zero/null,
+         * product must remain INACTIVE.
+         */
 
-        if (product.getStock() != null
-                && product.getStock() <= 0) {
+        if (product.getStock() == null
+                || product.getStock() <= 0) {
 
             product.setStatus(
                     ProductStatus.INACTIVE
@@ -272,20 +272,16 @@ public class ProductServiceImpl implements ProductService {
             product.setStatus(status);
         }
 
-
         product.setUpdatedAt(
                 LocalDateTime.now()
         );
 
-
-        return productRepository.save(
-                product
-        );
+        return productRepository.save(product);
     }
 
-
+    // =====================================================
     // DELETE PRODUCT
-   
+    // =====================================================
 
     @Override
     public void deleteProduct(String id) {
@@ -300,164 +296,137 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
+    // =====================================================
     // AUTOMATIC PRODUCT STATUS
-    
+    // =====================================================
 
     private ProductStatus getAutomaticStatus(
             Integer stock
     ) {
 
-        if (stock == null) {
+        /*
+         * Stock null
+         *      -> INACTIVE
+         *
+         * Stock 0
+         *      -> INACTIVE
+         *
+         * Stock > 0
+         *      -> ACTIVE
+         */
+
+        if (stock == null || stock <= 0) {
 
             return ProductStatus.INACTIVE;
         }
-
-
-        if (stock <= 0) {
-
-            return ProductStatus.INACTIVE;
-        }
-
 
         return ProductStatus.ACTIVE;
     }
 
-    // CREATE STOCK NOTIFICATION
+    // =====================================================
+    // STOCK NOTIFICATION
+    // =====================================================
+
     private void createStockNotification(
             Product product,
             Integer oldStock,
             Integer newStock
     ) {
 
-
         if (newStock == null) {
-
             return;
         }
 
+        // =================================================
+        // 1. OUT OF STOCK
+        // =================================================
 
-        // OUT OF STOCK
-       
+        if (newStock <= 0) {
 
-        if (newStock == 0) {
-
-            Notification notification =
-                    new Notification();
-
-            notification.setSellerId(
-                    product.getSellerId()
-            );
-
-            notification.setProductId(
-                    product.getId()
-            );
-
-            notification.setProductName(
-                    product.getName()
-            );
-
-            notification.setType(
-                    NotificationType.OUT_OF_STOCK
-            );
-
-            notification.setMessage(
+            saveNotification(
+                    product,
+                    NotificationType.OUT_OF_STOCK,
                     product.getName()
                             + " is out of stock."
             );
 
-            notification.setRead(false);
-
-            notification.setCreatedAt(
-                    LocalDateTime.now()
-            );
-
-            mongoTemplate.save(notification);
-
             return;
         }
 
-        // BACK IN STOCK
-      
+        // =================================================
+        // 2. BACK IN STOCK
+        // =================================================
 
         if (oldStock != null
-                && oldStock == 0
+                && oldStock <= 0
                 && newStock > 0) {
 
-            Notification notification =
-                    new Notification();
-
-            notification.setSellerId(
-                    product.getSellerId()
-            );
-
-            notification.setProductId(
-                    product.getId()
-            );
-
-            notification.setProductName(
-                    product.getName()
-            );
-
-            notification.setType(
-                    NotificationType.BACK_IN_STOCK
-            );
-
-            notification.setMessage(
+            saveNotification(
+                    product,
+                    NotificationType.BACK_IN_STOCK,
                     product.getName()
                             + " is back in stock. "
                             + "Available stock: "
                             + newStock
             );
 
-            notification.setRead(false);
-
-            notification.setCreatedAt(
-                    LocalDateTime.now()
-            );
-
-            mongoTemplate.save(notification);
-
             return;
         }
-        // LOW STOCK
+
+        // =================================================
+        // 3. LOW STOCK
+        // =================================================
 
         if (newStock > 0
-                && newStock <= 5) {
+                && newStock <= LOW_STOCK_LIMIT) {
 
-            Notification notification =
-                    new Notification();
-
-            notification.setSellerId(
-                    product.getSellerId()
-            );
-
-            notification.setProductId(
-                    product.getId()
-            );
-
-            notification.setProductName(
-                    product.getName()
-            );
-
-            notification.setType(
-                    NotificationType.LOW_STOCK
-            );
-
-            notification.setMessage(
+            saveNotification(
+                    product,
+                    NotificationType.LOW_STOCK,
                     product.getName()
                             + " stock is low. "
                             + "Only "
                             + newStock
                             + " items left."
             );
-
-            notification.setRead(false);
-
-            notification.setCreatedAt(
-                    LocalDateTime.now()
-            );
-
-            mongoTemplate.save(notification);
         }
+    }
+
+    // =====================================================
+    // SAVE NOTIFICATION
+    // =====================================================
+
+    private void saveNotification(
+            Product product,
+            NotificationType type,
+            String message
+    ) {
+
+        Notification notification =
+                new Notification();
+
+        notification.setSellerId(
+                product.getSellerId()
+        );
+
+        notification.setProductId(
+                product.getId()
+        );
+
+        notification.setProductName(
+                product.getName()
+        );
+
+        notification.setType(type);
+
+        notification.setMessage(message);
+
+        notification.setRead(false);
+
+        notification.setCreatedAt(
+                LocalDateTime.now()
+        );
+
+        mongoTemplate.save(notification);
     }
 }
