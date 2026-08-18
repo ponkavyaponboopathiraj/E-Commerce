@@ -7,6 +7,15 @@ function CustomerDashboard() {
     const navigate = useNavigate();
 
     // =====================================================
+    // API
+    // =====================================================
+
+    const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL ||
+        "http://localhost:8080";
+
+
+    // =====================================================
     // CUSTOMER DETAILS
     // =====================================================
 
@@ -18,6 +27,12 @@ function CustomerDashboard() {
         localStorage.getItem("firstName") ||
         localStorage.getItem("name") ||
         storedEmail.split("@")[0];
+
+    const customerId =
+        localStorage.getItem("customerId") ||
+        localStorage.getItem("userId") ||
+        localStorage.getItem("id");
+
 
     const [customerName, setCustomerName] =
         useState(
@@ -62,124 +77,95 @@ function CustomerDashboard() {
 
 
     // =====================================================
-    // PRODUCTS
+    // LOADING / ERROR STATES
     // =====================================================
 
-    const [products] = useState([
+    const [products, setProducts] =
+        useState([]);
 
-        {
-            id: 1,
-            name: "Premium Sneakers",
-            category: "Fashion",
-            price: 89.99,
-            rating: 4.8,
-            reviews: 124,
-            image:
-                "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
-            description:
-                "Premium comfortable sneakers designed for everyday style and performance.",
-            seller: "Urban Style Store"
-        },
+    const [productsLoading, setProductsLoading] =
+        useState(true);
 
-        {
-            id: 2,
-            name: "Wireless Headphones",
-            category: "Electronics",
-            price: 129.99,
-            rating: 4.7,
-            reviews: 89,
-            image:
-                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
-            description:
-                "Enjoy immersive sound with premium wireless headphones.",
-            seller: "Tech World"
-        },
+    const [ordersLoading, setOrdersLoading] =
+        useState(false);
 
-        {
-            id: 3,
-            name: "Smart Watch Pro",
-            category: "Electronics",
-            price: 199.99,
-            rating: 4.9,
-            reviews: 212,
-            image:
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
-            description:
-                "Track your health, fitness and notifications with a stylish smartwatch.",
-            seller: "Future Gadgets"
-        },
+    const [placingOrder, setPlacingOrder] =
+        useState(false);
 
-        {
-            id: 4,
-            name: "Luxury Leather Handbag",
-            category: "Fashion",
-            price: 79.99,
-            rating: 4.6,
-            reviews: 76,
-            image:
-                "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800",
-            description:
-                "Elegant leather handbag designed for modern fashion lovers.",
-            seller: "Fashion Hub"
-        },
+    const [cancellingOrderId, setCancellingOrderId] =
+        useState(null);
 
-        {
-            id: 5,
-            name: "Modern Comfort Chair",
-            category: "Home",
-            price: 149.99,
-            rating: 4.5,
-            reviews: 54,
-            image:
-                "https://images.unsplash.com/photo-1503602642458-232111445657?w=800",
-            description:
-                "A modern comfortable chair that adds style to your home.",
-            seller: "Home Decor"
-        },
+    const [errorMessage, setErrorMessage] =
+        useState("");
 
-        {
-            id: 6,
-            name: "Minimal Table Lamp",
-            category: "Home",
-            price: 49.99,
-            rating: 4.7,
-            reviews: 91,
-            image:
-                "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800",
-            description:
-                "Minimal decorative lamp perfect for modern interiors.",
-            seller: "Home Decor"
-        },
 
-        {
-            id: 7,
-            name: "Classic Sunglasses",
-            category: "Fashion",
-            price: 39.99,
-            rating: 4.4,
-            reviews: 43,
-            image:
-                "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800",
-            description:
-                "Classic sunglasses with a stylish modern frame.",
-            seller: "Urban Style Store"
-        },
+    // =====================================================
+    // SHIPPING ADDRESS
+    // =====================================================
 
-        {
-            id: 8,
-            name: "Premium Camera",
-            category: "Electronics",
-            price: 599.99,
-            rating: 4.9,
-            reviews: 176,
-            image:
-                "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800",
-            description:
-                "Capture beautiful memories with this premium digital camera.",
-            seller: "Tech World"
+    const [shippingAddress, setShippingAddress] =
+        useState(
+            localStorage.getItem("shippingAddress") || ""
+        );
+
+
+    // =====================================================
+    // CART
+    // =====================================================
+
+    const [cart, setCart] = useState(() => {
+
+        const savedCart =
+            localStorage.getItem("customerCart");
+
+        try {
+
+            return savedCart
+                ? JSON.parse(savedCart)
+                : [];
+
+        } catch {
+
+            return [];
+
         }
 
-    ]);
+    });
+
+
+    // =====================================================
+    // WISHLIST
+    // =====================================================
+
+    const [wishlist, setWishlist] =
+        useState(() => {
+
+            const savedWishlist =
+                localStorage.getItem(
+                    "customerWishlist"
+                );
+
+            try {
+
+                return savedWishlist
+                    ? JSON.parse(savedWishlist)
+                    : [];
+
+            } catch {
+
+                return [];
+
+            }
+
+        });
+
+
+    // =====================================================
+    // ORDERS
+    // =====================================================
+
+    const [orders, setOrders] =
+        useState([]);
 
 
     // =====================================================
@@ -207,57 +193,185 @@ function CustomerDashboard() {
 
 
     // =====================================================
-    // CART
+    // FETCH PRODUCTS
     // =====================================================
 
-    const [cart, setCart] = useState(() => {
+    useEffect(() => {
 
-        const savedCart =
-            localStorage.getItem("customerCart");
+        fetchProducts();
 
-        return savedCart
-            ? JSON.parse(savedCart)
-            : [];
-
-    });
+    }, []);
 
 
-    // =====================================================
-    // WISHLIST
-    // =====================================================
+    const fetchProducts = async () => {
 
-    const [wishlist, setWishlist] =
-        useState(() => {
+        try {
 
-            const savedWishlist =
-                localStorage.getItem(
-                    "customerWishlist"
+            setProductsLoading(true);
+            setErrorMessage("");
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/products`
                 );
 
-            return savedWishlist
-                ? JSON.parse(savedWishlist)
-                : [];
+            if (!response.ok) {
 
-        });
-
-
-    // =====================================================
-    // ORDERS
-    // =====================================================
-
-    const [orders, setOrders] =
-        useState(() => {
-
-            const savedOrders =
-                localStorage.getItem(
-                    "customerOrders"
+                throw new Error(
+                    "Failed to fetch products."
                 );
 
-            return savedOrders
-                ? JSON.parse(savedOrders)
-                : [];
+            }
 
-        });
+            const data =
+                await response.json();
+
+            /*
+             * Backend Product fields are converted
+             * into the structure used by this dashboard.
+             */
+
+            const formattedProducts =
+                Array.isArray(data)
+                    ? data.map((product) => ({
+
+                        id:
+                            product.id ??
+                            product._id,
+
+                        name:
+                            product.name,
+
+                        category:
+                            product.categoryName ??
+                            product.category ??
+                            "General",
+
+                        price:
+                            Number(
+                                product.price || 0
+                            ),
+
+                        rating:
+                            Number(
+                                product.rating || 4.5
+                            ),
+
+                        reviews:
+                            Number(
+                                product.reviews || 0
+                            ),
+
+                        image:
+                            product.image ||
+                            product.imageUrl ||
+                            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
+
+                        description:
+                            product.description ||
+                            "Quality product from DeluLu Cart.",
+
+                        seller:
+                            product.sellerName ||
+                            product.seller ||
+                            "DeluLu Seller",
+
+                        sellerId:
+                            product.sellerId,
+
+                        stock:
+                            product.stock ?? 0
+
+                    }))
+                    : [];
+
+
+            setProducts(
+                formattedProducts
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Product fetch error:",
+                error
+            );
+
+            setErrorMessage(
+                "Unable to load products from server."
+            );
+
+        } finally {
+
+            setProductsLoading(false);
+
+        }
+
+    };
+
+
+    // =====================================================
+    // FETCH CUSTOMER ORDERS
+    // =====================================================
+
+    useEffect(() => {
+
+        if (customerId) {
+
+            fetchCustomerOrders();
+
+        }
+
+    }, [customerId]);
+
+
+    const fetchCustomerOrders = async () => {
+
+        try {
+
+            setOrdersLoading(true);
+            setErrorMessage("");
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/orders/customer/${customerId}`
+                );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to fetch customer orders."
+                );
+
+            }
+
+            const data =
+                await response.json();
+
+            setOrders(
+                Array.isArray(data)
+                    ? data
+                    : []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Order fetch error:",
+                error
+            );
+
+            setErrorMessage(
+                "Unable to load your orders."
+            );
+
+        } finally {
+
+            setOrdersLoading(false);
+
+        }
+
+    };
 
 
     // =====================================================
@@ -289,17 +403,17 @@ function CustomerDashboard() {
 
 
     // =====================================================
-    // SAVE ORDERS
+    // SAVE SHIPPING ADDRESS
     // =====================================================
 
     useEffect(() => {
 
         localStorage.setItem(
-            "customerOrders",
-            JSON.stringify(orders)
+            "shippingAddress",
+            shippingAddress
         );
 
-    }, [orders]);
+    }, [shippingAddress]);
 
 
     // =====================================================
@@ -310,8 +424,14 @@ function CustomerDashboard() {
 
         return products.filter((product) => {
 
+            const productName =
+                product.name || "";
+
+            const productCategory =
+                product.category || "";
+
             const matchesSearch =
-                product.name
+                productName
                     .toLowerCase()
                     .includes(
                         search.toLowerCase()
@@ -319,7 +439,7 @@ function CustomerDashboard() {
 
             const matchesCategory =
                 selectedCategory === "All" ||
-                product.category ===
+                productCategory ===
                 selectedCategory;
 
             return (
@@ -342,7 +462,7 @@ function CustomerDashboard() {
 
     const cartCount = cart.reduce(
         (total, item) =>
-            total + item.quantity,
+            total + Number(item.quantity || 0),
         0
     );
 
@@ -354,8 +474,8 @@ function CustomerDashboard() {
     const cartTotal = cart.reduce(
         (total, item) =>
             total +
-            item.price *
-            item.quantity,
+            Number(item.price || 0) *
+            Number(item.quantity || 0),
         0
     );
 
@@ -366,6 +486,31 @@ function CustomerDashboard() {
 
     const addToCart = (product) => {
 
+        if (!product.id) {
+
+            alert(
+                "Product ID is missing."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            product.stock !== undefined &&
+            Number(product.stock) <= 0
+        ) {
+
+            alert(
+                "This product is currently out of stock."
+            );
+
+            return;
+
+        }
+
+
         setCart((previousCart) => {
 
             const existingProduct =
@@ -374,7 +519,23 @@ function CustomerDashboard() {
                         item.id === product.id
                 );
 
+
             if (existingProduct) {
+
+                if (
+                    product.stock &&
+                    existingProduct.quantity >=
+                    Number(product.stock)
+                ) {
+
+                    alert(
+                        "You cannot add more than available stock."
+                    );
+
+                    return previousCart;
+
+                }
+
 
                 return previousCart.map(
                     (item) =>
@@ -388,6 +549,7 @@ function CustomerDashboard() {
                 );
 
             }
+
 
             return [
                 ...previousCart,
@@ -420,11 +582,42 @@ function CustomerDashboard() {
                         item.id === productId
                     ) {
 
+                        const newQuantity =
+                            item.quantity +
+                            change;
+
+
+                        if (
+                            newQuantity <= 0
+                        ) {
+
+                            return {
+                                ...item,
+                                quantity: 0
+                            };
+
+                        }
+
+
+                        if (
+                            item.stock &&
+                            newQuantity >
+                            Number(item.stock)
+                        ) {
+
+                            alert(
+                                "Maximum available stock reached."
+                            );
+
+                            return item;
+
+                        }
+
+
                         return {
                             ...item,
                             quantity:
-                                item.quantity +
-                                change
+                                newQuantity
                         };
 
                     }
@@ -478,6 +671,7 @@ function CustomerDashboard() {
                             item.id === product.id
                     );
 
+
                 if (exists) {
 
                     return previousWishlist.filter(
@@ -487,6 +681,7 @@ function CustomerDashboard() {
                     );
 
                 }
+
 
                 return [
                     ...previousWishlist,
@@ -512,7 +707,22 @@ function CustomerDashboard() {
             );
 
             return;
+
         }
+
+
+        if (!customerId) {
+
+            alert(
+                "Customer information not found. Please login again."
+            );
+
+            navigate("/login");
+
+            return;
+
+        }
+
 
         setShowCheckout(true);
 
@@ -523,50 +733,325 @@ function CustomerDashboard() {
     // PLACE ORDER
     // =====================================================
 
-    const placeOrder = () => {
+    const placeOrder = async () => {
 
-        const newOrder = {
+        if (cart.length === 0) {
 
-            id:
-                "DL" +
-                Date.now()
-                    .toString()
-                    .slice(-6),
+            alert(
+                "Your cart is empty."
+            );
 
-            date:
-                new Date()
-                    .toLocaleDateString(),
+            return;
 
-            items: cart,
-
-            total: cartTotal,
-
-            status: "Processing"
-
-        };
+        }
 
 
-        setOrders(
-            (previousOrders) => [
-                newOrder,
-                ...previousOrders
-            ]
-        );
+        if (!customerId) {
+
+            alert(
+                "Customer ID not found. Please login again."
+            );
+
+            navigate("/login");
+
+            return;
+
+        }
 
 
-        setCart([]);
+        if (
+            !shippingAddress.trim()
+        ) {
 
-        setShowCheckout(false);
+            alert(
+                "Please enter your shipping address."
+            );
 
-        setShowCart(false);
+            return;
 
-        setActiveSection(
-            "orders"
-        );
+        }
 
-        alert(
-            "Order placed successfully! 🎉"
-        );
+
+        try {
+
+            setPlacingOrder(true);
+            setErrorMessage("");
+
+
+            // =================================================
+            // CREATE BACKEND ORDER
+            // =================================================
+
+            const orderPayload = {
+
+                customerId:
+
+                    customerId,
+
+                items:
+
+                    cart.map(
+                        (item) => ({
+
+                            productId:
+                                String(
+                                    item.id
+                                ),
+
+                            quantity:
+                                Number(
+                                    item.quantity
+                                )
+
+                        })
+                    ),
+
+                shippingAddress:
+                    shippingAddress.trim()
+
+            };
+
+
+            console.log(
+                "Order Payload:",
+                orderPayload
+            );
+
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/orders`,
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body:
+                            JSON.stringify(
+                                orderPayload
+                            )
+
+                    }
+                );
+
+
+            const responseText =
+                await response.text();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    responseText ||
+                    "Failed to place order."
+                );
+
+            }
+
+
+            const savedOrder =
+                responseText
+                    ? JSON.parse(
+                        responseText
+                    )
+                    : null;
+
+
+            console.log(
+                "Order Created:",
+                savedOrder
+            );
+
+
+            // =================================================
+            // CLEAR CART
+            // =================================================
+
+            setCart([]);
+
+
+            // =================================================
+            // CLOSE MODALS
+            // =================================================
+
+            setShowCheckout(
+                false
+            );
+
+            setShowCart(
+                false
+            );
+
+
+            // =================================================
+            // GO TO ORDERS
+            // =================================================
+
+            setActiveSection(
+                "orders"
+            );
+
+
+            // =================================================
+            // REFRESH ORDERS FROM MONGODB
+            // =================================================
+
+            await fetchCustomerOrders();
+
+
+            alert(
+                "Order placed successfully! 🎉"
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Place order error:",
+                error
+            );
+
+            setErrorMessage(
+                error.message ||
+                "Unable to place order."
+            );
+
+
+            alert(
+                "Failed to place order. Please try again."
+            );
+
+        } finally {
+
+            setPlacingOrder(false);
+
+        }
+
+    };
+
+
+    // =====================================================
+    // CANCEL ORDER
+    // =====================================================
+
+    const cancelOrder = async (
+        orderId
+    ) => {
+
+        if (!orderId) {
+
+            return;
+
+        }
+
+
+        const confirmCancel =
+            window.confirm(
+                "Are you sure you want to cancel this order?"
+            );
+
+
+        if (!confirmCancel) {
+
+            return;
+
+        }
+
+
+        try {
+
+            setCancellingOrderId(
+                orderId
+            );
+
+            setErrorMessage("");
+
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/orders/${orderId}/cancel`,
+                    {
+
+                        method: "PATCH"
+
+                    }
+                );
+
+
+            const responseText =
+                await response.text();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    responseText ||
+                    "Unable to cancel order."
+                );
+
+            }
+
+
+            const cancelledOrder =
+                responseText
+                    ? JSON.parse(
+                        responseText
+                    )
+                    : null;
+
+
+            // Update order directly
+            if (cancelledOrder) {
+
+                setOrders(
+                    (previousOrders) =>
+                        previousOrders.map(
+                            (order) =>
+                                order.id ===
+                                cancelledOrder.id
+                                    ? cancelledOrder
+                                    : order
+                        )
+                );
+
+            } else {
+
+                await fetchCustomerOrders();
+
+            }
+
+
+            alert(
+                "Order cancelled successfully."
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Cancel order error:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to cancel order."
+            );
+
+        } finally {
+
+            setCancellingOrderId(
+                null
+            );
+
+        }
 
     };
 
@@ -575,15 +1060,99 @@ function CustomerDashboard() {
     // REORDER
     // =====================================================
 
-    const reorder = (order) => {
+    const reorder = (
+        order
+    ) => {
+
+        if (
+            !order ||
+            !order.items
+        ) {
+
+            return;
+
+        }
+
 
         order.items.forEach(
-            (item) => {
+            (orderItem) => {
 
-                addToCart(item);
+                const product =
+                    products.find(
+                        (item) =>
+                            String(
+                                item.id
+                            ) ===
+                            String(
+                                orderItem.productId
+                            )
+                    );
+
+
+                if (product) {
+
+                    const reorderProduct = {
+
+                        ...product,
+
+                        quantity:
+                            Number(
+                                orderItem.quantity
+                            )
+
+                    };
+
+
+                    setCart(
+                        (previousCart) => {
+
+                            const existing =
+                                previousCart.find(
+                                    (item) =>
+                                        String(
+                                            item.id
+                                        ) ===
+                                        String(
+                                            reorderProduct.id
+                                        )
+                                );
+
+
+                            if (existing) {
+
+                                return previousCart.map(
+                                    (item) =>
+                                        String(
+                                            item.id
+                                        ) ===
+                                        String(
+                                            reorderProduct.id
+                                        )
+                                            ? {
+                                                ...item,
+                                                quantity:
+                                                    item.quantity +
+                                                    reorderProduct.quantity
+                                            }
+                                            : item
+                                );
+
+                            }
+
+
+                            return [
+                                ...previousCart,
+                                reorderProduct
+                            ];
+
+                        }
+                    );
+
+                }
 
             }
         );
+
 
         setShowCart(true);
 
@@ -612,6 +1181,18 @@ function CustomerDashboard() {
             "firstName"
         );
 
+        localStorage.removeItem(
+            "customerId"
+        );
+
+        localStorage.removeItem(
+            "userId"
+        );
+
+        localStorage.removeItem(
+            "id"
+        );
+
         navigate("/login");
 
     };
@@ -631,10 +1212,103 @@ function CustomerDashboard() {
 
         setShowProfile(false);
 
+        setShowNotifications(false);
+
         window.scrollTo({
             top: 0,
             behavior: "smooth"
         });
+
+
+        if (
+            section === "orders" &&
+            customerId
+        ) {
+
+            fetchCustomerOrders();
+
+        }
+
+    };
+
+
+    // =====================================================
+    // ORDER DATE
+    // =====================================================
+
+    const formatOrderDate = (
+        order
+    ) => {
+
+        if (
+            order.createdAt
+        ) {
+
+            return new Date(
+                order.createdAt
+            ).toLocaleString();
+
+        }
+
+
+        return "Recently";
+
+    };
+
+
+    // =====================================================
+    // ORDER TOTAL
+    // =====================================================
+
+    const getOrderTotal = (
+        order
+    ) => {
+
+        return Number(
+            order.totalAmount || 0
+        );
+
+    };
+
+
+    // =====================================================
+    // STATUS CLASS
+    // =====================================================
+
+    const getStatusClass = (
+        status
+    ) => {
+
+        if (!status) {
+
+            return "";
+
+        }
+
+
+        return status
+            .toLowerCase()
+            .replaceAll(
+                "_",
+                "-"
+            );
+
+    };
+
+
+    // =====================================================
+    // CAN CANCEL
+    // =====================================================
+
+    const canCancelOrder = (
+        status
+    ) => {
+
+        return (
+            status &&
+            status !== "DELIVERED" &&
+            status !== "CANCELLED"
+        );
 
     };
 
@@ -661,6 +1335,7 @@ function CustomerDashboard() {
                     </div>
 
                     <div>
+
                         <strong>
                             DeluLu
                         </strong>
@@ -668,6 +1343,7 @@ function CustomerDashboard() {
                         <span>
                             Cart
                         </span>
+
                     </div>
 
                 </div>
@@ -741,9 +1417,11 @@ function CustomerDashboard() {
                     >
 
                         <div className="avatar">
+
                             {customerName
                                 .charAt(0)
                                 .toUpperCase()}
+
                         </div>
 
                         <span>
@@ -755,7 +1433,7 @@ function CustomerDashboard() {
                 </div>
 
 
-                {/* NOTIFICATION DROPDOWN */}
+                {/* NOTIFICATIONS */}
 
                 {showNotifications && (
 
@@ -770,12 +1448,11 @@ function CustomerDashboard() {
                         </div>
 
                         <div className="notification-item">
-                            🚚 Your shopping experience
-                            starts here.
+                            🚚 Track your orders easily.
                         </div>
 
                         <div className="notification-item">
-                            💜 Discover amazing deals today.
+                            💜 Discover amazing products today.
                         </div>
 
                     </div>
@@ -853,6 +1530,7 @@ function CustomerDashboard() {
                                 🏠 Dashboard
                             </button>
 
+
                             <button
                                 onClick={() =>
                                     goToSection(
@@ -863,6 +1541,7 @@ function CustomerDashboard() {
                                 📦 My Orders
                             </button>
 
+
                             <button
                                 onClick={() =>
                                     goToSection(
@@ -872,6 +1551,7 @@ function CustomerDashboard() {
                             >
                                 ❤️ My Wishlist
                             </button>
+
 
                             <button
                                 onClick={() =>
@@ -903,6 +1583,29 @@ function CustomerDashboard() {
 
 
             {/* =================================================
+                ERROR MESSAGE
+            ================================================= */}
+
+            {errorMessage && (
+
+                <div className="dashboard-error">
+
+                    ⚠️ {errorMessage}
+
+                    <button
+                        onClick={() =>
+                            setErrorMessage("")
+                        }
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+            )}
+
+
+            {/* =================================================
                 MAIN CONTENT
             ================================================= */}
 
@@ -923,7 +1626,7 @@ function CustomerDashboard() {
                             <div className="hero-content">
 
                                 <span className="hero-badge">
-                                    ✨ Welcome back,
+                                    ✨ Welcome back,{" "}
                                     {customerName}
                                 </span>
 
@@ -973,17 +1676,24 @@ function CustomerDashboard() {
                                 />
 
                                 <div className="floating-card card-one">
+
                                     🛍️
+
                                     <span>
                                         Happy Shopping
                                     </span>
+
                                 </div>
 
+
                                 <div className="floating-card card-two">
+
                                     ⭐
+
                                     <span>
                                         Top Rated
                                     </span>
+
                                 </div>
 
                             </div>
@@ -996,51 +1706,70 @@ function CustomerDashboard() {
                         <section className="customer-stats">
 
                             <div className="stat-card">
+
                                 <span>
                                     🛒
                                 </span>
+
                                 <strong>
                                     {cartCount}
                                 </strong>
+
                                 <p>
                                     Cart Items
                                 </p>
+
                             </div>
 
+
                             <div className="stat-card">
+
                                 <span>
                                     ❤️
                                 </span>
+
                                 <strong>
                                     {wishlist.length}
                                 </strong>
+
                                 <p>
                                     Wishlist
                                 </p>
+
                             </div>
 
+
                             <div className="stat-card">
+
                                 <span>
                                     📦
                                 </span>
+
                                 <strong>
                                     {orders.length}
                                 </strong>
+
                                 <p>
                                     Orders
                                 </p>
+
                             </div>
 
+
                             <div className="stat-card">
+
                                 <span>
                                     🎁
                                 </span>
+
                                 <strong>
                                     12
                                 </strong>
+
                                 <p>
                                     Rewards
                                 </p>
+
                             </div>
 
                         </section>
@@ -1068,47 +1797,48 @@ function CustomerDashboard() {
                                 {categories.map(
                                     (category) => (
 
-                                    <button
-                                        key={
-                                            category.name
-                                        }
-                                        className={
-                                            selectedCategory ===
-                                            category.name
-                                                ? "category-card active"
-                                                : "category-card"
-                                        }
-                                        onClick={() => {
-
-                                            setSelectedCategory(
+                                        <button
+                                            key={
                                                 category.name
-                                            );
-
-                                            document
-                                                .getElementById(
-                                                    "products"
-                                                )
-                                                ?.scrollIntoView({
-                                                    behavior:
-                                                        "smooth"
-                                                });
-
-                                        }}
-                                    >
-
-                                        <span>
-                                            {
-                                                category.icon
                                             }
-                                        </span>
+                                            className={
+                                                selectedCategory ===
+                                                category.name
+                                                    ? "category-card active"
+                                                    : "category-card"
+                                            }
+                                            onClick={() => {
 
-                                        {
-                                            category.name
-                                        }
+                                                setSelectedCategory(
+                                                    category.name
+                                                );
 
-                                    </button>
+                                                document
+                                                    .getElementById(
+                                                        "products"
+                                                    )
+                                                    ?.scrollIntoView({
+                                                        behavior:
+                                                            "smooth"
+                                                    });
 
-                                ))}
+                                            }}
+                                        >
+
+                                            <span>
+                                                {
+                                                    category.icon
+                                                }
+                                            </span>
+
+                                            {
+                                                category.name
+                                            }
+
+                                        </button>
+
+                                    )
+                                )}
 
                             </div>
 
@@ -1135,173 +1865,214 @@ function CustomerDashboard() {
                             </div>
 
 
-                            <div className="product-grid">
+                            {productsLoading ? (
 
-                                {filteredProducts.length >
-                                0 ? (
+                                <div className="empty-dashboard">
 
-                                    filteredProducts.map(
-                                        (product) => {
+                                    <div>
+                                        ⏳
+                                    </div>
 
-                                        const isWishlisted =
-                                            wishlist.some(
-                                                (item) =>
-                                                    item.id ===
-                                                    product.id
-                                            );
+                                    <h3>
+                                        Loading products...
+                                    </h3>
 
-                                        return (
+                                    <p>
+                                        Please wait while we
+                                        load the latest products.
+                                    </p>
 
-                                            <div
-                                                className="product-card"
-                                                key={
-                                                    product.id
-                                                }
-                                            >
+                                </div>
 
-                                                <div className="product-image-container">
+                            ) : (
 
-                                                    <img
-                                                        src={
-                                                            product.image
-                                                        }
-                                                        alt={
-                                                            product.name
-                                                        }
-                                                        className="product-image"
-                                                    />
+                                <div className="product-grid">
 
+                                    {filteredProducts.length >
+                                    0 ? (
 
-                                                    <button
-                                                        className={
-                                                            isWishlisted
-                                                                ? "wishlist-button wishlisted"
-                                                                : "wishlist-button"
-                                                        }
-                                                        onClick={() =>
-                                                            toggleWishlist(
-                                                                product
+                                        filteredProducts.map(
+                                            (product) => {
+
+                                                const isWishlisted =
+                                                    wishlist.some(
+                                                        (item) =>
+                                                            String(
+                                                                item.id
+                                                            ) ===
+                                                            String(
+                                                                product.id
                                                             )
+                                                    );
+
+
+                                                return (
+
+                                                    <div
+                                                        className="product-card"
+                                                        key={
+                                                            product.id
                                                         }
                                                     >
-                                                        {isWishlisted
-                                                            ? "♥"
-                                                            : "♡"}
-                                                    </button>
 
-                                                </div>
+                                                        <div className="product-image-container">
 
+                                                            <img
+                                                                src={
+                                                                    product.image
+                                                                }
+                                                                alt={
+                                                                    product.name
+                                                                }
+                                                                className="product-image"
+                                                            />
 
-                                                <div className="product-details">
-
-                                                    <span className="product-category">
-                                                        {
-                                                            product.category
-                                                        }
-                                                    </span>
-
-                                                    <h3>
-                                                        {
-                                                            product.name
-                                                        }
-                                                    </h3>
-
-                                                    <p className="seller-name">
-                                                        Sold by{" "}
-                                                        {
-                                                            product.seller
-                                                        }
-                                                    </p>
-
-                                                    <div className="rating">
-
-                                                        ⭐
-                                                        {
-                                                            product.rating
-                                                        }
-
-                                                        <span>
-                                                            (
-                                                            {
-                                                                product.reviews
-                                                            }
-                                                            )
-                                                        </span>
-
-                                                    </div>
-
-
-                                                    <div className="product-bottom">
-
-                                                        <strong>
-                                                            $
-                                                            {
-                                                                product.price.toFixed(
-                                                                    2
-                                                                )
-                                                            }
-                                                        </strong>
-
-
-                                                        <div className="product-actions">
 
                                                             <button
-                                                                className="view-button"
+                                                                className={
+                                                                    isWishlisted
+                                                                        ? "wishlist-button wishlisted"
+                                                                        : "wishlist-button"
+                                                                }
                                                                 onClick={() =>
-                                                                    setSelectedProduct(
+                                                                    toggleWishlist(
                                                                         product
                                                                     )
                                                                 }
                                                             >
-                                                                👁️
+                                                                {
+                                                                    isWishlisted
+                                                                        ? "♥"
+                                                                        : "♡"
+                                                                }
                                                             </button>
 
-                                                            <button
-                                                                className="add-cart-button"
-                                                                onClick={() =>
-                                                                    addToCart(
-                                                                        product
-                                                                    )
+                                                        </div>
+
+
+                                                        <div className="product-details">
+
+                                                            <span className="product-category">
+                                                                {
+                                                                    product.category
                                                                 }
-                                                            >
-                                                                🛒
-                                                            </button>
+                                                            </span>
+
+                                                            <h3>
+                                                                {
+                                                                    product.name
+                                                                }
+                                                            </h3>
+
+
+                                                            <p className="seller-name">
+
+                                                                Sold by{" "}
+
+                                                                {
+                                                                    product.seller
+                                                                }
+
+                                                            </p>
+
+
+                                                            <div className="rating">
+
+                                                                ⭐
+                                                                {
+                                                                    product.rating
+                                                                }
+
+                                                                <span>
+                                                                    (
+                                                                    {
+                                                                        product.reviews
+                                                                    }
+                                                                    )
+                                                                </span>
+
+                                                            </div>
+
+
+                                                            <div className="product-bottom">
+
+                                                                <strong>
+
+                                                                    $
+                                                                    {
+                                                                        Number(
+                                                                            product.price
+                                                                        ).toFixed(
+                                                                            2
+                                                                        )
+                                                                    }
+
+                                                                </strong>
+
+
+                                                                <div className="product-actions">
+
+                                                                    <button
+                                                                        className="view-button"
+                                                                        onClick={() =>
+                                                                            setSelectedProduct(
+                                                                                product
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        👁️
+                                                                    </button>
+
+
+                                                                    <button
+                                                                        className="add-cart-button"
+                                                                        onClick={() =>
+                                                                            addToCart(
+                                                                                product
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        🛒
+                                                                    </button>
+
+                                                                </div>
+
+                                                            </div>
 
                                                         </div>
 
                                                     </div>
 
-                                                </div>
+                                                );
 
+                                            }
+                                        )
+
+                                    ) : (
+
+                                        <div className="empty-state">
+
+                                            <div>
+                                                🔍
                                             </div>
 
-                                        );
+                                            <h3>
+                                                No products found
+                                            </h3>
 
-                                    })
+                                            <p>
+                                                Try another
+                                                search or
+                                                category.
+                                            </p>
 
-                                ) : (
-
-                                    <div className="empty-state">
-
-                                        <div>
-                                            🔍
                                         </div>
 
-                                        <h3>
-                                            No products found
-                                        </h3>
+                                    )}
 
-                                        <p>
-                                            Try another
-                                            search or
-                                            category.
-                                        </p>
+                                </div>
 
-                                    </div>
-
-                                )}
-
-                            </div>
+                            )}
 
                         </section>
 
@@ -1331,7 +2102,21 @@ function CustomerDashboard() {
                         </div>
 
 
-                        {orders.length === 0 ? (
+                        {ordersLoading ? (
+
+                            <div className="empty-dashboard">
+
+                                <div>
+                                    ⏳
+                                </div>
+
+                                <h3>
+                                    Loading orders...
+                                </h3>
+
+                            </div>
+
+                        ) : orders.length === 0 ? (
 
                             <div className="empty-dashboard">
 
@@ -1368,113 +2153,219 @@ function CustomerDashboard() {
                                 {orders.map(
                                     (order) => (
 
-                                    <div
-                                        className="order-card"
-                                        key={
-                                            order.id
-                                        }
-                                    >
+                                        <div
+                                            className="order-card"
+                                            key={
+                                                order.id
+                                            }
+                                        >
 
-                                        <div className="order-header">
+                                            {/* ORDER HEADER */}
 
-                                            <div>
+                                            <div className="order-header">
 
-                                                <strong>
-                                                    Order #
-                                                    {
-                                                        order.id
-                                                    }
-                                                </strong>
+                                                <div>
 
-                                                <p>
-                                                    {
-                                                        order.date
-                                                    }
-                                                </p>
+                                                    <strong>
 
-                                            </div>
+                                                        Order #{" "}
 
-                                            <span className="order-status">
-                                                {
-                                                    order.status
-                                                }
-                                            </span>
-
-                                        </div>
-
-
-                                        <div className="order-items">
-
-                                            {order.items.map(
-                                                (item) => (
-
-                                                <div
-                                                    className="order-item"
-                                                    key={
-                                                        item.id
-                                                    }
-                                                >
-
-                                                    <img
-                                                        src={
-                                                            item.image
+                                                        {
+                                                            order.id
                                                         }
-                                                        alt={
-                                                            item.name
+
+                                                    </strong>
+
+                                                    <p>
+                                                        {
+                                                            formatOrderDate(
+                                                                order
+                                                            )
                                                         }
-                                                    />
-
-                                                    <div>
-
-                                                        <strong>
-                                                            {
-                                                                item.name
-                                                            }
-                                                        </strong>
-
-                                                        <p>
-                                                            Qty:
-                                                            {
-                                                                item.quantity
-                                                            }
-                                                        </p>
-
-                                                    </div>
+                                                    </p>
 
                                                 </div>
 
-                                            ))}
+
+                                                <span
+                                                    className={
+                                                        `order-status ${getStatusClass(
+                                                            order.status
+                                                        )}`
+                                                    }
+                                                >
+                                                    {
+                                                        order.status
+                                                    }
+                                                </span>
+
+                                            </div>
+
+
+                                            {/* SHIPPING ADDRESS */}
+
+                                            {order.shippingAddress && (
+
+                                                <div className="order-address">
+
+                                                    📍
+
+                                                    <span>
+
+                                                        {
+                                                            order.shippingAddress
+                                                        }
+
+                                                    </span>
+
+                                                </div>
+
+                                            )}
+
+
+                                            {/* ORDER ITEMS */}
+
+                                            <div className="order-items">
+
+                                                {order.items?.map(
+                                                    (
+                                                        item,
+                                                        index
+                                                    ) => (
+
+                                                        <div
+                                                            className="order-item"
+                                                            key={
+                                                                `${order.id}-${item.productId}-${index}`
+                                                            }
+                                                        >
+
+                                                            <div className="order-product-image">
+
+                                                                <span>
+                                                                    🛍️
+                                                                </span>
+
+                                                            </div>
+
+
+                                                            <div>
+
+                                                                <strong>
+                                                                    {
+                                                                        item.productName
+                                                                    }
+                                                                </strong>
+
+                                                                <p>
+                                                                    Qty:{" "}
+                                                                    {
+                                                                        item.quantity
+                                                                    }
+                                                                </p>
+
+                                                                <small>
+                                                                    Price: $
+                                                                    {
+                                                                        Number(
+                                                                            item.price || 0
+                                                                        ).toFixed(
+                                                                            2
+                                                                        )
+                                                                    }
+                                                                </small>
+
+                                                            </div>
+
+
+                                                            <strong className="order-item-subtotal">
+
+                                                                $
+                                                                {
+                                                                    Number(
+                                                                        item.subtotal || 0
+                                                                    ).toFixed(
+                                                                        2
+                                                                    )
+                                                                }
+
+                                                            </strong>
+
+                                                        </div>
+
+                                                    )
+                                                )}
+
+                                            </div>
+
+
+                                            {/* ORDER FOOTER */}
+
+                                            <div className="order-footer">
+
+                                                <strong>
+
+                                                    Total: $
+
+                                                    {
+                                                        getOrderTotal(
+                                                            order
+                                                        ).toFixed(
+                                                            2
+                                                        )
+                                                    }
+
+                                                </strong>
+
+
+                                                <div className="order-actions">
+
+                                                    <button
+                                                        className="secondary-button"
+                                                        onClick={() =>
+                                                            reorder(
+                                                                order
+                                                            )
+                                                        }
+                                                    >
+                                                        🔁 Reorder
+                                                    </button>
+
+
+                                                    {canCancelOrder(
+                                                        order.status
+                                                    ) && (
+
+                                                        <button
+                                                            className="cancel-order-button"
+                                                            disabled={
+                                                                cancellingOrderId ===
+                                                                order.id
+                                                            }
+                                                            onClick={() =>
+                                                                cancelOrder(
+                                                                    order.id
+                                                                )
+                                                            }
+                                                        >
+
+                                                            {cancellingOrderId ===
+                                                            order.id
+                                                                ? "Cancelling..."
+                                                                : "Cancel Order"}
+
+                                                        </button>
+
+                                                    )}
+
+                                                </div>
+
+                                            </div>
 
                                         </div>
 
-
-                                        <div className="order-footer">
-
-                                            <strong>
-                                                Total: $
-                                                {
-                                                    order.total.toFixed(
-                                                        2
-                                                    )
-                                                }
-                                            </strong>
-
-                                            <button
-                                                className="secondary-button"
-                                                onClick={() =>
-                                                    reorder(
-                                                        order
-                                                    )
-                                                }
-                                            >
-                                                🔁 Reorder
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1532,82 +2423,91 @@ function CustomerDashboard() {
                                 {wishlist.map(
                                     (product) => (
 
-                                    <div
-                                        className="product-card"
-                                        key={
-                                            product.id
-                                        }
-                                    >
+                                        <div
+                                            className="product-card"
+                                            key={
+                                                product.id
+                                            }
+                                        >
 
-                                        <div className="product-image-container">
+                                            <div className="product-image-container">
 
-                                            <img
-                                                src={
-                                                    product.image
-                                                }
-                                                alt={
-                                                    product.name
-                                                }
-                                                className="product-image"
-                                            />
-
-                                            <button
-                                                className="wishlist-button wishlisted"
-                                                onClick={() =>
-                                                    toggleWishlist(
-                                                        product
-                                                    )
-                                                }
-                                            >
-                                                ♥
-                                            </button>
-
-                                        </div>
-
-
-                                        <div className="product-details">
-
-                                            <span className="product-category">
-                                                {
-                                                    product.category
-                                                }
-                                            </span>
-
-                                            <h3>
-                                                {
-                                                    product.name
-                                                }
-                                            </h3>
-
-                                            <div className="product-bottom">
-
-                                                <strong>
-                                                    $
-                                                    {
-                                                        product.price.toFixed(
-                                                            2
-                                                        )
+                                                <img
+                                                    src={
+                                                        product.image
                                                     }
-                                                </strong>
+                                                    alt={
+                                                        product.name
+                                                    }
+                                                    className="product-image"
+                                                />
+
 
                                                 <button
-                                                    className="add-cart-button"
+                                                    className="wishlist-button wishlisted"
                                                     onClick={() =>
-                                                        addToCart(
+                                                        toggleWishlist(
                                                             product
                                                         )
                                                     }
                                                 >
-                                                    🛒
+                                                    ♥
                                                 </button>
+
+                                            </div>
+
+
+                                            <div className="product-details">
+
+                                                <span className="product-category">
+                                                    {
+                                                        product.category
+                                                    }
+                                                </span>
+
+                                                <h3>
+                                                    {
+                                                        product.name
+                                                    }
+                                                </h3>
+
+
+                                                <div className="product-bottom">
+
+                                                    <strong>
+
+                                                        $
+
+                                                        {
+                                                            Number(
+                                                                product.price
+                                                            ).toFixed(
+                                                                2
+                                                            )
+                                                        }
+
+                                                    </strong>
+
+
+                                                    <button
+                                                        className="add-cart-button"
+                                                        onClick={() =>
+                                                            addToCart(
+                                                                product
+                                                            )
+                                                        }
+                                                    >
+                                                        🛒
+                                                    </button>
+
+                                                </div>
 
                                             </div>
 
                                         </div>
 
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                             </div>
 
@@ -1634,6 +2534,7 @@ function CustomerDashboard() {
                             setShowCart(false)
                         }
                     />
+
 
                     <aside className="cart-drawer">
 
@@ -1681,89 +2582,99 @@ function CustomerDashboard() {
                                     {cart.map(
                                         (item) => (
 
-                                        <div
-                                            className="cart-item"
-                                            key={
-                                                item.id
-                                            }
-                                        >
-
-                                            <img
-                                                src={
-                                                    item.image
+                                            <div
+                                                className="cart-item"
+                                                key={
+                                                    item.id
                                                 }
-                                                alt={
-                                                    item.name
-                                                }
-                                            />
+                                            >
 
-
-                                            <div className="cart-item-info">
-
-                                                <h4>
-                                                    {
+                                                <img
+                                                    src={
+                                                        item.image
+                                                    }
+                                                    alt={
                                                         item.name
                                                     }
-                                                </h4>
-
-                                                <strong>
-                                                    $
-                                                    {
-                                                        item.price.toFixed(
-                                                            2
-                                                        )
-                                                    }
-                                                </strong>
+                                                />
 
 
-                                                <div className="quantity-controls">
+                                                <div className="cart-item-info">
 
-                                                    <button
-                                                        onClick={() =>
-                                                            updateQuantity(
-                                                                item.id,
-                                                                -1
-                                                            )
-                                                        }
-                                                    >
-                                                        −
-                                                    </button>
-
-                                                    <span>
+                                                    <h4>
                                                         {
-                                                            item.quantity
+                                                            item.name
                                                         }
-                                                    </span>
+                                                    </h4>
 
-                                                    <button
-                                                        onClick={() =>
-                                                            updateQuantity(
-                                                                item.id,
-                                                                1
+
+                                                    <strong>
+
+                                                        $
+
+                                                        {
+                                                            Number(
+                                                                item.price
+                                                            ).toFixed(
+                                                                2
                                                             )
                                                         }
-                                                    >
-                                                        +
-                                                    </button>
 
-                                                    <button
-                                                        className="remove-item"
-                                                        onClick={() =>
-                                                            removeFromCart(
-                                                                item.id
-                                                            )
-                                                        }
-                                                    >
-                                                        🗑️
-                                                    </button>
+                                                    </strong>
+
+
+                                                    <div className="quantity-controls">
+
+                                                        <button
+                                                            onClick={() =>
+                                                                updateQuantity(
+                                                                    item.id,
+                                                                    -1
+                                                                )
+                                                            }
+                                                        >
+                                                            −
+                                                        </button>
+
+
+                                                        <span>
+                                                            {
+                                                                item.quantity
+                                                            }
+                                                        </span>
+
+
+                                                        <button
+                                                            onClick={() =>
+                                                                updateQuantity(
+                                                                    item.id,
+                                                                    1
+                                                                )
+                                                            }
+                                                        >
+                                                            +
+                                                        </button>
+
+
+                                                        <button
+                                                            className="remove-item"
+                                                            onClick={() =>
+                                                                removeFromCart(
+                                                                    item.id
+                                                                )
+                                                            }
+                                                        >
+                                                            🗑️
+                                                        </button>
+
+                                                    </div>
 
                                                 </div>
 
                                             </div>
 
-                                        </div>
-
-                                    ))}
+                                        )
+                                    )}
 
                                 </div>
 
@@ -1777,12 +2688,15 @@ function CustomerDashboard() {
                                         </span>
 
                                         <strong>
+
                                             $
+
                                             {
                                                 cartTotal.toFixed(
                                                     2
                                                 )
                                             }
+
                                         </strong>
 
                                     </div>
@@ -1850,13 +2764,16 @@ function CustomerDashboard() {
                                 }
                             </span>
 
+
                             <h2>
                                 {
                                     selectedProduct.name
                                 }
                             </h2>
 
+
                             <div className="rating">
+
                                 ⭐
                                 {
                                     selectedProduct.rating
@@ -1868,7 +2785,9 @@ function CustomerDashboard() {
                                         selectedProduct.reviews
                                     } reviews)
                                 </small>
+
                             </div>
+
 
                             <p>
                                 {
@@ -1876,14 +2795,21 @@ function CustomerDashboard() {
                                 }
                             </p>
 
+
                             <h3>
+
                                 $
+
                                 {
-                                    selectedProduct.price.toFixed(
+                                    Number(
+                                        selectedProduct.price
+                                    ).toFixed(
                                         2
                                     )
                                 }
+
                             </h3>
+
 
                             <button
                                 className="primary-button full-button"
@@ -1932,32 +2858,88 @@ function CustomerDashboard() {
                             ×
                         </button>
 
+
                         <div className="checkout-icon">
                             💳
                         </div>
+
 
                         <h2>
                             Confirm Your Order
                         </h2>
 
+
                         <p>
-                            You are about to place
-                            an order worth
+                            Enter your shipping address
+                            and confirm your order.
                         </p>
 
-                        <strong className="checkout-total">
-                            $
-                            {
-                                cartTotal.toFixed(
-                                    2
-                                )
-                            }
-                        </strong>
+
+                        {/* SHIPPING ADDRESS */}
+
+                        <div className="checkout-address">
+
+                            <label>
+                                Shipping Address
+                            </label>
+
+                            <textarea
+                                value={
+                                    shippingAddress
+                                }
+                                onChange={(event) =>
+                                    setShippingAddress(
+                                        event.target.value
+                                    )
+                                }
+                                placeholder="Enter your complete shipping address..."
+                                rows="4"
+                            />
+
+                        </div>
+
+
+                        <div className="checkout-summary">
+
+                            <span>
+                                Items
+                            </span>
+
+                            <strong>
+                                {cartCount}
+                            </strong>
+
+                        </div>
+
+
+                        <div className="checkout-summary">
+
+                            <span>
+                                Total Amount
+                            </span>
+
+                            <strong className="checkout-total">
+
+                                $
+
+                                {
+                                    cartTotal.toFixed(
+                                        2
+                                    )
+                                }
+
+                            </strong>
+
+                        </div>
+
 
                         <div className="checkout-actions">
 
                             <button
                                 className="secondary-button"
+                                disabled={
+                                    placingOrder
+                                }
                                 onClick={() =>
                                     setShowCheckout(
                                         false
@@ -1967,13 +2949,21 @@ function CustomerDashboard() {
                                 Cancel
                             </button>
 
+
                             <button
                                 className="primary-button"
+                                disabled={
+                                    placingOrder
+                                }
                                 onClick={
                                     placeOrder
                                 }
                             >
-                                Confirm Order
+
+                                {placingOrder
+                                    ? "Placing Order..."
+                                    : "Confirm Order"}
+
                             </button>
 
                         </div>
@@ -2006,15 +2996,20 @@ function CustomerDashboard() {
                             ×
                         </button>
 
+
                         <div className="profile-avatar-large">
+
                             {customerName
                                 .charAt(0)
                                 .toUpperCase()}
+
                         </div>
+
 
                         <h2>
                             Edit Profile
                         </h2>
+
 
                         <input
                             type="text"
@@ -2027,11 +3022,13 @@ function CustomerDashboard() {
                             placeholder="Your name"
                         />
 
+
                         <input
                             type="email"
                             value={customerEmail}
                             disabled
                         />
+
 
                         <button
                             className="primary-button full-button"
