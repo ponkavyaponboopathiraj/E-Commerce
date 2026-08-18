@@ -66,6 +66,7 @@ public class ProductController {
                 productService.getProductsByCategory(category)
         );
     }
+    
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Product>> getProductsByStatus(
@@ -123,4 +124,5 @@ public class ProductController {
                 "Product deleted successfully."
         );
     }
+    
 }

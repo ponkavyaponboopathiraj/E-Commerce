@@ -17,6 +17,7 @@ public interface ProductRepository
             ecart.ecommerce.enums.ProductStatus status);
     List<Product> findByNameContainingIgnoreCase(
             String name
+            
     );
 }
 

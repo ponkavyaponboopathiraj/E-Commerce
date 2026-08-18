@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./CustomerDashboard.css";
 
 function CustomerDashboard() {
-
     const navigate = useNavigate();
 
     // =====================================================
@@ -13,7 +12,6 @@ function CustomerDashboard() {
     const API_BASE_URL =
         import.meta.env.VITE_API_BASE_URL ||
         "http://localhost:8080";
-
 
     // =====================================================
     // CUSTOMER DETAILS
@@ -33,140 +31,83 @@ function CustomerDashboard() {
         localStorage.getItem("userId") ||
         localStorage.getItem("id");
 
+    const [customerName, setCustomerName] = useState(
+        storedName.charAt(0).toUpperCase() + storedName.slice(1)
+    );
 
-    const [customerName, setCustomerName] =
-        useState(
-            storedName.charAt(0).toUpperCase() +
-            storedName.slice(1)
-        );
-
-    const [customerEmail] =
-        useState(storedEmail);
-
+    const [customerEmail] = useState(storedEmail);
 
     // =====================================================
     // UI STATES
     // =====================================================
 
-    const [activeSection, setActiveSection] =
-        useState("home");
+    const [activeSection, setActiveSection] = useState("home");
+    const [search, setSearch] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All");
 
-    const [search, setSearch] =
-        useState("");
+    const [showProfile, setShowProfile] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showCart, setShowCart] = useState(false);
 
-    const [selectedCategory, setSelectedCategory] =
-        useState("All");
-
-    const [showProfile, setShowProfile] =
-        useState(false);
-
-    const [showNotifications, setShowNotifications] =
-        useState(false);
-
-    const [showCart, setShowCart] =
-        useState(false);
-
-    const [selectedProduct, setSelectedProduct] =
-        useState(null);
-
-    const [showCheckout, setShowCheckout] =
-        useState(false);
-
-    const [showEditProfile, setShowEditProfile] =
-        useState(false);
-
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [showCheckout, setShowCheckout] = useState(false);
+    const [showEditProfile, setShowEditProfile] = useState(false);
 
     // =====================================================
     // LOADING / ERROR STATES
     // =====================================================
 
-    const [products, setProducts] =
-        useState([]);
+    const [products, setProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(true);
 
-    const [productsLoading, setProductsLoading] =
-        useState(true);
+    const [orders, setOrders] = useState([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
 
-    const [ordersLoading, setOrdersLoading] =
-        useState(false);
+    const [placingOrder, setPlacingOrder] = useState(false);
+    const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
-    const [placingOrder, setPlacingOrder] =
-        useState(false);
-
-    const [cancellingOrderId, setCancellingOrderId] =
-        useState(null);
-
-    const [errorMessage, setErrorMessage] =
-        useState("");
-
+    const [errorMessage, setErrorMessage] = useState("");
 
     // =====================================================
     // SHIPPING ADDRESS
     // =====================================================
 
-    const [shippingAddress, setShippingAddress] =
-        useState(
-            localStorage.getItem("shippingAddress") || ""
-        );
-
+    const [shippingAddress, setShippingAddress] = useState(
+        localStorage.getItem("shippingAddress") || ""
+    );
 
     // =====================================================
     // CART
     // =====================================================
 
     const [cart, setCart] = useState(() => {
-
-        const savedCart =
-            localStorage.getItem("customerCart");
+        const savedCart = localStorage.getItem("customerCart");
 
         try {
-
-            return savedCart
-                ? JSON.parse(savedCart)
-                : [];
-
-        } catch {
-
+            return savedCart ? JSON.parse(savedCart) : [];
+        } catch (error) {
+            console.error("Cart parse error:", error);
             return [];
-
         }
-
     });
-
 
     // =====================================================
     // WISHLIST
     // =====================================================
 
-    const [wishlist, setWishlist] =
-        useState(() => {
+    const [wishlist, setWishlist] = useState(() => {
+        const savedWishlist =
+            localStorage.getItem("customerWishlist");
 
-            const savedWishlist =
-                localStorage.getItem(
-                    "customerWishlist"
-                );
-
-            try {
-
-                return savedWishlist
-                    ? JSON.parse(savedWishlist)
-                    : [];
-
-            } catch {
-
-                return [];
-
-            }
-
-        });
-
-
-    // =====================================================
-    // ORDERS
-    // =====================================================
-
-    const [orders, setOrders] =
-        useState([]);
-
+        try {
+            return savedWishlist
+                ? JSON.parse(savedWishlist)
+                : [];
+        } catch (error) {
+            console.error("Wishlist parse error:", error);
+            return [];
+        }
+    });
 
     // =====================================================
     // CATEGORIES
@@ -191,270 +132,548 @@ function CustomerDashboard() {
         }
     ];
 
+    // =====================================================
+    // AUTH HEADER
+    // =====================================================
+
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem("token");
+
+        return {
+            "Content-Type": "application/json",
+            ...(token
+                ? {
+                    Authorization: `Bearer ${token}`
+                }
+                : {})
+        };
+    };
+
+    // =====================================================
+    // HANDLE AUTH ERROR
+    // =====================================================
+
+    const handleUnauthorized = () => {
+        localStorage.removeItem("token");
+
+        setErrorMessage(
+            "Your login session has expired. Please login again."
+        );
+
+        setTimeout(() => {
+            navigate("/login");
+        }, 1200);
+    };
+
+    // =====================================================
+    // EXTRACT PRODUCT ARRAY
+    // Handles:
+    //
+    // [
+    //   {...},
+    //   {...}
+    // ]
+    //
+    // OR
+    //
+    // {
+    //   products: [...]
+    // }
+    //
+    // OR
+    //
+    // {
+    //   data: [...]
+    // }
+    // =====================================================
+
+    const extractProducts = (data) => {
+        if (Array.isArray(data)) {
+            return data;
+        }
+
+        if (Array.isArray(data?.products)) {
+            return data.products;
+        }
+
+        if (Array.isArray(data?.data)) {
+            return data.data;
+        }
+
+        if (Array.isArray(data?.content)) {
+            return data.content;
+        }
+
+        return [];
+    };
+
+    // =====================================================
+    // FORMAT PRODUCT
+    // =====================================================
+
+    const formatProduct = (product) => {
+        const productId =
+            product?.id ??
+            product?._id ??
+            product?.productId ??
+            null;
+
+        let productImage =
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800";
+
+        if (
+            Array.isArray(product?.images) &&
+            product.images.length > 0
+        ) {
+            productImage = product.images[0];
+        } else if (product?.image) {
+            productImage = product.image;
+        } else if (product?.imageUrl) {
+            productImage = product.imageUrl;
+        }
+
+        const productImages =
+            Array.isArray(product?.images) &&
+            product.images.length > 0
+                ? product.images
+                : [productImage];
+
+        const productCategory =
+            product?.categoryName ??
+            product?.category?.name ??
+            product?.category ??
+            "General";
+
+        const sellerName =
+            product?.sellerName ??
+            product?.seller?.name ??
+            product?.seller?.firstName ??
+            product?.sellerFirstName ??
+            product?.seller ??
+            "DeluLu Seller";
+
+        const sellerId =
+            product?.sellerId ??
+            product?.seller?.id ??
+            null;
+
+        const productPrice = Number(
+            product?.price ?? 0
+        );
+
+        const productStock = Number(
+            product?.stock ??
+            product?.quantity ??
+            product?.availableStock ??
+            0
+        );
+
+        const productRating = Number(
+            product?.rating ?? 4.5
+        );
+
+        const productReviews = Number(
+            product?.reviews ??
+            product?.reviewCount ??
+            0
+        );
+
+        return {
+            id: productId,
+
+            name:
+                product?.name ??
+                product?.productName ??
+                "Unnamed Product",
+
+            category: productCategory,
+
+            price: productPrice,
+
+            rating: productRating,
+
+            reviews: productReviews,
+
+            image: productImage,
+
+            images: productImages,
+
+            description:
+                product?.description ??
+                "Quality product from DeluLu Cart.",
+
+            seller: sellerName,
+
+            sellerId: sellerId,
+
+            stock: productStock,
+
+            status: product?.status ?? "ACTIVE",
+
+            attributes:
+                product?.attributes ?? {},
+
+            brand:
+                product?.brandName ??
+                product?.brand ??
+                "",
+
+            originalProduct: product
+        };
+    };
 
     // =====================================================
     // FETCH PRODUCTS
     // =====================================================
 
-    useEffect(() => {
-
-        fetchProducts();
-
-    }, []);
-
-
     const fetchProducts = async () => {
-
         try {
-
             setProductsLoading(true);
             setErrorMessage("");
 
-            const response =
-                await fetch(
-                    `${API_BASE_URL}/api/products`
+            const token = localStorage.getItem("token");
+
+            console.log(
+                "Fetching customer products..."
+            );
+
+            if (!token) {
+                console.error(
+                    "JWT token not found in localStorage"
                 );
 
-            if (!response.ok) {
-
-                throw new Error(
-                    "Failed to fetch products."
+                setErrorMessage(
+                    "Login session expired. Please login again."
                 );
 
+                setProductsLoading(false);
+
+                return;
             }
 
-            const data =
-                await response.json();
+            const response = await fetch(
+                `${API_BASE_URL}/api/products`,
+                {
+                    method: "GET",
+                    headers: getAuthHeaders()
+                }
+            );
 
-            /*
-             * Backend Product fields are converted
-             * into the structure used by this dashboard.
-             */
+            console.log(
+                "Product API status:",
+                response.status
+            );
+
+            const responseText =
+                await response.text();
+
+            let data = null;
+
+            try {
+                data = responseText
+                    ? JSON.parse(responseText)
+                    : null;
+            } catch {
+                data = responseText;
+            }
+
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+                console.error(
+                    "Product API unauthorized:",
+                    data
+                );
+
+                handleUnauthorized();
+
+                return;
+            }
+
+            if (!response.ok) {
+                console.error(
+                    "Product API Error:",
+                    response.status,
+                    data
+                );
+
+                throw new Error(
+                    typeof data === "string"
+                        ? data
+                        : data?.message ||
+                        "Failed to fetch products."
+                );
+            }
+
+            console.log(
+                "Products received from backend:",
+                data
+            );
+
+            const backendProducts =
+                extractProducts(data);
+
+            console.log(
+                "Backend product count:",
+                backendProducts.length
+            );
 
             const formattedProducts =
-                Array.isArray(data)
-                    ? data.map((product) => ({
+                backendProducts
+                    .filter((product) => {
+                        /*
+                         * If backend provides status,
+                         * show only ACTIVE products.
+                         *
+                         * If status is missing,
+                         * show the product.
+                         */
 
-                        id:
-                            product.id ??
-                            product._id,
+                        if (!product?.status) {
+                            return true;
+                        }
 
-                        name:
-                            product.name,
+                        const status =
+                            String(
+                                product.status
+                            ).toUpperCase();
 
-                        category:
-                            product.categoryName ??
-                            product.category ??
-                            "General",
+                        return (
+                            status === "ACTIVE" ||
+                            status === "AVAILABLE" ||
+                            status === "APPROVED"
+                        );
+                    })
+                    .map(formatProduct)
+                    .filter(
+                        (product) =>
+                            product.id !== null
+                    );
 
-                        price:
-                            Number(
-                                product.price || 0
-                            ),
-
-                        rating:
-                            Number(
-                                product.rating || 4.5
-                            ),
-
-                        reviews:
-                            Number(
-                                product.reviews || 0
-                            ),
-
-                        image:
-                            product.image ||
-                            product.imageUrl ||
-                            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
-
-                        description:
-                            product.description ||
-                            "Quality product from DeluLu Cart.",
-
-                        seller:
-                            product.sellerName ||
-                            product.seller ||
-                            "DeluLu Seller",
-
-                        sellerId:
-                            product.sellerId,
-
-                        stock:
-                            product.stock ?? 0
-
-                    }))
-                    : [];
-
+            console.log(
+                "Formatted customer products:",
+                formattedProducts
+            );
 
             setProducts(
                 formattedProducts
             );
 
         } catch (error) {
-
             console.error(
                 "Product fetch error:",
                 error
             );
 
             setErrorMessage(
+                error.message ||
                 "Unable to load products from server."
             );
-
         } finally {
-
             setProductsLoading(false);
-
         }
-
     };
 
+    // =====================================================
+    // INITIAL PRODUCT LOAD
+    // =====================================================
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    // =====================================================
+    // REFRESH PRODUCTS WHEN CUSTOMER RETURNS TO HOME
+    // This helps seller-added products appear.
+    // =====================================================
+
+    useEffect(() => {
+        if (activeSection === "home") {
+            fetchProducts();
+        }
+    }, [activeSection]);
 
     // =====================================================
     // FETCH CUSTOMER ORDERS
     // =====================================================
 
-    useEffect(() => {
-
-        if (customerId) {
-
-            fetchCustomerOrders();
-
+    const fetchCustomerOrders = async () => {
+        if (!customerId) {
+            return;
         }
 
-    }, [customerId]);
-
-
-    const fetchCustomerOrders = async () => {
-
         try {
-
             setOrdersLoading(true);
-            setErrorMessage("");
 
-            const response =
-                await fetch(
-                    `${API_BASE_URL}/api/orders/customer/${customerId}`
-                );
+            const token =
+                localStorage.getItem("token");
 
-            if (!response.ok) {
-
-                throw new Error(
-                    "Failed to fetch customer orders."
-                );
-
+            if (!token) {
+                handleUnauthorized();
+                return;
             }
 
-            const data =
-                await response.json();
-
-            setOrders(
-                Array.isArray(data)
-                    ? data
-                    : []
+            const response = await fetch(
+                `${API_BASE_URL}/api/orders/customer/${customerId}`,
+                {
+                    method: "GET",
+                    headers: getAuthHeaders()
+                }
             );
 
-        } catch (error) {
+            const responseText =
+                await response.text();
 
+            let data = null;
+
+            try {
+                data = responseText
+                    ? JSON.parse(responseText)
+                    : null;
+            } catch {
+                data = responseText;
+            }
+
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    typeof data === "string"
+                        ? data
+                        : data?.message ||
+                        "Failed to fetch customer orders."
+                );
+            }
+
+            const orderList =
+                Array.isArray(data)
+                    ? data
+                    : Array.isArray(data?.orders)
+                        ? data.orders
+                        : Array.isArray(data?.data)
+                            ? data.data
+                            : [];
+
+            setOrders(orderList);
+
+        } catch (error) {
             console.error(
                 "Order fetch error:",
                 error
             );
 
             setErrorMessage(
+                error.message ||
                 "Unable to load your orders."
             );
-
         } finally {
-
             setOrdersLoading(false);
-
         }
-
     };
 
+    // =====================================================
+    // LOAD ORDERS
+    // =====================================================
+
+    useEffect(() => {
+        if (customerId) {
+            fetchCustomerOrders();
+        }
+    }, [customerId]);
 
     // =====================================================
     // SAVE CART
     // =====================================================
 
     useEffect(() => {
-
         localStorage.setItem(
             "customerCart",
             JSON.stringify(cart)
         );
-
     }, [cart]);
-
 
     // =====================================================
     // SAVE WISHLIST
     // =====================================================
 
     useEffect(() => {
-
         localStorage.setItem(
             "customerWishlist",
             JSON.stringify(wishlist)
         );
-
     }, [wishlist]);
-
 
     // =====================================================
     // SAVE SHIPPING ADDRESS
     // =====================================================
 
     useEffect(() => {
-
         localStorage.setItem(
             "shippingAddress",
             shippingAddress
         );
-
     }, [shippingAddress]);
-
 
     // =====================================================
     // FILTER PRODUCTS
     // =====================================================
 
     const filteredProducts = useMemo(() => {
+        const searchValue =
+            search.trim().toLowerCase();
 
         return products.filter((product) => {
-
             const productName =
-                product.name || "";
+                String(
+                    product.name || ""
+                ).toLowerCase();
 
             const productCategory =
-                product.category || "";
+                String(
+                    product.category || ""
+                ).toLowerCase();
+
+            const productDescription =
+                String(
+                    product.description || ""
+                ).toLowerCase();
+
+            const productSeller =
+                String(
+                    product.seller || ""
+                ).toLowerCase();
 
             const matchesSearch =
-                productName
-                    .toLowerCase()
-                    .includes(
-                        search.toLowerCase()
-                    );
+                !searchValue ||
+                productName.includes(searchValue) ||
+                productCategory.includes(searchValue) ||
+                productDescription.includes(searchValue) ||
+                productSeller.includes(searchValue);
 
             const matchesCategory =
                 selectedCategory === "All" ||
                 productCategory ===
-                selectedCategory;
+                String(
+                    selectedCategory
+                ).toLowerCase();
 
             return (
                 matchesSearch &&
                 matchesCategory
             );
-
         });
-
     }, [
         products,
         search,
         selectedCategory
     ]);
-
 
     // =====================================================
     // CART COUNT
@@ -462,10 +681,10 @@ function CustomerDashboard() {
 
     const cartCount = cart.reduce(
         (total, item) =>
-            total + Number(item.quantity || 0),
+            total +
+            Number(item.quantity || 0),
         0
     );
-
 
     // =====================================================
     // CART TOTAL
@@ -479,77 +698,67 @@ function CustomerDashboard() {
         0
     );
 
-
     // =====================================================
     // ADD TO CART
     // =====================================================
 
     const addToCart = (product) => {
-
-        if (!product.id) {
-
+        if (!product?.id) {
             alert(
                 "Product ID is missing."
             );
-
             return;
-
         }
 
-
         if (
-            product.stock !== undefined &&
             Number(product.stock) <= 0
         ) {
-
             alert(
                 "This product is currently out of stock."
             );
-
             return;
-
         }
 
-
         setCart((previousCart) => {
-
             const existingProduct =
                 previousCart.find(
                     (item) =>
-                        item.id === product.id
+                        String(item.id) ===
+                        String(product.id)
                 );
 
-
             if (existingProduct) {
+                const currentQuantity =
+                    Number(
+                        existingProduct.quantity || 0
+                    );
+
+                const stock =
+                    Number(product.stock);
 
                 if (
-                    product.stock &&
-                    existingProduct.quantity >=
-                    Number(product.stock)
+                    stock > 0 &&
+                    currentQuantity >= stock
                 ) {
-
                     alert(
                         "You cannot add more than available stock."
                     );
 
                     return previousCart;
-
                 }
-
 
                 return previousCart.map(
                     (item) =>
-                        item.id === product.id
+                        String(item.id) ===
+                        String(product.id)
                             ? {
                                 ...item,
                                 quantity:
-                                    item.quantity + 1
+                                    currentQuantity + 1
                             }
                             : item
                 );
-
             }
-
 
             return [
                 ...previousCart,
@@ -558,11 +767,8 @@ function CustomerDashboard() {
                     quantity: 1
                 }
             ];
-
         });
-
     };
-
 
     // =====================================================
     // UPDATE CART QUANTITY
@@ -572,68 +778,58 @@ function CustomerDashboard() {
         productId,
         change
     ) => {
-
         setCart((previousCart) => {
-
             return previousCart
                 .map((item) => {
-
                     if (
-                        item.id === productId
+                        String(item.id) !==
+                        String(productId)
                     ) {
-
-                        const newQuantity =
-                            item.quantity +
-                            change;
-
-
-                        if (
-                            newQuantity <= 0
-                        ) {
-
-                            return {
-                                ...item,
-                                quantity: 0
-                            };
-
-                        }
-
-
-                        if (
-                            item.stock &&
-                            newQuantity >
-                            Number(item.stock)
-                        ) {
-
-                            alert(
-                                "Maximum available stock reached."
-                            );
-
-                            return item;
-
-                        }
-
-
-                        return {
-                            ...item,
-                            quantity:
-                                newQuantity
-                        };
-
+                        return item;
                     }
 
-                    return item;
+                    const currentQuantity =
+                        Number(
+                            item.quantity || 0
+                        );
 
+                    const newQuantity =
+                        currentQuantity +
+                        change;
+
+                    if (newQuantity <= 0) {
+                        return {
+                            ...item,
+                            quantity: 0
+                        };
+                    }
+
+                    const stock =
+                        Number(item.stock);
+
+                    if (
+                        stock > 0 &&
+                        newQuantity > stock
+                    ) {
+                        alert(
+                            "Maximum available stock reached."
+                        );
+
+                        return item;
+                    }
+
+                    return {
+                        ...item,
+                        quantity:
+                            newQuantity
+                    };
                 })
                 .filter(
                     (item) =>
-                        item.quantity > 0
+                        Number(item.quantity) > 0
                 );
-
         });
-
     };
-
 
     // =====================================================
     // REMOVE CART ITEM
@@ -642,17 +838,15 @@ function CustomerDashboard() {
     const removeFromCart = (
         productId
     ) => {
-
         setCart(
             (previousCart) =>
                 previousCart.filter(
                     (item) =>
-                        item.id !== productId
+                        String(item.id) !==
+                        String(productId)
                 )
         );
-
     };
-
 
     // =====================================================
     // WISHLIST
@@ -661,257 +855,185 @@ function CustomerDashboard() {
     const toggleWishlist = (
         product
     ) => {
-
         setWishlist(
             (previousWishlist) => {
-
                 const exists =
                     previousWishlist.some(
                         (item) =>
-                            item.id === product.id
+                            String(item.id) ===
+                            String(product.id)
                     );
-
 
                 if (exists) {
-
                     return previousWishlist.filter(
                         (item) =>
-                            item.id !==
-                            product.id
+                            String(item.id) !==
+                            String(product.id)
                     );
-
                 }
-
 
                 return [
                     ...previousWishlist,
                     product
                 ];
-
             }
         );
-
     };
-
 
     // =====================================================
     // CHECKOUT
     // =====================================================
 
     const handleCheckout = () => {
-
         if (cart.length === 0) {
-
             alert(
                 "Your cart is empty!"
             );
-
             return;
-
         }
 
-
         if (!customerId) {
-
             alert(
                 "Customer information not found. Please login again."
             );
 
             navigate("/login");
-
             return;
-
         }
 
-
         setShowCheckout(true);
-
     };
-
 
     // =====================================================
     // PLACE ORDER
     // =====================================================
 
     const placeOrder = async () => {
-
         if (cart.length === 0) {
-
             alert(
                 "Your cart is empty."
             );
-
             return;
-
         }
 
-
         if (!customerId) {
-
             alert(
                 "Customer ID not found. Please login again."
             );
 
             navigate("/login");
-
             return;
-
         }
 
-
-        if (
-            !shippingAddress.trim()
-        ) {
-
+        if (!shippingAddress.trim()) {
             alert(
                 "Please enter your shipping address."
             );
-
             return;
-
         }
 
-
         try {
-
             setPlacingOrder(true);
             setErrorMessage("");
 
+            const token =
+                localStorage.getItem("token");
 
-            // =================================================
-            // CREATE BACKEND ORDER
-            // =================================================
+            if (!token) {
+                handleUnauthorized();
+                return;
+            }
 
             const orderPayload = {
+                customerId: customerId,
 
-                customerId:
+                items: cart.map(
+                    (item) => ({
+                        productId:
+                            String(item.id),
 
-                    customerId,
-
-                items:
-
-                    cart.map(
-                        (item) => ({
-
-                            productId:
-                                String(
-                                    item.id
-                                ),
-
-                            quantity:
-                                Number(
-                                    item.quantity
-                                )
-
-                        })
-                    ),
+                        quantity:
+                            Number(
+                                item.quantity
+                            )
+                    })
+                ),
 
                 shippingAddress:
                     shippingAddress.trim()
-
             };
-
 
             console.log(
                 "Order Payload:",
                 orderPayload
             );
 
+            const response = await fetch(
+                `${API_BASE_URL}/api/orders`,
+                {
+                    method: "POST",
 
-            const response =
-                await fetch(
-                    `${API_BASE_URL}/api/orders`,
-                    {
+                    headers:
+                        getAuthHeaders(),
 
-                        method: "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-
-                        },
-
-                        body:
-                            JSON.stringify(
-                                orderPayload
-                            )
-
-                    }
-                );
-
+                    body:
+                        JSON.stringify(
+                            orderPayload
+                        )
+                }
+            );
 
             const responseText =
                 await response.text();
 
+            let data = null;
 
-            if (!response.ok) {
-
-                throw new Error(
-                    responseText ||
-                    "Failed to place order."
-                );
-
+            try {
+                data = responseText
+                    ? JSON.parse(responseText)
+                    : null;
+            } catch {
+                data = responseText;
             }
 
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+                handleUnauthorized();
+                return;
+            }
 
-            const savedOrder =
-                responseText
-                    ? JSON.parse(
-                        responseText
-                    )
-                    : null;
-
+            if (!response.ok) {
+                throw new Error(
+                    typeof data === "string"
+                        ? data
+                        : data?.message ||
+                        "Failed to place order."
+                );
+            }
 
             console.log(
                 "Order Created:",
-                savedOrder
+                data
             );
-
-
-            // =================================================
-            // CLEAR CART
-            // =================================================
 
             setCart([]);
 
-
-            // =================================================
-            // CLOSE MODALS
-            // =================================================
-
-            setShowCheckout(
-                false
-            );
-
-            setShowCart(
-                false
-            );
-
-
-            // =================================================
-            // GO TO ORDERS
-            // =================================================
+            setShowCheckout(false);
+            setShowCart(false);
 
             setActiveSection(
                 "orders"
             );
 
-
-            // =================================================
-            // REFRESH ORDERS FROM MONGODB
-            // =================================================
-
             await fetchCustomerOrders();
-
 
             alert(
                 "Order placed successfully! 🎉"
             );
 
-
         } catch (error) {
-
             console.error(
                 "Place order error:",
                 error
@@ -922,19 +1044,13 @@ function CustomerDashboard() {
                 "Unable to place order."
             );
 
-
             alert(
                 "Failed to place order. Please try again."
             );
-
         } finally {
-
             setPlacingOrder(false);
-
         }
-
     };
-
 
     // =====================================================
     // CANCEL ORDER
@@ -943,140 +1059,128 @@ function CustomerDashboard() {
     const cancelOrder = async (
         orderId
     ) => {
-
         if (!orderId) {
-
             return;
-
         }
-
 
         const confirmCancel =
             window.confirm(
                 "Are you sure you want to cancel this order?"
             );
 
-
         if (!confirmCancel) {
-
             return;
-
         }
 
-
         try {
-
             setCancellingOrderId(
                 orderId
             );
 
             setErrorMessage("");
 
-
             const response =
                 await fetch(
                     `${API_BASE_URL}/api/orders/${orderId}/cancel`,
                     {
-
-                        method: "PATCH"
-
+                        method: "PATCH",
+                        headers:
+                            getAuthHeaders()
                     }
                 );
-
 
             const responseText =
                 await response.text();
 
+            let data = null;
 
-            if (!response.ok) {
-
-                throw new Error(
-                    responseText ||
-                    "Unable to cancel order."
-                );
-
+            try {
+                data = responseText
+                    ? JSON.parse(responseText)
+                    : null;
+            } catch {
+                data = responseText;
             }
 
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    typeof data === "string"
+                        ? data
+                        : data?.message ||
+                        "Unable to cancel order."
+                );
+            }
 
             const cancelledOrder =
-                responseText
-                    ? JSON.parse(
-                        responseText
-                    )
-                    : null;
+                data;
 
-
-            // Update order directly
-            if (cancelledOrder) {
-
+            if (
+                cancelledOrder &&
+                cancelledOrder.id
+            ) {
                 setOrders(
                     (previousOrders) =>
                         previousOrders.map(
                             (order) =>
-                                order.id ===
-                                cancelledOrder.id
+                                String(
+                                    order.id
+                                ) ===
+                                String(
+                                    cancelledOrder.id
+                                )
                                     ? cancelledOrder
                                     : order
                         )
                 );
-
             } else {
-
                 await fetchCustomerOrders();
-
             }
-
 
             alert(
                 "Order cancelled successfully."
             );
 
-
         } catch (error) {
-
             console.error(
                 "Cancel order error:",
                 error
             );
 
-
             alert(
                 error.message ||
                 "Unable to cancel order."
             );
-
         } finally {
-
             setCancellingOrderId(
                 null
             );
-
         }
-
     };
-
 
     // =====================================================
     // REORDER
     // =====================================================
 
-    const reorder = (
-        order
-    ) => {
-
+    const reorder = (order) => {
         if (
             !order ||
-            !order.items
+            !Array.isArray(order.items)
         ) {
-
             return;
-
         }
 
+        let addedAnyProduct = false;
 
         order.items.forEach(
             (orderItem) => {
-
                 const product =
                     products.find(
                         (item) =>
@@ -1088,115 +1192,88 @@ function CustomerDashboard() {
                             )
                     );
 
-
-                if (product) {
-
-                    const reorderProduct = {
-
-                        ...product,
-
-                        quantity:
-                            Number(
-                                orderItem.quantity
-                            )
-
-                    };
-
-
-                    setCart(
-                        (previousCart) => {
-
-                            const existing =
-                                previousCart.find(
-                                    (item) =>
-                                        String(
-                                            item.id
-                                        ) ===
-                                        String(
-                                            reorderProduct.id
-                                        )
-                                );
-
-
-                            if (existing) {
-
-                                return previousCart.map(
-                                    (item) =>
-                                        String(
-                                            item.id
-                                        ) ===
-                                        String(
-                                            reorderProduct.id
-                                        )
-                                            ? {
-                                                ...item,
-                                                quantity:
-                                                    item.quantity +
-                                                    reorderProduct.quantity
-                                            }
-                                            : item
-                                );
-
-                            }
-
-
-                            return [
-                                ...previousCart,
-                                reorderProduct
-                            ];
-
-                        }
-                    );
-
+                if (!product) {
+                    return;
                 }
 
+                addedAnyProduct = true;
+
+                const quantity =
+                    Number(
+                        orderItem.quantity || 1
+                    );
+
+                setCart(
+                    (previousCart) => {
+                        const existing =
+                            previousCart.find(
+                                (item) =>
+                                    String(
+                                        item.id
+                                    ) ===
+                                    String(
+                                        product.id
+                                    )
+                            );
+
+                        if (existing) {
+                            return previousCart.map(
+                                (item) =>
+                                    String(
+                                        item.id
+                                    ) ===
+                                    String(
+                                        product.id
+                                    )
+                                        ? {
+                                            ...item,
+                                            quantity:
+                                                Number(
+                                                    item.quantity
+                                                ) +
+                                                quantity
+                                        }
+                                        : item
+                            );
+                        }
+
+                        return [
+                            ...previousCart,
+                            {
+                                ...product,
+                                quantity
+                            }
+                        ];
+                    }
+                );
             }
         );
 
-
-        setShowCart(true);
-
+        if (addedAnyProduct) {
+            setShowCart(true);
+        } else {
+            alert(
+                "The products from this order are no longer available."
+            );
+        }
     };
-
 
     // =====================================================
     // LOGOUT
     // =====================================================
 
     const handleLogout = () => {
-
-        localStorage.removeItem(
-            "token"
-        );
-
-        localStorage.removeItem(
-            "role"
-        );
-
-        localStorage.removeItem(
-            "email"
-        );
-
-        localStorage.removeItem(
-            "firstName"
-        );
-
-        localStorage.removeItem(
-            "customerId"
-        );
-
-        localStorage.removeItem(
-            "userId"
-        );
-
-        localStorage.removeItem(
-            "id"
-        );
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+        localStorage.removeItem("firstName");
+        localStorage.removeItem("name");
+        localStorage.removeItem("customerId");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("id");
 
         navigate("/login");
-
     };
-
 
     // =====================================================
     // NAVIGATION
@@ -1205,13 +1282,9 @@ function CustomerDashboard() {
     const goToSection = (
         section
     ) => {
-
-        setActiveSection(
-            section
-        );
+        setActiveSection(section);
 
         setShowProfile(false);
-
         setShowNotifications(false);
 
         window.scrollTo({
@@ -1219,18 +1292,19 @@ function CustomerDashboard() {
             behavior: "smooth"
         });
 
-
         if (
             section === "orders" &&
             customerId
         ) {
-
             fetchCustomerOrders();
-
         }
 
+        if (
+            section === "home"
+        ) {
+            fetchProducts();
+        }
     };
-
 
     // =====================================================
     // ORDER DATE
@@ -1239,22 +1313,19 @@ function CustomerDashboard() {
     const formatOrderDate = (
         order
     ) => {
+        if (order?.createdAt) {
+            const date =
+                new Date(
+                    order.createdAt
+                );
 
-        if (
-            order.createdAt
-        ) {
-
-            return new Date(
-                order.createdAt
-            ).toLocaleString();
-
+            if (!Number.isNaN(date.getTime())) {
+                return date.toLocaleString();
+            }
         }
 
-
         return "Recently";
-
     };
-
 
     // =====================================================
     // ORDER TOTAL
@@ -1263,13 +1334,38 @@ function CustomerDashboard() {
     const getOrderTotal = (
         order
     ) => {
+        if (
+            order?.totalAmount !== undefined &&
+            order?.totalAmount !== null
+        ) {
+            return Number(
+                order.totalAmount
+            );
+        }
 
-        return Number(
-            order.totalAmount || 0
-        );
+        if (
+            Array.isArray(order?.items)
+        ) {
+            return order.items.reduce(
+                (total, item) =>
+                    total +
+                    Number(
+                        item.subtotal ??
+                        (
+                            Number(
+                                item.price || 0
+                            ) *
+                            Number(
+                                item.quantity || 0
+                            )
+                        )
+                    ),
+                0
+            );
+        }
 
+        return 0;
     };
-
 
     // =====================================================
     // STATUS CLASS
@@ -1278,23 +1374,17 @@ function CustomerDashboard() {
     const getStatusClass = (
         status
     ) => {
-
         if (!status) {
-
             return "";
-
         }
 
-
-        return status
+        return String(status)
             .toLowerCase()
             .replaceAll(
                 "_",
                 "-"
             );
-
     };
-
 
     // =====================================================
     // CAN CANCEL
@@ -1303,18 +1393,26 @@ function CustomerDashboard() {
     const canCancelOrder = (
         status
     ) => {
+        if (!status) {
+            return false;
+        }
+
+        const normalizedStatus =
+            String(status).toUpperCase();
 
         return (
-            status &&
-            status !== "DELIVERED" &&
-            status !== "CANCELLED"
+            normalizedStatus !==
+            "DELIVERED" &&
+            normalizedStatus !==
+            "CANCELLED"
         );
-
     };
 
+    // =====================================================
+    // RENDER
+    // =====================================================
 
     return (
-
         <div className="customer-dashboard">
 
             {/* =================================================
@@ -1329,13 +1427,11 @@ function CustomerDashboard() {
                         goToSection("home")
                     }
                 >
-
                     <div className="brand-icon">
                         🛍️
                     </div>
 
                     <div>
-
                         <strong>
                             DeluLu
                         </strong>
@@ -1343,11 +1439,8 @@ function CustomerDashboard() {
                         <span>
                             Cart
                         </span>
-
                     </div>
-
                 </div>
-
 
                 {/* SEARCH */}
 
@@ -1370,7 +1463,6 @@ function CustomerDashboard() {
 
                 </div>
 
-
                 {/* NAV ACTIONS */}
 
                 <div className="nav-actions">
@@ -1386,26 +1478,20 @@ function CustomerDashboard() {
                         🔔
                     </button>
 
-
                     <button
                         className="nav-icon-button cart-nav-button"
                         onClick={() =>
                             setShowCart(true)
                         }
                     >
-
                         🛒
 
                         {cartCount > 0 && (
-
                             <span className="cart-count">
                                 {cartCount}
                             </span>
-
                         )}
-
                     </button>
-
 
                     <button
                         className="profile-mini"
@@ -1415,28 +1501,22 @@ function CustomerDashboard() {
                             )
                         }
                     >
-
                         <div className="avatar">
-
                             {customerName
                                 .charAt(0)
                                 .toUpperCase()}
-
                         </div>
 
                         <span>
                             {customerName}
                         </span>
-
                     </button>
 
                 </div>
 
-
                 {/* NOTIFICATIONS */}
 
                 {showNotifications && (
-
                     <div className="notification-panel">
 
                         <h3>
@@ -1456,20 +1536,16 @@ function CustomerDashboard() {
                         </div>
 
                     </div>
-
                 )}
 
             </header>
-
 
             {/* =================================================
                 PROFILE SIDEBAR
             ================================================= */}
 
             {showProfile && (
-
                 <>
-
                     <div
                         className="profile-overlay"
                         onClick={() =>
@@ -1488,15 +1564,11 @@ function CustomerDashboard() {
                             ×
                         </button>
 
-
                         <div className="profile-avatar-large">
-
                             {customerName
                                 .charAt(0)
                                 .toUpperCase()}
-
                         </div>
-
 
                         <h2>
                             {customerName}
@@ -1506,17 +1578,13 @@ function CustomerDashboard() {
                             {customerEmail}
                         </p>
 
-
                         <div className="profile-status">
-
                             <span>
                                 ●
                             </span>
 
                             Active Customer
-
                         </div>
-
 
                         <div className="profile-menu">
 
@@ -1530,7 +1598,6 @@ function CustomerDashboard() {
                                 🏠 Dashboard
                             </button>
 
-
                             <button
                                 onClick={() =>
                                     goToSection(
@@ -1541,7 +1608,6 @@ function CustomerDashboard() {
                                 📦 My Orders
                             </button>
 
-
                             <button
                                 onClick={() =>
                                     goToSection(
@@ -1551,7 +1617,6 @@ function CustomerDashboard() {
                             >
                                 ❤️ My Wishlist
                             </button>
-
 
                             <button
                                 onClick={() =>
@@ -1565,7 +1630,6 @@ function CustomerDashboard() {
 
                         </div>
 
-
                         <button
                             className="sidebar-logout"
                             onClick={
@@ -1576,18 +1640,14 @@ function CustomerDashboard() {
                         </button>
 
                     </aside>
-
                 </>
-
             )}
-
 
             {/* =================================================
                 ERROR MESSAGE
             ================================================= */}
 
             {errorMessage && (
-
                 <div className="dashboard-error">
 
                     ⚠️ {errorMessage}
@@ -1601,9 +1661,7 @@ function CustomerDashboard() {
                     </button>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 MAIN CONTENT
@@ -1616,7 +1674,6 @@ function CustomerDashboard() {
                 ================================================= */}
 
                 {activeSection === "home" && (
-
                     <>
 
                         {/* HERO */}
@@ -1665,7 +1722,6 @@ function CustomerDashboard() {
 
                             </div>
 
-
                             <div className="hero-visual">
 
                                 <div className="hero-glow"></div>
@@ -1676,37 +1732,28 @@ function CustomerDashboard() {
                                 />
 
                                 <div className="floating-card card-one">
-
                                     🛍️
-
                                     <span>
                                         Happy Shopping
                                     </span>
-
                                 </div>
 
-
                                 <div className="floating-card card-two">
-
                                     ⭐
-
                                     <span>
                                         Top Rated
                                     </span>
-
                                 </div>
 
                             </div>
 
                         </section>
 
-
                         {/* STATS */}
 
                         <section className="customer-stats">
 
                             <div className="stat-card">
-
                                 <span>
                                     🛒
                                 </span>
@@ -1718,12 +1765,9 @@ function CustomerDashboard() {
                                 <p>
                                     Cart Items
                                 </p>
-
                             </div>
 
-
                             <div className="stat-card">
-
                                 <span>
                                     ❤️
                                 </span>
@@ -1735,12 +1779,9 @@ function CustomerDashboard() {
                                 <p>
                                     Wishlist
                                 </p>
-
                             </div>
 
-
                             <div className="stat-card">
-
                                 <span>
                                     📦
                                 </span>
@@ -1752,12 +1793,9 @@ function CustomerDashboard() {
                                 <p>
                                     Orders
                                 </p>
-
                             </div>
 
-
                             <div className="stat-card">
-
                                 <span>
                                     🎁
                                 </span>
@@ -1769,11 +1807,9 @@ function CustomerDashboard() {
                                 <p>
                                     Rewards
                                 </p>
-
                             </div>
 
                         </section>
-
 
                         {/* CATEGORIES */}
 
@@ -1791,12 +1827,10 @@ function CustomerDashboard() {
 
                             </div>
 
-
                             <div className="category-list">
 
                                 {categories.map(
                                     (category) => (
-
                                         <button
                                             key={
                                                 category.name
@@ -1808,7 +1842,6 @@ function CustomerDashboard() {
                                                     : "category-card"
                                             }
                                             onClick={() => {
-
                                                 setSelectedCategory(
                                                     category.name
                                                 );
@@ -1821,10 +1854,8 @@ function CustomerDashboard() {
                                                         behavior:
                                                             "smooth"
                                                     });
-
                                             }}
                                         >
-
                                             <span>
                                                 {
                                                     category.icon
@@ -1834,16 +1865,13 @@ function CustomerDashboard() {
                                             {
                                                 category.name
                                             }
-
                                         </button>
-
                                     )
                                 )}
 
                             </div>
 
                         </section>
-
 
                         {/* PRODUCTS */}
 
@@ -1864,9 +1892,7 @@ function CustomerDashboard() {
 
                             </div>
 
-
                             {productsLoading ? (
-
                                 <div className="empty-dashboard">
 
                                     <div>
@@ -1883,17 +1909,12 @@ function CustomerDashboard() {
                                     </p>
 
                                 </div>
-
                             ) : (
-
                                 <div className="product-grid">
 
-                                    {filteredProducts.length >
-                                    0 ? (
-
+                                    {filteredProducts.length > 0 ? (
                                         filteredProducts.map(
                                             (product) => {
-
                                                 const isWishlisted =
                                                     wishlist.some(
                                                         (item) =>
@@ -1905,15 +1926,15 @@ function CustomerDashboard() {
                                                             )
                                                     );
 
-
                                                 return (
-
                                                     <div
                                                         className="product-card"
                                                         key={
                                                             product.id
                                                         }
                                                     >
+
+                                                        {/* PRODUCT IMAGE */}
 
                                                         <div className="product-image-container">
 
@@ -1925,8 +1946,13 @@ function CustomerDashboard() {
                                                                     product.name
                                                                 }
                                                                 className="product-image"
+                                                                onError={(
+                                                                    event
+                                                                ) => {
+                                                                    event.currentTarget.src =
+                                                                        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800";
+                                                                }}
                                                             />
-
 
                                                             <button
                                                                 className={
@@ -1940,15 +1966,14 @@ function CustomerDashboard() {
                                                                     )
                                                                 }
                                                             >
-                                                                {
-                                                                    isWishlisted
-                                                                        ? "♥"
-                                                                        : "♡"
-                                                                }
+                                                                {isWishlisted
+                                                                    ? "♥"
+                                                                    : "♡"}
                                                             </button>
 
                                                         </div>
 
+                                                        {/* PRODUCT DETAILS */}
 
                                                         <div className="product-details">
 
@@ -1964,21 +1989,16 @@ function CustomerDashboard() {
                                                                 }
                                                             </h3>
 
-
                                                             <p className="seller-name">
-
                                                                 Sold by{" "}
-
                                                                 {
                                                                     product.seller
                                                                 }
-
                                                             </p>
-
 
                                                             <div className="rating">
 
-                                                                ⭐
+                                                                ⭐{" "}
                                                                 {
                                                                     product.rating
                                                                 }
@@ -1993,22 +2013,42 @@ function CustomerDashboard() {
 
                                                             </div>
 
+                                                            <div
+                                                                className="product-stock"
+                                                                style={{
+                                                                    fontSize:
+                                                                        "13px",
+                                                                    marginTop:
+                                                                        "5px"
+                                                                }}
+                                                            >
+                                                                {Number(
+                                                                    product.stock
+                                                                ) > 0 ? (
+                                                                    <span>
+                                                                        🟢{" "}
+                                                                        {
+                                                                            product.stock
+                                                                        }{" "}
+                                                                        in stock
+                                                                    </span>
+                                                                ) : (
+                                                                    <span>
+                                                                        🔴 Out of stock
+                                                                    </span>
+                                                                )}
+                                                            </div>
 
                                                             <div className="product-bottom">
 
                                                                 <strong>
-
                                                                     $
-                                                                    {
-                                                                        Number(
-                                                                            product.price
-                                                                        ).toFixed(
-                                                                            2
-                                                                        )
-                                                                    }
-
+                                                                    {Number(
+                                                                        product.price
+                                                                    ).toFixed(
+                                                                        2
+                                                                    )}
                                                                 </strong>
-
 
                                                                 <div className="product-actions">
 
@@ -2023,9 +2063,14 @@ function CustomerDashboard() {
                                                                         👁️
                                                                     </button>
 
-
                                                                     <button
                                                                         className="add-cart-button"
+                                                                        disabled={
+                                                                            Number(
+                                                                                product.stock
+                                                                            ) <=
+                                                                            0
+                                                                        }
                                                                         onClick={() =>
                                                                             addToCart(
                                                                                 product
@@ -2042,14 +2087,10 @@ function CustomerDashboard() {
                                                         </div>
 
                                                     </div>
-
                                                 );
-
                                             }
                                         )
-
                                     ) : (
-
                                         <div className="empty-state">
 
                                             <div>
@@ -2066,27 +2107,35 @@ function CustomerDashboard() {
                                                 category.
                                             </p>
 
-                                        </div>
+                                            <button
+                                                className="secondary-button"
+                                                onClick={() => {
+                                                    setSearch("");
+                                                    setSelectedCategory(
+                                                        "All"
+                                                    );
+                                                    fetchProducts();
+                                                }}
+                                            >
+                                                Refresh Products
+                                            </button>
 
+                                        </div>
                                     )}
 
                                 </div>
-
                             )}
 
                         </section>
 
                     </>
-
                 )}
-
 
                 {/* =================================================
                     ORDERS
                 ================================================= */}
 
                 {activeSection === "orders" && (
-
                     <section className="dashboard-section">
 
                         <div className="section-heading">
@@ -2101,9 +2150,7 @@ function CustomerDashboard() {
 
                         </div>
 
-
                         {ordersLoading ? (
-
                             <div className="empty-dashboard">
 
                                 <div>
@@ -2115,9 +2162,7 @@ function CustomerDashboard() {
                                 </h3>
 
                             </div>
-
                         ) : orders.length === 0 ? (
-
                             <div className="empty-dashboard">
 
                                 <div>
@@ -2145,14 +2190,11 @@ function CustomerDashboard() {
                                 </button>
 
                             </div>
-
                         ) : (
-
                             <div className="orders-list">
 
                                 {orders.map(
                                     (order) => (
-
                                         <div
                                             className="order-card"
                                             key={
@@ -2160,20 +2202,15 @@ function CustomerDashboard() {
                                             }
                                         >
 
-                                            {/* ORDER HEADER */}
-
                                             <div className="order-header">
 
                                                 <div>
 
                                                     <strong>
-
                                                         Order #{" "}
-
                                                         {
                                                             order.id
                                                         }
-
                                                     </strong>
 
                                                     <p>
@@ -2185,7 +2222,6 @@ function CustomerDashboard() {
                                                     </p>
 
                                                 </div>
-
 
                                                 <span
                                                     className={
@@ -2201,122 +2237,108 @@ function CustomerDashboard() {
 
                                             </div>
 
-
-                                            {/* SHIPPING ADDRESS */}
-
                                             {order.shippingAddress && (
-
                                                 <div className="order-address">
 
                                                     📍
 
                                                     <span>
-
                                                         {
                                                             order.shippingAddress
                                                         }
-
                                                     </span>
 
                                                 </div>
-
                                             )}
-
-
-                                            {/* ORDER ITEMS */}
 
                                             <div className="order-items">
 
-                                                {order.items?.map(
-                                                    (
-                                                        item,
-                                                        index
-                                                    ) => (
+                                                {Array.isArray(
+                                                    order.items
+                                                ) &&
+                                                    order.items.map(
+                                                        (
+                                                            item,
+                                                            index
+                                                        ) => (
+                                                            <div
+                                                                className="order-item"
+                                                                key={
+                                                                    `${order.id}-${item.productId}-${index}`
+                                                                }
+                                                            >
 
-                                                        <div
-                                                            className="order-item"
-                                                            key={
-                                                                `${order.id}-${item.productId}-${index}`
-                                                            }
-                                                        >
+                                                                <div className="order-product-image">
+                                                                    <span>
+                                                                        🛍️
+                                                                    </span>
+                                                                </div>
 
-                                                            <div className="order-product-image">
+                                                                <div>
 
-                                                                <span>
-                                                                    🛍️
-                                                                </span>
+                                                                    <strong>
+                                                                        {
+                                                                            item.productName
+                                                                        }
+                                                                    </strong>
 
-                                                            </div>
+                                                                    <p>
+                                                                        Qty:{" "}
+                                                                        {
+                                                                            item.quantity
+                                                                        }
+                                                                    </p>
 
-
-                                                            <div>
-
-                                                                <strong>
-                                                                    {
-                                                                        item.productName
-                                                                    }
-                                                                </strong>
-
-                                                                <p>
-                                                                    Qty:{" "}
-                                                                    {
-                                                                        item.quantity
-                                                                    }
-                                                                </p>
-
-                                                                <small>
-                                                                    Price: $
-                                                                    {
-                                                                        Number(
-                                                                            item.price || 0
+                                                                    <small>
+                                                                        Price: $
+                                                                        {Number(
+                                                                            item.price ||
+                                                                            0
                                                                         ).toFixed(
                                                                             2
+                                                                        )}
+                                                                    </small>
+
+                                                                </div>
+
+                                                                <strong className="order-item-subtotal">
+
+                                                                    $
+
+                                                                    {Number(
+                                                                        item.subtotal ??
+                                                                        (
+                                                                            Number(
+                                                                                item.price ||
+                                                                                0
+                                                                            ) *
+                                                                            Number(
+                                                                                item.quantity ||
+                                                                                0
+                                                                            )
                                                                         )
-                                                                    }
-                                                                </small>
-
-                                                            </div>
-
-
-                                                            <strong className="order-item-subtotal">
-
-                                                                $
-                                                                {
-                                                                    Number(
-                                                                        item.subtotal || 0
                                                                     ).toFixed(
                                                                         2
-                                                                    )
-                                                                }
+                                                                    )}
 
-                                                            </strong>
+                                                                </strong>
 
-                                                        </div>
-
-                                                    )
-                                                )}
+                                                            </div>
+                                                        )
+                                                    )}
 
                                             </div>
-
-
-                                            {/* ORDER FOOTER */}
 
                                             <div className="order-footer">
 
                                                 <strong>
-
                                                     Total: $
-
-                                                    {
-                                                        getOrderTotal(
-                                                            order
-                                                        ).toFixed(
-                                                            2
-                                                        )
-                                                    }
-
+                                                    {getOrderTotal(
+                                                        order
+                                                    ).toFixed(
+                                                        2
+                                                    )}
                                                 </strong>
-
 
                                                 <div className="order-actions">
 
@@ -2331,11 +2353,9 @@ function CustomerDashboard() {
                                                         🔁 Reorder
                                                     </button>
 
-
                                                     {canCancelOrder(
                                                         order.status
                                                     ) && (
-
                                                         <button
                                                             className="cancel-order-button"
                                                             disabled={
@@ -2348,14 +2368,11 @@ function CustomerDashboard() {
                                                                 )
                                                             }
                                                         >
-
                                                             {cancellingOrderId ===
                                                             order.id
                                                                 ? "Cancelling..."
                                                                 : "Cancel Order"}
-
                                                         </button>
-
                                                     )}
 
                                                 </div>
@@ -2363,25 +2380,20 @@ function CustomerDashboard() {
                                             </div>
 
                                         </div>
-
                                     )
                                 )}
 
                             </div>
-
                         )}
 
                     </section>
-
                 )}
-
 
                 {/* =================================================
                     WISHLIST
                 ================================================= */}
 
                 {activeSection === "wishlist" && (
-
                     <section className="dashboard-section">
 
                         <div className="section-heading">
@@ -2396,9 +2408,7 @@ function CustomerDashboard() {
 
                         </div>
 
-
                         {wishlist.length === 0 ? (
-
                             <div className="empty-dashboard">
 
                                 <div>
@@ -2415,14 +2425,11 @@ function CustomerDashboard() {
                                 </p>
 
                             </div>
-
                         ) : (
-
                             <div className="product-grid">
 
                                 {wishlist.map(
                                     (product) => (
-
                                         <div
                                             className="product-card"
                                             key={
@@ -2442,7 +2449,6 @@ function CustomerDashboard() {
                                                     className="product-image"
                                                 />
 
-
                                                 <button
                                                     className="wishlist-button wishlisted"
                                                     onClick={() =>
@@ -2455,7 +2461,6 @@ function CustomerDashboard() {
                                                 </button>
 
                                             </div>
-
 
                                             <div className="product-details">
 
@@ -2471,26 +2476,32 @@ function CustomerDashboard() {
                                                     }
                                                 </h3>
 
+                                                <p className="seller-name">
+                                                    Sold by{" "}
+                                                    {
+                                                        product.seller
+                                                    }
+                                                </p>
 
                                                 <div className="product-bottom">
 
                                                     <strong>
-
                                                         $
-
-                                                        {
-                                                            Number(
-                                                                product.price
-                                                            ).toFixed(
-                                                                2
-                                                            )
-                                                        }
-
+                                                        {Number(
+                                                            product.price
+                                                        ).toFixed(
+                                                            2
+                                                        )}
                                                     </strong>
-
 
                                                     <button
                                                         className="add-cart-button"
+                                                        disabled={
+                                                            Number(
+                                                                product.stock
+                                                            ) <=
+                                                            0
+                                                        }
                                                         onClick={() =>
                                                             addToCart(
                                                                 product
@@ -2505,36 +2516,29 @@ function CustomerDashboard() {
                                             </div>
 
                                         </div>
-
                                     )
                                 )}
 
                             </div>
-
                         )}
 
                     </section>
-
                 )}
 
             </main>
-
 
             {/* =================================================
                 CART DRAWER
             ================================================= */}
 
             {showCart && (
-
                 <>
-
                     <div
                         className="cart-overlay"
                         onClick={() =>
                             setShowCart(false)
                         }
                     />
-
 
                     <aside className="cart-drawer">
 
@@ -2554,9 +2558,7 @@ function CustomerDashboard() {
 
                         </div>
 
-
                         {cart.length === 0 ? (
-
                             <div className="empty-cart">
 
                                 <div>
@@ -2572,16 +2574,12 @@ function CustomerDashboard() {
                                 </p>
 
                             </div>
-
                         ) : (
-
                             <>
-
                                 <div className="cart-items">
 
                                     {cart.map(
                                         (item) => (
-
                                             <div
                                                 className="cart-item"
                                                 key={
@@ -2598,7 +2596,6 @@ function CustomerDashboard() {
                                                     }
                                                 />
 
-
                                                 <div className="cart-item-info">
 
                                                     <h4>
@@ -2607,21 +2604,14 @@ function CustomerDashboard() {
                                                         }
                                                     </h4>
 
-
                                                     <strong>
-
                                                         $
-
-                                                        {
-                                                            Number(
-                                                                item.price
-                                                            ).toFixed(
-                                                                2
-                                                            )
-                                                        }
-
+                                                        {Number(
+                                                            item.price
+                                                        ).toFixed(
+                                                            2
+                                                        )}
                                                     </strong>
-
 
                                                     <div className="quantity-controls">
 
@@ -2636,13 +2626,11 @@ function CustomerDashboard() {
                                                             −
                                                         </button>
 
-
                                                         <span>
                                                             {
                                                                 item.quantity
                                                             }
                                                         </span>
-
 
                                                         <button
                                                             onClick={() =>
@@ -2654,7 +2642,6 @@ function CustomerDashboard() {
                                                         >
                                                             +
                                                         </button>
-
 
                                                         <button
                                                             className="remove-item"
@@ -2672,12 +2659,10 @@ function CustomerDashboard() {
                                                 </div>
 
                                             </div>
-
                                         )
                                     )}
 
                                 </div>
-
 
                                 <div className="cart-footer">
 
@@ -2688,19 +2673,13 @@ function CustomerDashboard() {
                                         </span>
 
                                         <strong>
-
                                             $
-
-                                            {
-                                                cartTotal.toFixed(
-                                                    2
-                                                )
-                                            }
-
+                                            {cartTotal.toFixed(
+                                                2
+                                            )}
                                         </strong>
 
                                     </div>
-
 
                                     <button
                                         className="checkout-button"
@@ -2714,22 +2693,17 @@ function CustomerDashboard() {
                                 </div>
 
                             </>
-
                         )}
 
                     </aside>
-
                 </>
-
             )}
-
 
             {/* =================================================
                 PRODUCT DETAILS MODAL
             ================================================= */}
 
             {selectedProduct && (
-
                 <div className="modal-overlay">
 
                     <div className="product-modal">
@@ -2745,7 +2719,6 @@ function CustomerDashboard() {
                             ×
                         </button>
 
-
                         <img
                             src={
                                 selectedProduct.image
@@ -2755,7 +2728,6 @@ function CustomerDashboard() {
                             }
                         />
 
-
                         <div className="modal-content">
 
                             <span>
@@ -2764,13 +2736,18 @@ function CustomerDashboard() {
                                 }
                             </span>
 
-
                             <h2>
                                 {
                                     selectedProduct.name
                                 }
                             </h2>
 
+                            <p className="seller-name">
+                                Sold by{" "}
+                                {
+                                    selectedProduct.seller
+                                }
+                            </p>
 
                             <div className="rating">
 
@@ -2788,33 +2765,39 @@ function CustomerDashboard() {
 
                             </div>
 
-
                             <p>
                                 {
                                     selectedProduct.description
                                 }
                             </p>
 
+                            <p>
+                                Stock:{" "}
+                                <strong>
+                                    {
+                                        selectedProduct.stock
+                                    }
+                                </strong>
+                            </p>
 
                             <h3>
-
                                 $
-
-                                {
-                                    Number(
-                                        selectedProduct.price
-                                    ).toFixed(
-                                        2
-                                    )
-                                }
-
+                                {Number(
+                                    selectedProduct.price
+                                ).toFixed(
+                                    2
+                                )}
                             </h3>
-
 
                             <button
                                 className="primary-button full-button"
+                                disabled={
+                                    Number(
+                                        selectedProduct.stock
+                                    ) <=
+                                    0
+                                }
                                 onClick={() => {
-
                                     addToCart(
                                         selectedProduct
                                     );
@@ -2822,10 +2805,13 @@ function CustomerDashboard() {
                                     setSelectedProduct(
                                         null
                                     );
-
                                 }}
                             >
-                                🛒 Add to Cart
+                                {Number(
+                                    selectedProduct.stock
+                                ) > 0
+                                    ? "🛒 Add to Cart"
+                                    : "Out of Stock"}
                             </button>
 
                         </div>
@@ -2833,16 +2819,13 @@ function CustomerDashboard() {
                     </div>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 CHECKOUT MODAL
             ================================================= */}
 
             {showCheckout && (
-
                 <div className="modal-overlay">
 
                     <div className="checkout-modal">
@@ -2858,24 +2841,18 @@ function CustomerDashboard() {
                             ×
                         </button>
 
-
                         <div className="checkout-icon">
                             💳
                         </div>
-
 
                         <h2>
                             Confirm Your Order
                         </h2>
 
-
                         <p>
                             Enter your shipping address
                             and confirm your order.
                         </p>
-
-
-                        {/* SHIPPING ADDRESS */}
 
                         <div className="checkout-address">
 
@@ -2898,7 +2875,6 @@ function CustomerDashboard() {
 
                         </div>
 
-
                         <div className="checkout-summary">
 
                             <span>
@@ -2911,7 +2887,6 @@ function CustomerDashboard() {
 
                         </div>
 
-
                         <div className="checkout-summary">
 
                             <span>
@@ -2919,19 +2894,13 @@ function CustomerDashboard() {
                             </span>
 
                             <strong className="checkout-total">
-
                                 $
-
-                                {
-                                    cartTotal.toFixed(
-                                        2
-                                    )
-                                }
-
+                                {cartTotal.toFixed(
+                                    2
+                                )}
                             </strong>
 
                         </div>
-
 
                         <div className="checkout-actions">
 
@@ -2949,7 +2918,6 @@ function CustomerDashboard() {
                                 Cancel
                             </button>
 
-
                             <button
                                 className="primary-button"
                                 disabled={
@@ -2959,11 +2927,9 @@ function CustomerDashboard() {
                                     placeOrder
                                 }
                             >
-
                                 {placingOrder
                                     ? "Placing Order..."
                                     : "Confirm Order"}
-
                             </button>
 
                         </div>
@@ -2971,16 +2937,13 @@ function CustomerDashboard() {
                     </div>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 EDIT PROFILE MODAL
             ================================================= */}
 
             {showEditProfile && (
-
                 <div className="modal-overlay">
 
                     <div className="profile-modal">
@@ -2996,24 +2959,21 @@ function CustomerDashboard() {
                             ×
                         </button>
 
-
                         <div className="profile-avatar-large">
-
                             {customerName
                                 .charAt(0)
                                 .toUpperCase()}
-
                         </div>
-
 
                         <h2>
                             Edit Profile
                         </h2>
 
-
                         <input
                             type="text"
-                            value={customerName}
+                            value={
+                                customerName
+                            }
                             onChange={(event) =>
                                 setCustomerName(
                                     event.target.value
@@ -3022,18 +2982,17 @@ function CustomerDashboard() {
                             placeholder="Your name"
                         />
 
-
                         <input
                             type="email"
-                            value={customerEmail}
+                            value={
+                                customerEmail
+                            }
                             disabled
                         />
-
 
                         <button
                             className="primary-button full-button"
                             onClick={() => {
-
                                 localStorage.setItem(
                                     "firstName",
                                     customerName
@@ -3042,7 +3001,6 @@ function CustomerDashboard() {
                                 setShowEditProfile(
                                     false
                                 );
-
                             }}
                         >
                             Save Profile
@@ -3051,9 +3009,7 @@ function CustomerDashboard() {
                     </div>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 FOOTER
@@ -3077,9 +3033,7 @@ function CustomerDashboard() {
             </footer>
 
         </div>
-
     );
-
 }
 
 export default CustomerDashboard;
