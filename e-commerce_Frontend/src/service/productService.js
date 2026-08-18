@@ -14,7 +14,7 @@ export const addProduct = async (product) => {
     return response.data;
 };
 
-
+    
 // =====================================================
 // GET ALL PRODUCTS
 // =====================================================

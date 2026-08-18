@@ -252,15 +252,90 @@ public class OrderServiceImpl implements OrderService {
     // =====================================================
     // GET SELLER ORDERS
     // =====================================================
-
     @Override
-    public List<Order> getOrdersBySeller(
-            String sellerId
-    ) {
+public List<Order> getOrdersBySeller(
+        String sellerId
+) {
 
-        return orderRepository
-                .findByItemsSellerId(sellerId);
+    if (sellerId == null || sellerId.isBlank()) {
+        throw new RuntimeException(
+                "Seller ID is required."
+        );
     }
+
+    List<Order> orders =
+            orderRepository.findByItemsSellerId(
+                    sellerId
+            );
+
+    return orders.stream()
+            .map(order -> {
+
+                // Keep only this seller's items
+                List<OrderItem> sellerItems =
+                        order.getItems()
+                                .stream()
+                                .filter(item ->
+                                        sellerId.equals(
+                                                item.getSellerId()
+                                        )
+                                )
+                                .toList();
+
+                // Create a seller-specific view
+                Order sellerOrder = new Order();
+
+                sellerOrder.setId(
+                        order.getId()
+                );
+
+                sellerOrder.setCustomerId(
+                        order.getCustomerId()
+                );
+
+                sellerOrder.setItems(
+                        sellerItems
+                );
+
+                sellerOrder.setShippingAddress(
+                        order.getShippingAddress()
+                );
+
+                sellerOrder.setStatus(
+                        order.getStatus()
+                );
+
+                sellerOrder.setCreatedAt(
+                        order.getCreatedAt()
+                );
+
+                sellerOrder.setUpdatedAt(
+                        order.getUpdatedAt()
+                );
+
+                // Calculate seller-specific total
+                BigDecimal sellerTotal =
+                        sellerItems.stream()
+                                .map(item ->
+                                        item.getSubtotal() != null
+                                                ? item.getSubtotal()
+                                                : BigDecimal.ZERO
+                                )
+                                .reduce(
+                                        BigDecimal.ZERO,
+                                        BigDecimal::add
+                                );
+
+                sellerOrder.setTotalAmount(
+                        sellerTotal
+                );
+
+                return sellerOrder;
+
+            })
+            .toList();
+}
+    
 
     // =====================================================
     // UPDATE ORDER STATUS
