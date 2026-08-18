@@ -100,43 +100,48 @@ function Login() {
                 response.email || formData.email
             );
 
-
             // =================================================
-            // SAVE SELLER ID
-            // =================================================
-            // IMPORTANT:
-            // Backend response field is userId,
-            // NOT id.
-            // =================================================
+// SAVE USER ID
+// =================================================
 
-            if (userRole === "SELLER") {
+if (!response.userId) {
 
-                if (!response.userId) {
+    console.error(
+        "❌ User ID missing from login response:",
+        response
+    );
 
-                    console.error(
-                        "❌ Seller ID missing from login response:",
-                        response
-                    );
+    setMessage(
+        "User ID not received from server. Please try again."
+    );
 
-                    setMessage(
-                        "Seller ID not received from server. Please try again."
-                    );
+    return;
+}
 
-                    return;
-                }
+if (userRole === "SELLER") {
 
+    localStorage.setItem(
+        "sellerId",
+        response.userId
+    );
 
-                localStorage.setItem(
-                    "sellerId",
-                    response.userId
-                );
+    console.log(
+        "✅ Seller ID saved:",
+        response.userId
+    );
 
+} else if (userRole === "CUSTOMER") {
 
-                console.log(
-                    "✅ Seller ID saved:",
-                    response.userId
-                );
-            }
+    localStorage.setItem(
+        "customerId",
+        response.userId
+    );
+
+    console.log(
+        "✅ Customer ID saved:",
+        response.userId
+    );
+}
 
 
             // =================================================
