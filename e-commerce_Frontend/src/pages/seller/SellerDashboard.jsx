@@ -120,8 +120,6 @@ function SellerDashboard() {
         }
     };
 
-    // Load ALL marketplace products.
-    // This is intentionally different from getProductsBySeller().
     const loadAllMarketplaceProducts = async () => {
         try {
             setLoadingProducts(true);
