@@ -8,9 +8,6 @@ function ResetPassword() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    // Get token from URL
-    // Example:
-    // /reset-password?token=abc123
     const token = searchParams.get("token");
 
     const [newPassword, setNewPassword] = useState("");
