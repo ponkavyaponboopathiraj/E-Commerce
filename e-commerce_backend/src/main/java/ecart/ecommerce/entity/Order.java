@@ -30,6 +30,9 @@ public class Order {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+    private String customerName;
+private String customerEmail;
+private String customerPhone;
 
     public Order() {
     }
@@ -97,4 +100,27 @@ public class Order {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+    public String getCustomerName() {
+    return customerName;
+}
+
+public void setCustomerName(String customerName) {
+    this.customerName = customerName;
+}
+
+public String getCustomerEmail() {
+    return customerEmail;
+}
+
+public void setCustomerEmail(String customerEmail) {
+    this.customerEmail = customerEmail;
+}
+
+public String getCustomerPhone() {
+    return customerPhone;
+}
+
+public void setCustomerPhone(String customerPhone) {
+    this.customerPhone = customerPhone;
+}
 }
