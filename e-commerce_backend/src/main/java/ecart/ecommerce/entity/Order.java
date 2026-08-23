@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Document(collection = "orders")
 public class Order {
 
@@ -18,6 +17,11 @@ public class Order {
     private String id;
 
     private String customerId;
+
+    // Customer snapshot
+    private String customerName;
+    private String customerEmail;
+    private String customerPhone;
 
     private List<OrderItem> items = new ArrayList<>();
 
@@ -30,12 +34,11 @@ public class Order {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-    private String customerName;
-private String customerEmail;
-private String customerPhone;
+
 
     public Order() {
     }
+
 
     public String getId() {
         return id;
@@ -45,6 +48,7 @@ private String customerPhone;
         this.id = id;
     }
 
+
     public String getCustomerId() {
         return customerId;
     }
@@ -52,6 +56,34 @@ private String customerPhone;
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
+
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+
 
     public List<OrderItem> getItems() {
         return items;
@@ -61,6 +93,7 @@ private String customerPhone;
         this.items = items;
     }
 
+
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
@@ -68,6 +101,7 @@ private String customerPhone;
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
+
 
     public String getShippingAddress() {
         return shippingAddress;
@@ -77,6 +111,7 @@ private String customerPhone;
         this.shippingAddress = shippingAddress;
     }
 
+
     public OrderStatus getStatus() {
         return status;
     }
@@ -84,6 +119,7 @@ private String customerPhone;
     public void setStatus(OrderStatus status) {
         this.status = status;
     }
+
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -93,6 +129,7 @@ private String customerPhone;
         this.createdAt = createdAt;
     }
 
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
@@ -100,27 +137,4 @@ private String customerPhone;
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    public String getCustomerName() {
-    return customerName;
-}
-
-public void setCustomerName(String customerName) {
-    this.customerName = customerName;
-}
-
-public String getCustomerEmail() {
-    return customerEmail;
-}
-
-public void setCustomerEmail(String customerEmail) {
-    this.customerEmail = customerEmail;
-}
-
-public String getCustomerPhone() {
-    return customerPhone;
-}
-
-public void setCustomerPhone(String customerPhone) {
-    this.customerPhone = customerPhone;
-}
 }
