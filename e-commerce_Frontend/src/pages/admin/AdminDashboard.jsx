@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AdminUserManagement from "./AdminUserManagement";
+import AdminProductManagement from "./AdminProductManagement";
 import PendingSellerRequests from "./PendingSellerRequests";
 
 import "./AdminDashboard.css";
@@ -179,80 +180,92 @@ function AdminDashboard() {
 
     const renderModule = () => {
 
-        // -----------------------------------------------------
-        // USERS
-        // -----------------------------------------------------
+    // -----------------------------------------------------
+    // USERS
+    // -----------------------------------------------------
 
-        if (activeMenu === "Users") {
-
-            return (
-                <AdminUserManagement />
-            );
-        }
-
-
-        // -----------------------------------------------------
-        // SELLER REQUESTS
-        // -----------------------------------------------------
-
-        if (activeMenu === "Seller Requests") {
-
-            return (
-                <PendingSellerRequests />
-            );
-        }
-
-
-        // -----------------------------------------------------
-        // OTHER MODULES
-        // -----------------------------------------------------
-
-        const selectedItem = menuItems.find(
-            (item) =>
-                item.name === activeMenu
-        );
-
+    if (activeMenu === "Users") {
 
         return (
-
-            <section className="module-placeholder">
-
-                <div className="placeholder-icon">
-
-                    {selectedItem?.icon}
-
-                </div>
-
-
-                <h2>
-                    {activeMenu} Management
-                </h2>
-
-
-                <p>
-
-                    The{" "}
-                    {activeMenu.toLowerCase()}{" "}
-                    management module is ready to be
-                    connected with your backend API.
-
-                </p>
-
-
-                <button
-                    className="admin-primary-button"
-                    onClick={() =>
-                        setActiveMenu("Dashboard")
-                    }
-                >
-
-                    ← Back to Dashboard
-
-                </button>
-
-            </section>
+            <AdminUserManagement />
         );
-    };
+    }
+
+
+    // -----------------------------------------------------
+    // SELLER REQUESTS
+    // -----------------------------------------------------
+
+    if (activeMenu === "Seller Requests") {
+
+        return (
+            <PendingSellerRequests />
+        );
+    }
+
+
+    // -----------------------------------------------------
+    // PRODUCTS
+    // -----------------------------------------------------
+
+    if (activeMenu === "Products") {
+
+        return (
+            <AdminProductManagement />
+        );
+    }
+
+
+    // -----------------------------------------------------
+    // OTHER MODULES
+    // -----------------------------------------------------
+
+    const selectedItem = menuItems.find(
+        (item) =>
+            item.name === activeMenu
+    );
+
+
+    return (
+
+        <section className="module-placeholder">
+
+            <div className="placeholder-icon">
+
+                {selectedItem?.icon}
+
+            </div>
+
+
+            <h2>
+                {activeMenu} Management
+            </h2>
+
+
+            <p>
+
+                The{" "}
+                {activeMenu.toLowerCase()}{" "}
+                management module is ready to be
+                connected with your backend API.
+
+            </p>
+
+
+            <button
+                className="admin-primary-button"
+                onClick={() =>
+                    setActiveMenu("Dashboard")
+                }
+            >
+
+                ← Back to Dashboard
+
+            </button>
+
+        </section>
+    );
+};
 
 
     // =========================================================
@@ -1219,14 +1232,17 @@ function AdminDashboard() {
                     PAGE CONTENT
                 ================================================= */}
 
-                <div className="admin-page-content">
+               <div className="admin-page-content">
 
-                    {activeMenu === "Dashboard"
-                        ? renderDashboard()
-                        : renderModule()
-                    }
+                 {activeMenu === "Dashboard" ? (
+                 renderDashboard()
+            ) : (
+        renderModule()
+        
+    )}
 
-                </div>
+</div>
+
 
 
             </main>
