@@ -328,18 +328,30 @@ String token =
 
         return "Seller approved successfully.";
     }
-@Override
-public String rejectSeller(
-        UUID sellerId
-) {
+    @Override
+public String rejectSeller(UUID sellerId) {
 
     User seller =
             userRepository.findById(sellerId)
-            .orElseThrow(() ->
-                    new UserNotFoundException(
-                            "Seller not found."
-                    )
-            );
+                    .orElseThrow(() ->
+                            new UserNotFoundException(
+                                    "Seller not found."
+                            )
+                    );
+
+    if (seller.getRole() != Role.SELLER) {
+
+        throw new IllegalArgumentException(
+                "The selected user is not a seller."
+        );
+    }
+
+    if (seller.getStatus() != AccountStatus.PENDING_APPROVAL) {
+
+        throw new IllegalStateException(
+                "Seller is not waiting for approval."
+        );
+    }
 
     seller.setStatus(
             AccountStatus.REJECTED
@@ -350,15 +362,13 @@ public String rejectSeller(
     );
 
     emailService.sendSellerRejectedEmail(
-
             seller.getEmail(),
-
             seller.getFirstName()
-
     );
 
     return "Seller rejected successfully.";
 }
+
 
     @Override
     public ForgotPasswordResponse forgotPassword(
@@ -457,5 +467,6 @@ public List<User> getPendingSellers() {
             AccountStatus.PENDING_APPROVAL
     );
 }
+
 
 }
