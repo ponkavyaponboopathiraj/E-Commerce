@@ -1,10 +1,7 @@
 package ecart.ecommerce.entity;
-
 import ecart.ecommerce.enums.OrderStatus;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,17 +19,11 @@ public class Order {
     private String customerPhone;
     
     private List<OrderItem> items = new ArrayList<>();
-
     private BigDecimal totalAmount;
-
     private String shippingAddress;
-
     private OrderStatus status;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
 
     public Order() {
     }
@@ -64,8 +55,6 @@ public class Order {
         this.customerName = customerName;
     }
     
-
-
     public String getCustomerEmail() {
         return customerEmail;
     }
