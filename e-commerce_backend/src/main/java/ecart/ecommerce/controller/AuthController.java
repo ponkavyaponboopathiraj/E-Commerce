@@ -14,17 +14,22 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import ecart.ecommerce.entity.User;
 import org.springframework.web.bind.annotation.*;
+import ecart.ecommerce.dto.response.AdminUserResponse;
+import ecart.ecommerce.service.AdminService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
-    public AuthController(AuthService authService) {
+private final AdminService adminService;
 
-        this.authService = authService;
-    }
-
+public AuthController(AuthService authService,
+                      AdminService adminService) {
+    this.authService = authService;
+    this.adminService = adminService;
+}
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
             @Valid
@@ -127,4 +132,17 @@ public ResponseEntity<String> rejectSeller(
     );
 
 }
+ // ==========================================
+    // ADMIN - GET ALL USERS
+    // ==========================================
+
+    @GetMapping("/admin/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminUserResponse>> getAllUsers() {
+
+        List<AdminUserResponse> users =
+                adminService.getAllUsers();
+
+        return ResponseEntity.ok(users);
+    }
 }
