@@ -1,8 +1,6 @@
 package ecart.ecommerce.service;
-
 import ecart.ecommerce.entity.Order;
 import ecart.ecommerce.enums.OrderStatus;
-
 import java.util.List;
 
 public interface OrderService {

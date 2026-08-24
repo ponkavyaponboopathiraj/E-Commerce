@@ -46,14 +46,39 @@ public class OrderServiceImpl implements OrderService {
                     "Order cannot be null."
             );
         }
-
         if (order.getCustomerId() == null
-                || order.getCustomerId().isBlank()) {
+        || order.getCustomerId().isBlank()) {
 
-            throw new RuntimeException(
-                    "Customer ID is required."
-            );
-        }
+    throw new RuntimeException(
+            "Customer ID is required."
+    );
+}
+
+User customer =
+        userRepository.findById(
+                java.util.UUID.fromString(
+                        order.getCustomerId()
+                )
+        )
+        .orElseThrow(() ->
+                new RuntimeException(
+                        "Customer not found with id: "
+                                + order.getCustomerId()
+                )
+        );
+
+order.setCustomerName(
+        customer.getFirstName() + " "
+                + customer.getLastName()
+);
+
+order.setCustomerEmail(
+        customer.getEmail()
+);
+
+order.setCustomerPhone(
+        customer.getPhoneNumber()
+);
 
         if (order.getItems() == null
                 || order.getItems().isEmpty()) {
@@ -298,6 +323,18 @@ public List<Order> getOrdersBySeller(
                 sellerOrder.setCustomerId(
                         order.getCustomerId()
                 );
+                 
+                sellerOrder.setCustomerName(
+        order.getCustomerName()
+);
+
+sellerOrder.setCustomerEmail(
+        order.getCustomerEmail()
+);
+
+sellerOrder.setCustomerPhone(
+        order.getCustomerPhone()
+);
 
                 sellerOrder.setItems(
                         sellerItems

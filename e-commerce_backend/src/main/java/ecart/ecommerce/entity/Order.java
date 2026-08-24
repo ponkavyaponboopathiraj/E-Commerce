@@ -17,12 +17,10 @@ public class Order {
     private String id;
 
     private String customerId;
-
-    // Customer snapshot
     private String customerName;
     private String customerEmail;
     private String customerPhone;
-
+    
     private List<OrderItem> items = new ArrayList<>();
 
     private BigDecimal totalAmount;
