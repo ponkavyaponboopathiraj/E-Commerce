@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import AdminUserManagement from "./AdminUserManagement";
 import PendingSellerRequests from "./PendingSellerRequests";
-//import { getPendingSellers } from "../../services/adminService";
 
 import "./AdminDashboard.css";
 
@@ -10,12 +10,24 @@ function AdminDashboard() {
 
     const navigate = useNavigate();
 
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [activeMenu, setActiveMenu] = useState("Dashboard");
-    const [search, setSearch] = useState("");
-    const [pendingCount, setPendingCount] = useState(0);
+    // =========================================================
+    // STATE
+    // =========================================================
 
-    const [stats] = useState([
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const [activeMenu, setActiveMenu] = useState("Dashboard");
+
+    const [search, setSearch] = useState("");
+
+    const [pendingCount] = useState(0);
+
+
+    // =========================================================
+    // ADMIN DASHBOARD STATS
+    // =========================================================
+
+    const stats = [
         {
             title: "Total Sales",
             value: "$48,290",
@@ -40,10 +52,14 @@ function AdminDashboard() {
             icon: "📦",
             growth: "+6.8%"
         }
-    ]);
+    ];
 
 
-    const [recentOrders] = useState([
+    // =========================================================
+    // RECENT ORDERS
+    // =========================================================
+
+    const recentOrders = [
         {
             id: "#ORD-10245",
             customer: "Arun Kumar",
@@ -72,8 +88,12 @@ function AdminDashboard() {
             amount: "$79.99",
             status: "Cancelled"
         }
-    ]);
+    ];
 
+
+    // =========================================================
+    // SIDEBAR MENU
+    // =========================================================
 
     const menuItems = [
         {
@@ -87,7 +107,7 @@ function AdminDashboard() {
         {
             name: "Seller Requests",
             icon: "🔔"
-},
+        },
         {
             name: "Products",
             icon: "📦"
@@ -123,33 +143,743 @@ function AdminDashboard() {
     ];
 
 
+    // =========================================================
+    // MENU NAVIGATION
+    // =========================================================
+
     const handleMenuClick = (menu) => {
 
         setActiveMenu(menu);
 
-        setSidebarOpen(false);
+        setSearch("");
 
+        setSidebarOpen(false);
     };
 
+
+    // =========================================================
+    // LOGOUT
+    // =========================================================
 
     const handleLogout = () => {
 
         localStorage.removeItem("token");
+
         localStorage.removeItem("role");
+
         localStorage.removeItem("email");
 
         navigate("/login");
     };
 
 
+    // =========================================================
+    // RENDER OTHER ADMIN MODULES
+    // =========================================================
+
+    const renderModule = () => {
+
+        // -----------------------------------------------------
+        // USERS
+        // -----------------------------------------------------
+
+        if (activeMenu === "Users") {
+
+            return (
+                <AdminUserManagement />
+            );
+        }
+
+
+        // -----------------------------------------------------
+        // SELLER REQUESTS
+        // -----------------------------------------------------
+
+        if (activeMenu === "Seller Requests") {
+
+            return (
+                <PendingSellerRequests />
+            );
+        }
+
+
+        // -----------------------------------------------------
+        // OTHER MODULES
+        // -----------------------------------------------------
+
+        const selectedItem = menuItems.find(
+            (item) =>
+                item.name === activeMenu
+        );
+
+
+        return (
+
+            <section className="module-placeholder">
+
+                <div className="placeholder-icon">
+
+                    {selectedItem?.icon}
+
+                </div>
+
+
+                <h2>
+                    {activeMenu} Management
+                </h2>
+
+
+                <p>
+
+                    The{" "}
+                    {activeMenu.toLowerCase()}{" "}
+                    management module is ready to be
+                    connected with your backend API.
+
+                </p>
+
+
+                <button
+                    className="admin-primary-button"
+                    onClick={() =>
+                        setActiveMenu("Dashboard")
+                    }
+                >
+
+                    ← Back to Dashboard
+
+                </button>
+
+            </section>
+        );
+    };
+
+
+    // =========================================================
+    // DASHBOARD
+    // =========================================================
+
+    const renderDashboard = () => {
+
+        return (
+
+            <>
+
+                {/* =================================================
+                    WELCOME BANNER
+                ================================================= */}
+
+                <section className="welcome-banner">
+
+                    <div>
+
+                        <span>
+                            ✨ GOOD TO SEE YOU, ADMIN
+                        </span>
+
+
+                        <h2>
+
+                            Welcome back to{" "}
+
+                            <strong>
+                                DeluLu Cart
+                            </strong>
+
+                        </h2>
+
+
+                        <p>
+
+                            Here's what's happening
+                            with your store today.
+
+                        </p>
+
+                    </div>
+
+
+                    <div className="welcome-illustration">
+
+                        🛍️
+
+                    </div>
+
+                </section>
+
+
+
+                {/* =================================================
+                    STATS
+                ================================================= */}
+
+                <section className="admin-stats-grid">
+
+                    {stats.map((stat) => (
+
+                        <div
+                            className="admin-stat-card"
+                            key={stat.title}
+                        >
+
+                            <div className="stat-icon">
+
+                                {stat.icon}
+
+                            </div>
+
+
+                            <div className="stat-content">
+
+                                <span>
+                                    {stat.title}
+                                </span>
+
+
+                                <h3>
+                                    {stat.value}
+                                </h3>
+
+
+                                <small>
+
+                                    <b>
+                                        {stat.growth}
+                                    </b>
+
+                                    {" "}from last month
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    ))}
+
+                </section>
+
+
+
+                {/* =================================================
+                    MAIN CONTENT GRID
+                ================================================= */}
+
+                <section className="admin-content-grid">
+
+
+                    {/* =================================================
+                        RECENT ORDERS
+                    ================================================= */}
+
+                    <div className="admin-card orders-card">
+
+                        <div className="admin-card-header">
+
+                            <div>
+
+                                <span className="card-label">
+
+                                    ORDER MANAGEMENT
+
+                                </span>
+
+
+                                <h2>
+
+                                    Recent Orders
+
+                                </h2>
+
+                            </div>
+
+
+                            <button
+                                className="view-all-button"
+                                onClick={() =>
+                                    handleMenuClick(
+                                        "Orders"
+                                    )
+                                }
+                            >
+
+                                View All →
+
+                            </button>
+
+                        </div>
+
+
+
+                        <div className="admin-table-wrapper">
+
+                            <table className="admin-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Order ID
+                                        </th>
+
+                                        <th>
+                                            Customer
+                                        </th>
+
+                                        <th>
+                                            Product
+                                        </th>
+
+                                        <th>
+                                            Amount
+                                        </th>
+
+                                        <th>
+                                            Status
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {recentOrders.map(
+                                        (order) => (
+
+                                            <tr
+                                                key={order.id}
+                                            >
+
+                                                <td>
+
+                                                    <strong>
+                                                        {order.id}
+                                                    </strong>
+
+                                                </td>
+
+
+                                                <td>
+                                                    {order.customer}
+                                                </td>
+
+
+                                                <td>
+                                                    {order.product}
+                                                </td>
+
+
+                                                <td>
+
+                                                    <strong>
+                                                        {order.amount}
+                                                    </strong>
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    <span
+                                                        className={
+                                                            `status-badge status-${order.status.toLowerCase()}`
+                                                        }
+                                                    >
+
+                                                        {order.status}
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                        )
+                                    )}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+
+                    {/* =================================================
+                        RIGHT COLUMN
+                    ================================================= */}
+
+                    <div className="admin-side-column">
+
+
+                        {/* =================================================
+                            SALES OVERVIEW
+                        ================================================= */}
+
+                        <div className="admin-card">
+
+                            <div className="admin-card-header">
+
+                                <div>
+
+                                    <span className="card-label">
+
+                                        ANALYTICS
+
+                                    </span>
+
+
+                                    <h2>
+
+                                        Sales Overview
+
+                                    </h2>
+
+                                </div>
+
+
+                                <span className="period-badge">
+
+                                    This Month
+
+                                </span>
+
+                            </div>
+
+
+                            <div className="sales-overview">
+
+                                <div className="sales-total">
+
+                                    $48,290
+
+                                </div>
+
+
+                                <div className="sales-growth">
+
+                                    ↑ 12.5%
+
+                                </div>
+
+                            </div>
+
+
+                            <div className="fake-chart">
+
+                                <div
+                                    style={{
+                                        height: "35%"
+                                    }}
+                                ></div>
+
+
+                                <div
+                                    style={{
+                                        height: "55%"
+                                    }}
+                                ></div>
+
+
+                                <div
+                                    style={{
+                                        height: "45%"
+                                    }}
+                                ></div>
+
+
+                                <div
+                                    style={{
+                                        height: "75%"
+                                    }}
+                                ></div>
+
+
+                                <div
+                                    style={{
+                                        height: "60%"
+                                    }}
+                                ></div>
+
+
+                                <div
+                                    style={{
+                                        height: "90%"
+                                    }}
+                                ></div>
+
+
+                                <div
+                                    style={{
+                                        height: "70%"
+                                    }}
+                                ></div>
+
+                            </div>
+
+
+                            <div className="chart-labels">
+
+                                <span>Mon</span>
+                                <span>Tue</span>
+                                <span>Wed</span>
+                                <span>Thu</span>
+                                <span>Fri</span>
+                                <span>Sat</span>
+                                <span>Sun</span>
+
+                            </div>
+
+                        </div>
+
+
+
+                        {/* =================================================
+                            QUICK ACTIONS
+                        ================================================= */}
+
+                        <div className="admin-card">
+
+                            <div className="admin-card-header">
+
+                                <div>
+
+                                    <span className="card-label">
+
+                                        SHORTCUTS
+
+                                    </span>
+
+
+                                    <h2>
+
+                                        Quick Actions
+
+                                    </h2>
+
+                                </div>
+
+                            </div>
+
+
+                            <div className="quick-actions">
+
+
+                                {/* MANAGE USERS */}
+
+                                <button
+                                    onClick={() =>
+                                        handleMenuClick(
+                                            "Users"
+                                        )
+                                    }
+                                >
+
+                                    👥
+
+                                    <span>
+                                        Manage Users
+                                    </span>
+
+                                </button>
+
+
+
+                                {/* PRODUCTS */}
+
+                                <button
+                                    onClick={() =>
+                                        handleMenuClick(
+                                            "Products"
+                                        )
+                                    }
+                                >
+
+                                    📦
+
+                                    <span>
+                                        Manage Products
+                                    </span>
+
+                                </button>
+
+
+
+                                {/* ORDERS */}
+
+                                <button
+                                    onClick={() =>
+                                        handleMenuClick(
+                                            "Orders"
+                                        )
+                                    }
+                                >
+
+                                    🛒
+
+                                    <span>
+                                        Manage Orders
+                                    </span>
+
+                                </button>
+
+
+
+                                {/* REPORTS */}
+
+                                <button
+                                    onClick={() =>
+                                        handleMenuClick(
+                                            "Reports"
+                                        )
+                                    }
+                                >
+
+                                    📈
+
+                                    <span>
+                                        View Reports
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                {/* =================================================
+                    REPORT SUMMARY
+                ================================================= */}
+
+                <section className="report-summary">
+
+                    <div className="report-summary-header">
+
+                        <div>
+
+                            <span className="card-label">
+
+                                BUSINESS INSIGHTS
+
+                            </span>
+
+
+                            <h2>
+
+                                Store Performance
+
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="report-grid">
+
+
+                        <div className="report-card">
+
+                            <span>
+                                Best Selling Product
+                            </span>
+
+                            <strong>
+                                Premium Sneakers
+                            </strong>
+
+                            <small>
+                                248 units sold
+                            </small>
+
+                        </div>
+
+
+
+                        <div className="report-card">
+
+                            <span>
+                                Top Customer
+                            </span>
+
+                            <strong>
+                                Arun Kumar
+                            </strong>
+
+                            <small>
+                                $2,450 total spent
+                            </small>
+
+                        </div>
+
+
+
+                        <div className="report-card">
+
+                            <span>
+                                Monthly Revenue
+                            </span>
+
+                            <strong>
+                                $18,920
+                            </strong>
+
+                            <small>
+                                ↑ 14.2% growth
+                            </small>
+
+                        </div>
+
+
+
+                        <div className="report-card">
+
+                            <span>
+                                Pending Orders
+                            </span>
+
+                            <strong>
+                                86
+                            </strong>
+
+                            <small>
+                                Need attention
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </>
+        );
+    };
+
+
+    // =========================================================
+    // MAIN RETURN
+    // =========================================================
+
     return (
 
         <div className="admin-dashboard">
 
 
-            {/* =========================================
+            {/* =================================================
                 MOBILE OVERLAY
-            ========================================= */}
+            ================================================= */}
 
             {sidebarOpen && (
 
@@ -163,9 +893,10 @@ function AdminDashboard() {
             )}
 
 
-            {/* =========================================
+
+            {/* =================================================
                 SIDEBAR
-            ========================================= */}
+            ================================================= */}
 
             <aside
                 className={
@@ -181,8 +912,11 @@ function AdminDashboard() {
                 <div className="admin-logo">
 
                     <div className="admin-logo-icon">
+
                         🛍️
+
                     </div>
+
 
                     <div className="admin-logo-text">
 
@@ -190,11 +924,13 @@ function AdminDashboard() {
                             DeluLu
                         </span>
 
+
                         <strong>
                             Cart
                         </strong>
 
                     </div>
+
 
                     <button
                         className="sidebar-close"
@@ -202,10 +938,13 @@ function AdminDashboard() {
                             setSidebarOpen(false)
                         }
                     >
+
                         ✕
+
                     </button>
 
                 </div>
+
 
 
                 {/* PROFILE */}
@@ -213,8 +952,11 @@ function AdminDashboard() {
                 <div className="admin-profile">
 
                     <div className="admin-avatar">
+
                         👑
+
                     </div>
+
 
                     <div className="admin-profile-info">
 
@@ -222,9 +964,14 @@ function AdminDashboard() {
                             Administrator
                         </h4>
 
+
                         <p>
-                            {localStorage.getItem("email") ||
-                                "admin@delulu.com"}
+
+                            {
+                                localStorage.getItem("email") ||
+                                "admin@delulu.com"
+                            }
+
                         </p>
 
                     </div>
@@ -232,10 +979,13 @@ function AdminDashboard() {
                 </div>
 
 
+
                 {/* NAVIGATION */}
 
                 <div className="sidebar-section-title">
+
                     MAIN MENU
+
                 </div>
 
 
@@ -258,17 +1008,25 @@ function AdminDashboard() {
                         >
 
                             <span className="admin-nav-icon">
+
                                 {item.icon}
+
                             </span>
 
+
                             <span className="admin-nav-text">
+
                                 {item.name}
+
                             </span>
+
 
                             {activeMenu === item.name && (
 
                                 <span className="active-indicator">
+
                                     →
+
                                 </span>
 
                             )}
@@ -280,9 +1038,11 @@ function AdminDashboard() {
                 </nav>
 
 
+
                 {/* SIDEBAR BOTTOM */}
 
                 <div className="sidebar-bottom">
+
 
                     <button className="sidebar-help">
 
@@ -290,11 +1050,13 @@ function AdminDashboard() {
                             💡
                         </span>
 
+
                         <div>
 
                             <strong>
                                 Need Help?
                             </strong>
+
 
                             <small>
                                 Admin support
@@ -303,6 +1065,7 @@ function AdminDashboard() {
                         </div>
 
                     </button>
+
 
 
                     <button
@@ -314,6 +1077,7 @@ function AdminDashboard() {
                             🚪
                         </span>
 
+
                         Logout
 
                     </button>
@@ -323,19 +1087,23 @@ function AdminDashboard() {
             </aside>
 
 
-            {/* =========================================
-                MAIN CONTENT
-            ========================================= */}
+
+            {/* =================================================
+                MAIN
+            ================================================= */}
 
             <main className="admin-main">
 
 
-                {/* HEADER */}
+                {/* =================================================
+                    HEADER
+                ================================================= */}
 
                 <header className="admin-header">
 
 
                     <div className="admin-header-left">
+
 
                         <button
                             className="admin-menu-button"
@@ -343,23 +1111,33 @@ function AdminDashboard() {
                                 setSidebarOpen(true)
                             }
                         >
+
                             ☰
+
                         </button>
 
 
                         <div>
 
                             <span className="header-label">
+
                                 ADMIN CONTROL CENTER
+
                             </span>
 
+
                             <h1>
+
                                 {activeMenu}
+
                             </h1>
 
+
                             <p>
+
                                 Manage your DeluLu Cart
                                 platform from one place.
+
                             </p>
 
                         </div>
@@ -367,13 +1145,18 @@ function AdminDashboard() {
                     </div>
 
 
+
                     <div className="admin-header-actions">
+
+
+                        {/* HEADER SEARCH */}
 
                         <div className="admin-search">
 
                             <span>
                                 🔍
                             </span>
+
 
                             <input
                                 type="text"
@@ -388,27 +1171,42 @@ function AdminDashboard() {
 
                         </div>
 
-<button
-    className="notification-button"
-    onClick={() => setActiveMenu("Seller Requests")}
->
 
-    🔔
 
-    {pendingCount > 0 && (
+                        {/* NOTIFICATION */}
 
-        <span className="notification-dot">
+                        <button
+                            className="notification-button"
+                            onClick={() =>
+                                handleMenuClick(
+                                    "Seller Requests"
+                                )
+                            }
+                        >
 
-            {pendingCount}
+                            🔔
 
-        </span>
 
-    )}
+                            {pendingCount > 0 && (
 
-</button>
+                                <span className="notification-dot">
+
+                                    {pendingCount}
+
+                                </span>
+
+                            )}
+
+                        </button>
+
+
+
+                        {/* ADMIN AVATAR */}
 
                         <div className="header-avatar">
+
                             👑
+
                         </div>
 
                     </div>
@@ -416,559 +1214,20 @@ function AdminDashboard() {
                 </header>
 
 
-                {/* =========================================
-                    DASHBOARD CONTENT
-                ========================================= */}
 
-                {activeMenu === "Dashboard" ? (
+                {/* =================================================
+                    PAGE CONTENT
+                ================================================= */}
 
-                    <>
+                <div className="admin-page-content">
 
+                    {activeMenu === "Dashboard"
+                        ? renderDashboard()
+                        : renderModule()
+                    }
 
-                        {/* WELCOME BANNER */}
+                </div>
 
-                        <section className="welcome-banner">
-
-                            <div>
-
-                                <span>
-                                    ✨ GOOD TO SEE YOU, ADMIN
-                                </span>
-
-                                <h2>
-                                    Welcome back to
-                                    <strong>
-                                        DeluLu Cart
-                                    </strong>
-                                </h2>
-
-                                <p>
-                                    Here's what's happening
-                                    with your store today.
-                                </p>
-
-                            </div>
-
-                            <div className="welcome-illustration">
-                                🛍️
-                            </div>
-
-                        </section>
-
-
-                        {/* STATS */}
-
-                        <section className="admin-stats-grid">
-
-                            {stats.map((stat) => (
-
-                                <div
-                                    className="admin-stat-card"
-                                    key={stat.title}
-                                >
-
-                                    <div className="stat-icon">
-                                        {stat.icon}
-                                    </div>
-
-                                    <div className="stat-content">
-
-                                        <span>
-                                            {stat.title}
-                                        </span>
-
-                                        <h3>
-                                            {stat.value}
-                                        </h3>
-
-                                        <small>
-                                            <b>
-                                                {stat.growth}
-                                            </b>
-                                            {" "}from last month
-                                        </small>
-
-                                    </div>
-
-                                </div>
-
-                            ))}
-
-                        </section>
-
-
-                        {/* MAIN GRID */}
-
-                        <section className="admin-content-grid">
-
-
-                            {/* RECENT ORDERS */}
-
-                            <div className="admin-card orders-card">
-
-                                <div className="admin-card-header">
-
-                                    <div>
-
-                                        <span className="card-label">
-                                            ORDER MANAGEMENT
-                                        </span>
-
-                                        <h2>
-                                            Recent Orders
-                                        </h2>
-
-                                    </div>
-
-                                    <button
-                                        className="view-all-button"
-                                        onClick={() =>
-                                            handleMenuClick(
-                                                "Orders"
-                                            )
-                                        }
-                                    >
-                                        View All →
-                                    </button>
-
-                                </div>
-
-
-                                <div className="admin-table-wrapper">
-
-                                    <table className="admin-table">
-
-                                        <thead>
-
-                                            <tr>
-
-                                                <th>
-                                                    Order ID
-                                                </th>
-
-                                                <th>
-                                                    Customer
-                                                </th>
-
-                                                <th>
-                                                    Product
-                                                </th>
-
-                                                <th>
-                                                    Amount
-                                                </th>
-
-                                                <th>
-                                                    Status
-                                                </th>
-
-                                            </tr>
-
-                                        </thead>
-
-
-                                        <tbody>
-
-                                            {recentOrders.map(
-                                                (order) => (
-
-                                                    <tr
-                                                        key={
-                                                            order.id
-                                                        }
-                                                    >
-
-                                                        <td>
-                                                            <strong>
-                                                                {
-                                                                    order.id
-                                                                }
-                                                            </strong>
-                                                        </td>
-
-                                                        <td>
-                                                            {
-                                                                order.customer
-                                                            }
-                                                        </td>
-
-                                                        <td>
-                                                            {
-                                                                order.product
-                                                            }
-                                                        </td>
-
-                                                        <td>
-                                                            <strong>
-                                                                {
-                                                                    order.amount
-                                                                }
-                                                            </strong>
-                                                        </td>
-
-                                                        <td>
-
-                                                            <span
-                                                                className={`status-badge status-${order.status.toLowerCase()}`}
-                                                            >
-                                                                {
-                                                                    order.status
-                                                                }
-                                                            </span>
-
-                                                        </td>
-
-                                                    </tr>
-
-                                                )
-                                            )}
-
-                                        </tbody>
-
-                                    </table>
-
-                                </div>
-
-                            </div>
-
-
-                            {/* RIGHT SIDE */}
-
-                            <div className="admin-side-column">
-
-
-                                {/* SALES REPORT */}
-
-                                <div className="admin-card">
-
-                                    <div className="admin-card-header">
-
-                                        <div>
-
-                                            <span className="card-label">
-                                                ANALYTICS
-                                            </span>
-
-                                            <h2>
-                                                Sales Overview
-                                            </h2>
-
-                                        </div>
-
-                                        <span className="period-badge">
-                                            This Month
-                                        </span>
-
-                                    </div>
-
-
-                                    <div className="sales-overview">
-
-                                        <div className="sales-total">
-                                            $48,290
-                                        </div>
-
-                                        <div className="sales-growth">
-                                            ↑ 12.5%
-                                        </div>
-
-                                    </div>
-
-
-                                    <div className="fake-chart">
-
-                                        <div style={{
-                                            height: "35%"
-                                        }}></div>
-
-                                        <div style={{
-                                            height: "55%"
-                                        }}></div>
-
-                                        <div style={{
-                                            height: "45%"
-                                        }}></div>
-
-                                        <div style={{
-                                            height: "75%"
-                                        }}></div>
-
-                                        <div style={{
-                                            height: "60%"
-                                        }}></div>
-
-                                        <div style={{
-                                            height: "90%"
-                                        }}></div>
-
-                                        <div style={{
-                                            height: "70%"
-                                        }}></div>
-
-                                    </div>
-
-                                    <div className="chart-labels">
-
-                                        <span>
-                                            Mon
-                                        </span>
-
-                                        <span>
-                                            Tue
-                                        </span>
-
-                                        <span>
-                                            Wed
-                                        </span>
-
-                                        <span>
-                                            Thu
-                                        </span>
-
-                                        <span>
-                                            Fri
-                                        </span>
-
-                                        <span>
-                                            Sat
-                                        </span>
-
-                                        <span>
-                                            Sun
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* QUICK ACTIONS */}
-
-                                <div className="admin-card">
-
-                                    <div className="admin-card-header">
-
-                                        <div>
-
-                                            <span className="card-label">
-                                                SHORTCUTS
-                                            </span>
-
-                                            <h2>
-                                                Quick Actions
-                                            </h2>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div className="quick-actions">
-
-                                        <button
-                                            onClick={() =>
-                                                handleMenuClick(
-                                                    "Users"
-                                                )
-                                            }
-                                        >
-                                            👥
-                                            <span>
-                                                Manage Users
-                                            </span>
-                                        </button>
-
-
-                                        <button
-                                            onClick={() =>
-                                                handleMenuClick(
-                                                    "Products"
-                                                )
-                                            }
-                                        >
-                                            📦
-                                            <span>
-                                                Manage Products
-                                            </span>
-                                        </button>
-
-
-                                        <button
-                                            onClick={() =>
-                                                handleMenuClick(
-                                                    "Orders"
-                                                )
-                                            }
-                                        >
-                                            🛒
-                                            <span>
-                                                Manage Orders
-                                            </span>
-                                        </button>
-
-
-                                        <button
-                                            onClick={() =>
-                                                handleMenuClick(
-                                                    "Reports"
-                                                )
-                                            }
-                                        >
-                                            📈
-                                            <span>
-                                                View Reports
-                                            </span>
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </section>
-
-
-                        {/* REPORT SUMMARY */}
-
-                        <section className="report-summary">
-
-                            <div className="report-summary-header">
-
-                                <div>
-
-                                    <span className="card-label">
-                                        BUSINESS INSIGHTS
-                                    </span>
-
-                                    <h2>
-                                        Store Performance
-                                    </h2>
-
-                                </div>
-
-                            </div>
-
-
-                            <div className="report-grid">
-
-                                <div className="report-card">
-
-                                    <span>
-                                        Best Selling Product
-                                    </span>
-
-                                    <strong>
-                                        Premium Sneakers
-                                    </strong>
-
-                                    <small>
-                                        248 units sold
-                                    </small>
-
-                                </div>
-
-
-                                <div className="report-card">
-
-                                    <span>
-                                        Top Customer
-                                    </span>
-
-                                    <strong>
-                                        Arun Kumar
-                                    </strong>
-
-                                    <small>
-                                        $2,450 total spent
-                                    </small>
-
-                                </div>
-
-
-                                <div className="report-card">
-
-                                    <span>
-                                        Monthly Revenue
-                                    </span>
-
-                                    <strong>
-                                        $18,920
-                                    </strong>
-
-                                    <small>
-                                        ↑ 14.2% growth
-                                    </small>
-
-                                </div>
-
-
-                                <div className="report-card">
-
-                                    <span>
-                                        Pending Orders
-                                    </span>
-
-                                    <strong>
-                                        86
-                                    </strong>
-
-                                    <small>
-                                        Need attention
-                                    </small>
-
-                                </div>
-
-                            </div>
-
-                        </section>
-
-                    </>
-
-                ) : (
-
-                    /* =========================================
-                       OTHER MODULE PLACEHOLDER
-                    ========================================= */
-
-                    <section className="module-placeholder">
-
-    <PendingSellerRequests />
-
-
-    <section className="module-placeholder">
-
-        <div className="placeholder-icon">
-            {
-                menuItems.find(
-                    (item) => item.name === activeMenu
-                )?.icon
-            }
-        </div>
-
-        <h2>
-            {activeMenu} Management
-        </h2>
-
-        <p>
-            The {activeMenu.toLowerCase()} management module is ready
-            to be connected with your backend API.
-        </p>
-
-        <button
-            className="admin-primary-button"
-            onClick={() => setActiveMenu("Dashboard")}
-        >
-            ← Back to Dashboard
-        </button>
-
-    </section>
-
-
-                       
-                    </section>
-
-                )}
 
             </main>
 
