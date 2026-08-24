@@ -219,8 +219,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/register"
                         )
+                        
                         .permitAll()
-
+                         
+                        
 
                         // =================================================
                         // LOGIN - PUBLIC
@@ -260,6 +262,10 @@ public class SecurityConfig {
                                "/api/auth/admin/**"
                         )
                         .hasRole("ADMIN")
+                        .requestMatchers(
+        "/api/admin/**"
+)
+.hasRole("ADMIN")
                         // =================================================
                         // ALL OTHER APIs - JWT REQUIRED
                         // =================================================
