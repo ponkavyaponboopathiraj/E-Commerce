@@ -1427,6 +1427,29 @@ function SellerDashboard() {
                                                     Customer:{" "}
                                                     {order.customerId}
                                                 </small>
+                                                <div className="customer-details">
+    <h4>Customer Details</h4>
+
+    <p>
+        <strong>Name:</strong>{" "}
+        {order.customerName || "N/A"}
+    </p>
+
+    <p>
+        <strong>Email:</strong>{" "}
+        {order.customerEmail || "N/A"}
+    </p>
+
+    <p>
+        <strong>Phone:</strong>{" "}
+        {order.customerPhone || "N/A"}
+    </p>
+
+    <p>
+        <strong>Address:</strong>{" "}
+        {order.shippingAddress || "N/A"}
+    </p>
+</div>
 
                                                 <small
                                                     style={{
