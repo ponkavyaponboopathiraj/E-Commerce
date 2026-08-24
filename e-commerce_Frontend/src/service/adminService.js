@@ -54,7 +54,6 @@ export const approveSeller = async (sellerId) => {
     return response.data;
 };
 
-
 // ==========================================
 // REJECT SELLER
 // ==========================================
@@ -64,6 +63,19 @@ export const rejectSeller = async (sellerId) => {
     const response = await axios.put(
         `${BASE_URL}/admin/reject-seller/${sellerId}`,
         {},
+        getHeaders()
+    );
+
+    return response.data;
+};
+// ==========================================
+// GET ALL USERS
+// ==========================================
+
+export const getAllUsers = async () => {
+
+    const response = await axios.get(
+        `${BASE_URL}/admin/users`,
         getHeaders()
     );
 
