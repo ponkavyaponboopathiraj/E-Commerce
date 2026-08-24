@@ -13,19 +13,25 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import ecart.ecommerce.entity.User;
+import ecart.ecommerce.repository.UserRepository;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
-            ProductRepository productRepository
+            ProductRepository productRepository,
+             UserRepository userRepository
     ) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+            this.userRepository = userRepository;
+
     }
 
     // =====================================================
