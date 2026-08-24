@@ -1,17 +1,9 @@
 
 import axios from "axios";
 
-
-// ==========================================
-// BASE URLS
-// ==========================================
-
-// Auth / Admin APIs
 const BASE_URL = "http://localhost:8080/api/auth";
-
-// Product / Admin APIs
 const PRODUCT_BASE_URL = "http://localhost:8080/api/admin";
-
+const ORDER_BASE_URL = "http://localhost:8080/api/orders";
 
 // ==========================================
 // GET JWT TOKEN
@@ -217,6 +209,74 @@ export const deleteAdminProduct = async (id) => {
 
     const response = await axios.delete(
         `${PRODUCT_BASE_URL}/products/${id}`,
+        getHeaders()
+    );
+
+    return response.data;
+};
+// ==========================================
+// GET ALL ORDERS
+// ==========================================
+
+export const getAllOrders = async () => {
+
+    const response = await axios.get(
+        "http://localhost:8080/api/orders",
+        getHeaders()
+    );
+
+    return response.data;
+};
+
+
+// ==========================================
+// GET ORDER BY ID
+// ==========================================
+
+export const getOrderById = async (orderId) => {
+
+    const response = await axios.get(
+        `http://localhost:8080/api/orders/${orderId}`,
+        getHeaders()
+    );
+
+    return response.data;
+};
+
+
+// ==========================================
+// UPDATE ORDER STATUS
+// ==========================================
+
+export const updateOrderStatus = async (
+    orderId,
+    status
+) => {
+
+    const response = await axios.patch(
+        `http://localhost:8080/api/orders/${orderId}/status`,
+        {},
+        {
+            ...getHeaders(),
+            params: {
+                status
+            }
+        }
+    );
+
+    return response.data;
+};
+
+
+// ==========================================
+// CANCEL ORDER
+// ==========================================
+
+export const cancelOrder = async (orderId) => {
+
+    const response = await axios.patch(
+        `http://localhost:8080/api/orders/${orderId}/cancel`,
+        {},
         getHeaders()
     );
 

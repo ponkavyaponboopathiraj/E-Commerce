@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import AdminUserManagement from "./AdminUserManagement";
 import AdminProductManagement from "./AdminProductManagement";
+
 import PendingSellerRequests from "./PendingSellerRequests";
+import AdminOrderManagement from "./AdminOrderManagement";
 
 import "./AdminDashboard.css";
 
@@ -214,6 +216,24 @@ function AdminDashboard() {
             <AdminProductManagement />
         );
     }
+    if (activeMenu === "Products") {
+
+    return (
+        <AdminProductManagement />
+    );
+}
+
+
+// -----------------------------------------------------
+// ORDERS
+// -----------------------------------------------------
+
+if (activeMenu === "Orders") {
+
+    return (
+        <AdminOrderManagement />
+    );
+}
 
 
     // -----------------------------------------------------
