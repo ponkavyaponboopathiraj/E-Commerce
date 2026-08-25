@@ -10,19 +10,16 @@ import java.util.Optional;
 
 public interface CategoryRepository
         extends MongoRepository<Category, String> {
-
     Optional<Category> findByNameIgnoreCase(
             String name
     );
-
-    boolean existsByNameIgnoreCase(
+    List<Category> findByNameContainingIgnoreCase(
             String name
     );
-
     List<Category> findByStatus(
             CategoryStatus status
-    );
-    List<Category> findByNameContainingIgnoreCase(
+    );    
+    boolean existsByNameIgnoreCase(
             String name
     );
 }
