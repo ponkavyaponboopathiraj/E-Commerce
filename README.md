@@ -84,4 +84,4 @@ docker build -t delulu-cart .
 docker run -p 8080:8080 delulu-cart
 
 ## Screenshots
-<img width="1900" height="901" alt="image" src="https://github.com/user-attachments/assets/4f371b8c-338f-4818-b22d-5067399f2d94" />
+![image Alt](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshot%202026-08-25%20164844.png?raw=true)
