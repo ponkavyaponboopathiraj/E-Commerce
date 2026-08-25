@@ -84,10 +84,8 @@ docker build -t delulu-cart .
 docker run -p 8080:8080 delulu-cart
 
 ## Screenshots
-![fallback vale aka alt](url)
 ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Admin%20Dashboard.png?raw=true)
 ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Admin%20View.png?raw=true)
-![fallback vale aka alt](url)
 ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Admin%20view%20users.png?raw=true)
-![fallback vale aka alt](url) ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Create%20Account.png?raw=true)
-![fallback vale aka alt](url) ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Dashboard.png?raw=true)
+ ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Create%20Account.png?raw=true)
+ ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Dashboard.png?raw=true)
