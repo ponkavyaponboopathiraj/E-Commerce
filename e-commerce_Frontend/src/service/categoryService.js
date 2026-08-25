@@ -75,6 +75,21 @@ export const searchCategories = async (name) => {
 
 
 // =====================================================
+// GET CATEGORIES BY STATUS
+// =====================================================
+
+export const getCategoriesByStatus = async (status) => {
+
+    const response = await axios.get(
+        `${BASE_URL}/status/${status}`,
+        getHeaders()
+    );
+
+    return response.data;
+};
+
+
+// =====================================================
 // ADD CATEGORY
 // =====================================================
 

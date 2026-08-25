@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 
 import AdminUserManagement from "./AdminUserManagement";
 import AdminProductManagement from "./AdminProductManagement";
-
 import PendingSellerRequests from "./PendingSellerRequests";
 import AdminOrderManagement from "./AdminOrderManagement";
-
+import AdminCategoryManagement from "./AdminCategoryManagement";
 import "./AdminDashboard.css";
+
 
 function AdminDashboard() {
 
@@ -234,7 +234,16 @@ if (activeMenu === "Orders") {
         <AdminOrderManagement />
     );
 }
+// -----------------------------------------------------
+// CATEGORIES
+// -----------------------------------------------------
 
+if (activeMenu === "Categories") {
+
+    return (
+        <AdminCategoryManagement />
+    );
+}
 
     // -----------------------------------------------------
     // OTHER MODULES

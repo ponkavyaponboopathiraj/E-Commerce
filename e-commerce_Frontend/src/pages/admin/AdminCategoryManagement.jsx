@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-
 import {
     getAllCategories,
     addCategory,
     updateCategory,
     updateCategoryStatus,
     deleteCategory
-} from "../services/categoryService";
+} from "../../service/categoryService";
 
 import "./AdminCategoryManagement.css";
 
