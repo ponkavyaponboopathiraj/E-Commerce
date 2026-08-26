@@ -1,16 +1,13 @@
 
 package ecart.ecommerce.controller;
-
 import ecart.ecommerce.dto.response.AdminUserResponse;
 import ecart.ecommerce.entity.Product;
 import ecart.ecommerce.enums.ProductStatus;
 import ecart.ecommerce.service.AdminService;
 import ecart.ecommerce.service.ProductService;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -30,11 +27,6 @@ public class AdminController {
     }
 
 
-    // ==========================================
-    // USERS
-    // ==========================================
-
-    // GET ALL USERS - ADMIN ONLY
 
     @GetMapping("/users")
     public ResponseEntity<List<AdminUserResponse>> getAllUsers() {
@@ -46,12 +38,6 @@ public class AdminController {
     }
 
 
-    // ==========================================
-    // PRODUCTS
-    // ==========================================
-
-    // GET ALL PRODUCTS
-
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
 
@@ -61,7 +47,7 @@ public class AdminController {
     }
 
 
-    // GET PRODUCT BY ID
+   
 
     @GetMapping("/products/{id}")
     public ResponseEntity<Product> getProductById(
@@ -74,7 +60,7 @@ public class AdminController {
     }
 
 
-    // GET PRODUCTS BY STATUS
+    
 
     @GetMapping("/products/status/{status}")
     public ResponseEntity<List<Product>> getProductsByStatus(
@@ -87,7 +73,6 @@ public class AdminController {
     }
 
 
-    // SEARCH PRODUCTS
 
     @GetMapping("/products/search")
     public ResponseEntity<List<Product>> searchProducts(
@@ -100,7 +85,7 @@ public class AdminController {
     }
 
 
-    // UPDATE PRODUCT
+    
 
     @PutMapping("/products/{id}")
     public ResponseEntity<Product> updateProduct(
@@ -117,7 +102,6 @@ public class AdminController {
     }
 
 
-    // UPDATE PRODUCT STATUS
 
     @PatchMapping("/products/{id}/status")
     public ResponseEntity<Product> updateProductStatus(
@@ -133,8 +117,6 @@ public class AdminController {
         );
     }
 
-
-    // DELETE PRODUCT
 
     @DeleteMapping("/products/{id}")
     public ResponseEntity<String> deleteProduct(

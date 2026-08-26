@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 @Document(collection = "orders")
 public class Order {
 
@@ -17,7 +16,6 @@ public class Order {
     private String customerName;
     private String customerEmail;
     private String customerPhone;
-    
     private List<OrderItem> items = new ArrayList<>();
     private BigDecimal totalAmount;
     private String shippingAddress;
@@ -45,7 +43,6 @@ public class Order {
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
-
 
     public String getCustomerName() {
         return customerName;
