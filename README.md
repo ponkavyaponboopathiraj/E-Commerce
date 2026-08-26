@@ -94,3 +94,4 @@ docker run -p 8080:8080 delulu-cart
   ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Seller%20Add%20product.png?raw=true)
  ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/Seller%20Add%20product.png?raw=true)
 ![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/cus.png?raw=true)
+![screenshot](https://github.com/ponkavyaponboopathiraj/E-Commerce/blob/main/Screenshort/cus_Wishlist.png?raw=true)
