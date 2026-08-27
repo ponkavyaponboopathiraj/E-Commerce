@@ -13,10 +13,6 @@ function AdminDashboard() {
 
     const navigate = useNavigate();
 
-    // =========================================================
-    // STATE
-    // =========================================================
-
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -24,11 +20,6 @@ function AdminDashboard() {
     const [search, setSearch] = useState("");
 
     const [pendingCount] = useState(0);
-
-
-    // =========================================================
-    // ADMIN DASHBOARD STATS
-    // =========================================================
 
     const stats = [
         {
