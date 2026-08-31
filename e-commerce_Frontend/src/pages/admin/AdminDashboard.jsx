@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AdminUserManagement from "./AdminUserManagement";
@@ -6,6 +6,14 @@ import AdminProductManagement from "./AdminProductManagement";
 import PendingSellerRequests from "./PendingSellerRequests";
 import AdminOrderManagement from "./AdminOrderManagement";
 import AdminCategoryManagement from "./AdminCategoryManagement";
+
+import {
+    getAllUsers,
+    getAllAdminProducts,
+    getAllOrders,
+    getPendingSellers
+} from "../../service/adminService";
+
 import "./AdminDashboard.css";
 
 
@@ -13,80 +21,143 @@ function AdminDashboard() {
 
     const navigate = useNavigate();
 
+    // =========================================================
+    // STATES
+    // =========================================================
+
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const [activeMenu, setActiveMenu] = useState("Dashboard");
+    const [activeMenu, setActiveMenu] =
+        useState("Dashboard");
 
-    const [search, setSearch] = useState("");
+    const [search, setSearch] =
+        useState("");
 
-    const [pendingCount] = useState(0);
+    const [users, setUsers] =
+        useState([]);
 
-    const stats = [
-        {
-            title: "Total Sales",
-            value: "$48,290",
-            icon: "💰",
-            growth: "+12.5%"
-        },
-        {
-            title: "Total Orders",
-            value: "1,284",
-            icon: "🛍️",
-            growth: "+8.2%"
-        },
-        {
-            title: "Total Customers",
-            value: "8,549",
-            icon: "👥",
-            growth: "+15.4%"
-        },
-        {
-            title: "Total Products",
-            value: "1,842",
-            icon: "📦",
-            growth: "+6.8%"
+    const [products, setProducts] =
+        useState([]);
+
+    const [orders, setOrders] =
+        useState([]);
+
+    const [pendingSellers, setPendingSellers] =
+        useState([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState("");
+
+
+    // =========================================================
+    // LOAD ADMIN DASHBOARD DATA
+    // =========================================================
+
+    useEffect(() => {
+
+        if (activeMenu !== "Dashboard") {
+            return;
         }
-    ];
+
+        loadDashboardData();
+
+    }, [activeMenu]);
 
 
-    // =========================================================
-    // RECENT ORDERS
-    // =========================================================
+    const loadDashboardData = async () => {
 
-    const recentOrders = [
-        {
-            id: "#ORD-10245",
-            customer: "Arun Kumar",
-            product: "Premium Sneakers",
-            amount: "$129.99",
-            status: "Completed"
-        },
-        {
-            id: "#ORD-10244",
-            customer: "Priya Sharma",
-            product: "Wireless Headphones",
-            amount: "$89.99",
-            status: "Pending"
-        },
-        {
-            id: "#ORD-10243",
-            customer: "Kavin Raj",
-            product: "Smart Watch",
-            amount: "$199.99",
-            status: "Completed"
-        },
-        {
-            id: "#ORD-10242",
-            customer: "Meena Devi",
-            product: "Leather Handbag",
-            amount: "$79.99",
-            status: "Cancelled"
+        try {
+
+            setLoading(true);
+            setError("");
+
+            const [
+                usersData,
+                productsData,
+                ordersData,
+                pendingSellersData
+            ] = await Promise.all([
+
+                getAllUsers(),
+
+                getAllAdminProducts(),
+
+                getAllOrders(),
+
+                getPendingSellers()
+
+            ]);
+
+
+            setUsers(
+                Array.isArray(usersData)
+                    ? usersData
+                    : []
+            );
+
+
+            setProducts(
+                Array.isArray(productsData)
+                    ? productsData
+                    : []
+            );
+
+
+            setOrders(
+                Array.isArray(ordersData)
+                    ? ordersData
+                    : []
+            );
+
+
+            setPendingSellers(
+                Array.isArray(pendingSellersData)
+                    ? pendingSellersData
+                    : []
+            );
+
+
+        } catch (err) {
+
+            console.error(
+                "Admin dashboard data error:",
+                err
+            );
+
+            setError(
+                err?.response?.data?.message ||
+                "Unable to load dashboard data."
+            );
+
+        } finally {
+
+            setLoading(false);
+
         }
-    ];
+
+    };
 
 
     // =========================================================
-    // SIDEBAR MENU
+    // LOGOUT
+    // =========================================================
+
+    const handleLogout = () => {
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+
+        navigate("/login");
+
+    };
+
+
+    // =========================================================
+    // MENU ITEMS
     // =========================================================
 
     const menuItems = [
@@ -148,144 +219,996 @@ function AdminDashboard() {
         setSearch("");
 
         setSidebarOpen(false);
+
     };
 
 
     // =========================================================
-    // LOGOUT
+    // HELPER - CUSTOMER USERS
     // =========================================================
 
-    const handleLogout = () => {
+    const customers = useMemo(() => {
 
-        localStorage.removeItem("token");
+        return users.filter(
+            user =>
+                user?.role?.toString().toUpperCase() ===
+                "CUSTOMER"
+        );
 
-        localStorage.removeItem("role");
+    }, [users]);
 
-        localStorage.removeItem("email");
 
-        navigate("/login");
+    // =========================================================
+    // HELPER - DATE
+    // =========================================================
+
+    const isSameMonth = (
+        dateValue,
+        date
+    ) => {
+
+        if (!dateValue) {
+            return false;
+        }
+
+        const value =
+            new Date(dateValue);
+
+        if (Number.isNaN(value.getTime())) {
+            return false;
+        }
+
+        return (
+            value.getMonth() ===
+                date.getMonth()
+            &&
+            value.getFullYear() ===
+                date.getFullYear()
+        );
+
+    };
+
+
+    const isPreviousMonth = (
+        dateValue,
+        date
+    ) => {
+
+        if (!dateValue) {
+            return false;
+        }
+
+        const value =
+            new Date(dateValue);
+
+        if (Number.isNaN(value.getTime())) {
+            return false;
+        }
+
+        const previousMonth =
+            new Date(
+                date.getFullYear(),
+                date.getMonth() - 1,
+                1
+            );
+
+        return (
+            value.getMonth() ===
+                previousMonth.getMonth()
+            &&
+            value.getFullYear() ===
+                previousMonth.getFullYear()
+        );
+
     };
 
 
     // =========================================================
-    // RENDER OTHER ADMIN MODULES
+    // VALID ORDERS
+    // =========================================================
+
+    const nonCancelledOrders = useMemo(() => {
+
+        return orders.filter(
+            order =>
+                order?.status?.toString().toUpperCase()
+                !== "CANCELLED"
+        );
+
+    }, [orders]);
+
+
+    // =========================================================
+    // TOTAL SALES
+    // =========================================================
+
+    const totalSales = useMemo(() => {
+
+        return nonCancelledOrders.reduce(
+            (total, order) => {
+
+                const amount =
+                    Number(
+                        order?.totalAmount || 0
+                    );
+
+                return total + amount;
+
+            },
+            0
+        );
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // THIS MONTH SALES
+    // =========================================================
+
+    const currentMonthSales = useMemo(() => {
+
+        const now = new Date();
+
+        return nonCancelledOrders.reduce(
+            (total, order) => {
+
+                if (
+                    !isSameMonth(
+                        order?.createdAt,
+                        now
+                    )
+                ) {
+                    return total;
+                }
+
+                return (
+                    total +
+                    Number(
+                        order?.totalAmount || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // PREVIOUS MONTH SALES
+    // =========================================================
+
+    const previousMonthSales = useMemo(() => {
+
+        const now = new Date();
+
+        return nonCancelledOrders.reduce(
+            (total, order) => {
+
+                if (
+                    !isPreviousMonth(
+                        order?.createdAt,
+                        now
+                    )
+                ) {
+                    return total;
+                }
+
+                return (
+                    total +
+                    Number(
+                        order?.totalAmount || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // SALES GROWTH
+    // =========================================================
+
+    const salesGrowth = useMemo(() => {
+
+        if (previousMonthSales === 0) {
+
+            if (currentMonthSales > 0) {
+                return 100;
+            }
+
+            return 0;
+        }
+
+        return (
+            (
+                (
+                    currentMonthSales -
+                    previousMonthSales
+                ) /
+                previousMonthSales
+            ) * 100
+        );
+
+    }, [
+        currentMonthSales,
+        previousMonthSales
+    ]);
+
+
+    // =========================================================
+    // ORDER GROWTH
+    // =========================================================
+
+    const orderGrowth = useMemo(() => {
+
+        const now = new Date();
+
+        const currentOrders =
+            nonCancelledOrders.filter(
+                order =>
+                    isSameMonth(
+                        order?.createdAt,
+                        now
+                    )
+            ).length;
+
+
+        const previousOrders =
+            nonCancelledOrders.filter(
+                order =>
+                    isPreviousMonth(
+                        order?.createdAt,
+                        now
+                    )
+            ).length;
+
+
+        if (previousOrders === 0) {
+
+            return currentOrders > 0
+                ? 100
+                : 0;
+
+        }
+
+        return (
+            (
+                (
+                    currentOrders -
+                    previousOrders
+                ) /
+                previousOrders
+            ) * 100
+        );
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // CUSTOMER GROWTH
+    // =========================================================
+
+    const customerGrowth = useMemo(() => {
+
+        const now = new Date();
+
+        const currentCustomers =
+            customers.filter(
+                user =>
+                    isSameMonth(
+                        user?.createdAt,
+                        now
+                    )
+            ).length;
+
+
+        const previousCustomers =
+            customers.filter(
+                user =>
+                    isPreviousMonth(
+                        user?.createdAt,
+                        now
+                    )
+            ).length;
+
+
+        if (previousCustomers === 0) {
+
+            return currentCustomers > 0
+                ? 100
+                : 0;
+
+        }
+
+        return (
+            (
+                (
+                    currentCustomers -
+                    previousCustomers
+                ) /
+                previousCustomers
+            ) * 100
+        );
+
+    }, [customers]);
+
+
+    // =========================================================
+    // PRODUCT GROWTH
+    // =========================================================
+
+    const productGrowth = useMemo(() => {
+
+        const now = new Date();
+
+        const currentProducts =
+            products.filter(
+                product =>
+                    isSameMonth(
+                        product?.createdAt,
+                        now
+                    )
+            ).length;
+
+
+        const previousProducts =
+            products.filter(
+                product =>
+                    isPreviousMonth(
+                        product?.createdAt,
+                        now
+                    )
+            ).length;
+
+
+        if (previousProducts === 0) {
+
+            return currentProducts > 0
+                ? 100
+                : 0;
+
+        }
+
+        return (
+            (
+                (
+                    currentProducts -
+                    previousProducts
+                ) /
+                previousProducts
+            ) * 100
+        );
+
+    }, [products]);
+
+
+    // =========================================================
+    // FORMAT CURRENCY
+    // =========================================================
+
+    const formatCurrency = (value) => {
+
+        const number =
+            Number(value || 0);
+
+        return new Intl.NumberFormat(
+            "en-US",
+            {
+                style: "currency",
+                currency: "USD",
+                maximumFractionDigits: 2
+            }
+        ).format(number);
+
+    };
+
+
+    // =========================================================
+    // FORMAT GROWTH
+    // =========================================================
+
+    const formatGrowth = (value) => {
+
+        const number =
+            Number(value || 0);
+
+        if (number > 0) {
+
+            return `+${number.toFixed(1)}%`;
+
+        }
+
+        if (number < 0) {
+
+            return `${number.toFixed(1)}%`;
+
+        }
+
+        return "0.0%";
+
+    };
+
+
+    // =========================================================
+    // DASHBOARD STATS
+    // =========================================================
+
+    const stats = [
+        {
+            title: "Total Sales",
+            value: formatCurrency(totalSales),
+            icon: "💰",
+            growth: formatGrowth(salesGrowth)
+        },
+        {
+            title: "Total Orders",
+            value: nonCancelledOrders.length.toLocaleString(),
+            icon: "🛍️",
+            growth: formatGrowth(orderGrowth)
+        },
+        {
+            title: "Total Customers",
+            value: customers.length.toLocaleString(),
+            icon: "👥",
+            growth: formatGrowth(customerGrowth)
+        },
+        {
+            title: "Total Products",
+            value: products.length.toLocaleString(),
+            icon: "📦",
+            growth: formatGrowth(productGrowth)
+        }
+    ];
+
+
+    // =========================================================
+    // RECENT ORDERS
+    // =========================================================
+
+    const recentOrders = useMemo(() => {
+
+        return [...orders]
+
+            .sort(
+                (a, b) =>
+                    new Date(
+                        b?.createdAt || 0
+                    ) -
+                    new Date(
+                        a?.createdAt || 0
+                    )
+            )
+
+            .slice(0, 5)
+
+            .map(order => {
+
+                const firstItem =
+                    order?.items?.[0];
+
+                const itemCount =
+                    order?.items?.reduce(
+                        (
+                            total,
+                            item
+                        ) =>
+                            total +
+                            Number(
+                                item?.quantity || 0
+                            ),
+                        0
+                    );
+
+
+                return {
+
+                    id:
+                        order?.id ||
+                        "N/A",
+
+                    customer:
+                        order?.customerName ||
+                        order?.customerEmail ||
+                        "Unknown Customer",
+
+                    product:
+                        firstItem?.productName
+                            ? (
+                                order?.items?.length > 1
+                                    ? `${firstItem.productName} + ${
+                                        order.items.length - 1
+                                      } more`
+                                    : firstItem.productName
+                              )
+                            : `${itemCount} item(s)`,
+
+                    amount:
+                        formatCurrency(
+                            order?.totalAmount || 0
+                        ),
+
+                    status:
+                        order?.status ||
+                        "PLACED"
+
+                };
+
+            });
+
+    }, [orders]);
+
+
+    // =========================================================
+    // ORDER STATUS LABEL
+    // =========================================================
+
+    const getStatusLabel = (status) => {
+
+        if (!status) {
+            return "Unknown";
+        }
+
+        return status
+            .toString()
+            .replaceAll("_", " ")
+            .toLowerCase()
+            .replace(
+                /\b\w/g,
+                char =>
+                    char.toUpperCase()
+            );
+
+    };
+
+
+    // =========================================================
+    // SALES BY DAY - CURRENT WEEK
+    // =========================================================
+
+    const weeklySales = useMemo(() => {
+
+        const now = new Date();
+
+        const day =
+            now.getDay();
+
+        const monday =
+            new Date(now);
+
+        monday.setDate(
+            now.getDate() -
+            (day === 0 ? 6 : day - 1)
+        );
+
+        monday.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+
+        const result = [
+            {
+                label: "Mon",
+                value: 0
+            },
+            {
+                label: "Tue",
+                value: 0
+            },
+            {
+                label: "Wed",
+                value: 0
+            },
+            {
+                label: "Thu",
+                value: 0
+            },
+            {
+                label: "Fri",
+                value: 0
+            },
+            {
+                label: "Sat",
+                value: 0
+            },
+            {
+                label: "Sun",
+                value: 0
+            }
+        ];
+
+
+        nonCancelledOrders.forEach(
+            order => {
+
+                if (!order?.createdAt) {
+                    return;
+                }
+
+                const orderDate =
+                    new Date(
+                        order.createdAt
+                    );
+
+                if (
+                    Number.isNaN(
+                        orderDate.getTime()
+                    )
+                ) {
+                    return;
+                }
+
+
+                const diff =
+                    Math.floor(
+                        (
+                            orderDate -
+                            monday
+                        ) /
+                        (
+                            1000 *
+                            60 *
+                            60 *
+                            24
+                        )
+                    );
+
+
+                if (
+                    diff >= 0 &&
+                    diff < 7
+                ) {
+
+                    result[diff].value +=
+                        Number(
+                            order?.totalAmount ||
+                            0
+                        );
+
+                }
+
+            }
+        );
+
+
+        return result;
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // MAX WEEKLY SALES
+    // =========================================================
+
+    const maxWeeklySales = useMemo(() => {
+
+        const max =
+            Math.max(
+                ...weeklySales.map(
+                    item => item.value
+                ),
+                0
+            );
+
+        return max > 0
+            ? max
+            : 1;
+
+    }, [weeklySales]);
+
+
+    // =========================================================
+    // BEST SELLING PRODUCT
+    // =========================================================
+
+    const bestSellingProduct = useMemo(() => {
+
+        const productMap = {};
+
+
+        nonCancelledOrders.forEach(
+            order => {
+
+                if (!order?.items) {
+                    return;
+                }
+
+
+                order.items.forEach(
+                    item => {
+
+                        const id =
+                            item?.productId ||
+                            item?.productName ||
+                            "unknown";
+
+
+                        if (!productMap[id]) {
+
+                            productMap[id] = {
+
+                                name:
+                                    item?.productName ||
+                                    "Unknown Product",
+
+                                quantity: 0,
+
+                                revenue: 0
+
+                            };
+
+                        }
+
+
+                        productMap[id].quantity +=
+                            Number(
+                                item?.quantity ||
+                                0
+                            );
+
+
+                        productMap[id].revenue +=
+                            Number(
+                                item?.subtotal ||
+                                0
+                            );
+
+                    }
+                );
+
+            }
+        );
+
+
+        const list =
+            Object.values(
+                productMap
+            );
+
+
+        if (list.length === 0) {
+
+            return {
+                name: "No sales yet",
+                quantity: 0,
+                revenue: 0
+            };
+
+        }
+
+
+        return list.sort(
+            (a, b) =>
+                b.quantity -
+                a.quantity
+        )[0];
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // TOP CUSTOMER
+    // =========================================================
+
+    const topCustomer = useMemo(() => {
+
+        const customerMap = {};
+
+
+        nonCancelledOrders.forEach(
+            order => {
+
+                const customerId =
+                    order?.customerId ||
+                    order?.customerEmail ||
+                    order?.customerName ||
+                    "unknown";
+
+
+                if (!customerMap[customerId]) {
+
+                    customerMap[customerId] = {
+
+                        name:
+                            order?.customerName ||
+                            order?.customerEmail ||
+                            "Unknown Customer",
+
+                        spent: 0
+
+                    };
+
+                }
+
+
+                customerMap[customerId].spent +=
+                    Number(
+                        order?.totalAmount ||
+                        0
+                    );
+
+            }
+        );
+
+
+        const list =
+            Object.values(
+                customerMap
+            );
+
+
+        if (list.length === 0) {
+
+            return {
+                name: "No customers yet",
+                spent: 0
+            };
+
+        }
+
+
+        return list.sort(
+            (a, b) =>
+                b.spent -
+                a.spent
+        )[0];
+
+    }, [nonCancelledOrders]);
+
+
+    // =========================================================
+    // MONTHLY REVENUE
+    // =========================================================
+
+    const monthlyRevenue =
+        currentMonthSales;
+
+
+    // =========================================================
+    // PENDING ORDERS
+    // =========================================================
+
+    const pendingOrders = useMemo(() => {
+
+        return orders.filter(
+            order => {
+
+                const status =
+                    order?.status
+                        ?.toString()
+                        .toUpperCase();
+
+                return (
+                    status === "PLACED" ||
+                    status === "CONFIRMED" ||
+                    status === "PROCESSING" ||
+                    status === "SHIPPED" ||
+                    status === "OUT_FOR_DELIVERY"
+                );
+
+            }
+        );
+
+    }, [orders]);
+
+
+    // =========================================================
+    // RENDER OTHER MODULES
     // =========================================================
 
     const renderModule = () => {
 
-    // -----------------------------------------------------
-    // USERS
-    // -----------------------------------------------------
+        // USERS
+        if (activeMenu === "Users") {
 
-    if (activeMenu === "Users") {
+            return (
+                <AdminUserManagement />
+            );
+
+        }
+
+
+        // SELLER REQUESTS
+        if (activeMenu === "Seller Requests") {
+
+            return (
+                <PendingSellerRequests />
+            );
+
+        }
+
+
+        // PRODUCTS
+        if (activeMenu === "Products") {
+
+            return (
+                <AdminProductManagement />
+            );
+
+        }
+
+
+        // ORDERS
+        if (activeMenu === "Orders") {
+
+            return (
+                <AdminOrderManagement />
+            );
+
+        }
+
+
+        // CATEGORIES
+        if (activeMenu === "Categories") {
+
+            return (
+                <AdminCategoryManagement />
+            );
+
+        }
+
+
+        const selectedItem =
+            menuItems.find(
+                item =>
+                    item.name ===
+                    activeMenu
+            );
+
 
         return (
-            <AdminUserManagement />
+
+            <section className="module-placeholder">
+
+                <div className="placeholder-icon">
+
+                    {selectedItem?.icon}
+
+                </div>
+
+
+                <h2>
+
+                    {activeMenu} Management
+
+                </h2>
+
+
+                <p>
+
+                    The{" "}
+                    {activeMenu.toLowerCase()}{" "}
+                    management module is ready to be
+                    connected with your backend API.
+
+                </p>
+
+
+                <button
+                    className="admin-primary-button"
+                    onClick={() =>
+                        setActiveMenu(
+                            "Dashboard"
+                        )
+                    }
+                >
+
+                    ← Back to Dashboard
+
+                </button>
+
+            </section>
+
         );
-    }
 
-
-    // -----------------------------------------------------
-    // SELLER REQUESTS
-    // -----------------------------------------------------
-
-    if (activeMenu === "Seller Requests") {
-
-        return (
-            <PendingSellerRequests />
-        );
-    }
-
-
-    // -----------------------------------------------------
-    // PRODUCTS
-    // -----------------------------------------------------
-
-    if (activeMenu === "Products") {
-
-        return (
-            <AdminProductManagement />
-        );
-    }
-    if (activeMenu === "Products") {
-
-    return (
-        <AdminProductManagement />
-    );
-}
-
-
-// -----------------------------------------------------
-// ORDERS
-// -----------------------------------------------------
-
-if (activeMenu === "Orders") {
-
-    return (
-        <AdminOrderManagement />
-    );
-}
-// -----------------------------------------------------
-// CATEGORIES
-// -----------------------------------------------------
-
-if (activeMenu === "Categories") {
-
-    return (
-        <AdminCategoryManagement />
-    );
-}
-
-    // -----------------------------------------------------
-    // OTHER MODULES
-    // -----------------------------------------------------
-
-    const selectedItem = menuItems.find(
-        (item) =>
-            item.name === activeMenu
-    );
-
-
-    return (
-
-        <section className="module-placeholder">
-
-            <div className="placeholder-icon">
-
-                {selectedItem?.icon}
-
-            </div>
-
-
-            <h2>
-                {activeMenu} Management
-            </h2>
-
-
-            <p>
-
-                The{" "}
-                {activeMenu.toLowerCase()}{" "}
-                management module is ready to be
-                connected with your backend API.
-
-            </p>
-
-
-            <button
-                className="admin-primary-button"
-                onClick={() =>
-                    setActiveMenu("Dashboard")
-                }
-            >
-
-                ← Back to Dashboard
-
-            </button>
-
-        </section>
-    );
-};
+    };
 
 
     // =========================================================
@@ -293,6 +1216,74 @@ if (activeMenu === "Categories") {
     // =========================================================
 
     const renderDashboard = () => {
+
+        // -----------------------------------------------------
+        // LOADING
+        // -----------------------------------------------------
+
+        if (loading) {
+
+            return (
+
+                <section className="module-placeholder">
+
+                    <div className="placeholder-icon">
+                        ⏳
+                    </div>
+
+                    <h2>
+                        Loading Dashboard
+                    </h2>
+
+                    <p>
+                        Fetching the latest data from
+                        DeluLu Cart database...
+                    </p>
+
+                </section>
+
+            );
+
+        }
+
+
+        // -----------------------------------------------------
+        // ERROR
+        // -----------------------------------------------------
+
+        if (error) {
+
+            return (
+
+                <section className="module-placeholder">
+
+                    <div className="placeholder-icon">
+                        ⚠️
+                    </div>
+
+                    <h2>
+                        Unable to Load Dashboard
+                    </h2>
+
+                    <p>
+                        {error}
+                    </p>
+
+                    <button
+                        className="admin-primary-button"
+                        onClick={
+                            loadDashboardData
+                        }
+                    >
+                        🔄 Retry
+                    </button>
+
+                </section>
+
+            );
+
+        }
+
 
         return (
 
@@ -341,57 +1332,58 @@ if (activeMenu === "Categories") {
                 </section>
 
 
-
                 {/* =================================================
                     STATS
                 ================================================= */}
 
                 <section className="admin-stats-grid">
 
-                    {stats.map((stat) => (
+                    {stats.map(
+                        stat => (
 
-                        <div
-                            className="admin-stat-card"
-                            key={stat.title}
-                        >
+                            <div
+                                className="admin-stat-card"
+                                key={stat.title}
+                            >
 
-                            <div className="stat-icon">
+                                <div className="stat-icon">
 
-                                {stat.icon}
+                                    {stat.icon}
+
+                                </div>
+
+
+                                <div className="stat-content">
+
+                                    <span>
+                                        {stat.title}
+                                    </span>
+
+
+                                    <h3>
+                                        {stat.value}
+                                    </h3>
+
+
+                                    <small>
+
+                                        <b>
+                                            {stat.growth}
+                                        </b>
+
+                                        {" "}
+                                        from last month
+
+                                    </small>
+
+                                </div>
 
                             </div>
 
-
-                            <div className="stat-content">
-
-                                <span>
-                                    {stat.title}
-                                </span>
-
-
-                                <h3>
-                                    {stat.value}
-                                </h3>
-
-
-                                <small>
-
-                                    <b>
-                                        {stat.growth}
-                                    </b>
-
-                                    {" "}from last month
-
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                    ))}
+                        )
+                    )}
 
                 </section>
-
 
 
                 {/* =================================================
@@ -443,7 +1435,6 @@ if (activeMenu === "Categories") {
                         </div>
 
 
-
                         <div className="admin-table-wrapper">
 
                             <table className="admin-table">
@@ -479,58 +1470,100 @@ if (activeMenu === "Categories") {
 
                                 <tbody>
 
-                                    {recentOrders.map(
-                                        (order) => (
+                                    {recentOrders.length === 0 ? (
 
-                                            <tr
-                                                key={order.id}
+                                        <tr>
+
+                                            <td
+                                                colSpan="5"
+                                                style={{
+                                                    textAlign:
+                                                        "center",
+                                                    padding:
+                                                        "30px"
+                                                }}
                                             >
 
-                                                <td>
+                                                No orders found.
 
-                                                    <strong>
-                                                        {order.id}
-                                                    </strong>
+                                            </td>
 
-                                                </td>
+                                        </tr>
 
+                                    ) : (
 
-                                                <td>
-                                                    {order.customer}
-                                                </td>
+                                        recentOrders.map(
+                                            order => (
 
+                                                <tr
+                                                    key={
+                                                        order.id
+                                                    }
+                                                >
 
-                                                <td>
-                                                    {order.product}
-                                                </td>
+                                                    <td>
 
+                                                        <strong>
+                                                            #{order.id}
+                                                        </strong>
 
-                                                <td>
-
-                                                    <strong>
-                                                        {order.amount}
-                                                    </strong>
-
-                                                </td>
+                                                    </td>
 
 
-                                                <td>
-
-                                                    <span
-                                                        className={
-                                                            `status-badge status-${order.status.toLowerCase()}`
+                                                    <td>
+                                                        {
+                                                            order.customer
                                                         }
-                                                    >
+                                                    </td>
 
-                                                        {order.status}
 
-                                                    </span>
+                                                    <td>
+                                                        {
+                                                            order.product
+                                                        }
+                                                    </td>
 
-                                                </td>
 
-                                            </tr>
+                                                    <td>
 
+                                                        <strong>
+                                                            {
+                                                                order.amount
+                                                            }
+                                                        </strong>
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <span
+                                                            className={
+                                                                `status-badge status-${order.status
+                                                                    .toString()
+                                                                    .toLowerCase()
+                                                                    .replaceAll(
+                                                                        "_",
+                                                                        "-"
+                                                                    )}`
+                                                            }
+                                                        >
+
+                                                            {
+                                                                getStatusLabel(
+                                                                    order.status
+                                                                )
+                                                            }
+
+                                                        </span>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            )
                                         )
+
                                     )}
 
                                 </tbody>
@@ -540,7 +1573,6 @@ if (activeMenu === "Categories") {
                         </div>
 
                     </div>
-
 
 
                     {/* =================================================
@@ -578,7 +1610,7 @@ if (activeMenu === "Categories") {
 
                                 <span className="period-badge">
 
-                                    This Month
+                                    This Week
 
                                 </span>
 
@@ -589,14 +1621,25 @@ if (activeMenu === "Categories") {
 
                                 <div className="sales-total">
 
-                                    $48,290
+                                    {formatCurrency(
+                                        currentMonthSales
+                                    )}
 
                                 </div>
 
 
-                                <div className="sales-growth">
+                                <div
+                                    className="sales-growth"
+                                >
 
-                                    ↑ 12.5%
+                                    {salesGrowth >= 0
+                                        ? "↑"
+                                        : "↓"}{" "}
+
+                                    {Math.abs(
+                                        salesGrowth
+                                    ).toFixed(1)}
+                                    %
 
                                 </div>
 
@@ -605,71 +1648,56 @@ if (activeMenu === "Categories") {
 
                             <div className="fake-chart">
 
-                                <div
-                                    style={{
-                                        height: "35%"
-                                    }}
-                                ></div>
+                                {weeklySales.map(
+                                    (item) => (
 
+                                        <div
+                                            key={
+                                                item.label
+                                            }
+                                            title={`${item.label}: ${formatCurrency(item.value)}`}
+                                            style={{
+                                                height:
+                                                    `${
+                                                        Math.max(
+                                                            (
+                                                                item.value /
+                                                                maxWeeklySales
+                                                            ) *
+                                                            100,
+                                                            4
+                                                        )
+                                                    }%`
+                                            }}
+                                        ></div>
 
-                                <div
-                                    style={{
-                                        height: "55%"
-                                    }}
-                                ></div>
-
-
-                                <div
-                                    style={{
-                                        height: "45%"
-                                    }}
-                                ></div>
-
-
-                                <div
-                                    style={{
-                                        height: "75%"
-                                    }}
-                                ></div>
-
-
-                                <div
-                                    style={{
-                                        height: "60%"
-                                    }}
-                                ></div>
-
-
-                                <div
-                                    style={{
-                                        height: "90%"
-                                    }}
-                                ></div>
-
-
-                                <div
-                                    style={{
-                                        height: "70%"
-                                    }}
-                                ></div>
+                                    )
+                                )}
 
                             </div>
 
 
                             <div className="chart-labels">
 
-                                <span>Mon</span>
-                                <span>Tue</span>
-                                <span>Wed</span>
-                                <span>Thu</span>
-                                <span>Fri</span>
-                                <span>Sat</span>
-                                <span>Sun</span>
+                                {weeklySales.map(
+                                    item => (
+
+                                        <span
+                                            key={
+                                                item.label
+                                            }
+                                        >
+                                            {
+                                                item.label
+                                            }
+                                        </span>
+
+                                    )
+                                )}
 
                             </div>
 
                         </div>
-
 
 
                         {/* =================================================
@@ -703,8 +1731,6 @@ if (activeMenu === "Categories") {
                             <div className="quick-actions">
 
 
-                                {/* MANAGE USERS */}
-
                                 <button
                                     onClick={() =>
                                         handleMenuClick(
@@ -721,9 +1747,6 @@ if (activeMenu === "Categories") {
 
                                 </button>
 
-
-
-                                {/* PRODUCTS */}
 
                                 <button
                                     onClick={() =>
@@ -742,9 +1765,6 @@ if (activeMenu === "Categories") {
                                 </button>
 
 
-
-                                {/* ORDERS */}
-
                                 <button
                                     onClick={() =>
                                         handleMenuClick(
@@ -761,9 +1781,6 @@ if (activeMenu === "Categories") {
 
                                 </button>
 
-
-
-                                {/* REPORTS */}
 
                                 <button
                                     onClick={() =>
@@ -788,7 +1805,6 @@ if (activeMenu === "Categories") {
                     </div>
 
                 </section>
-
 
 
                 {/* =================================================
@@ -822,23 +1838,35 @@ if (activeMenu === "Categories") {
                     <div className="report-grid">
 
 
+                        {/* BEST SELLING PRODUCT */}
+
                         <div className="report-card">
 
                             <span>
                                 Best Selling Product
                             </span>
 
+
                             <strong>
-                                Premium Sneakers
+                                {
+                                    bestSellingProduct.name
+                                }
                             </strong>
 
+
                             <small>
-                                248 units sold
+
+                                {
+                                    bestSellingProduct.quantity
+                                }{" "}
+                                units sold
+
                             </small>
 
                         </div>
 
 
+                        {/* TOP CUSTOMER */}
 
                         <div className="report-card">
 
@@ -846,17 +1874,29 @@ if (activeMenu === "Categories") {
                                 Top Customer
                             </span>
 
+
                             <strong>
-                                Arun Kumar
+                                {
+                                    topCustomer.name
+                                }
                             </strong>
 
+
                             <small>
-                                $2,450 total spent
+
+                                {
+                                    formatCurrency(
+                                        topCustomer.spent
+                                    )
+                                }{" "}
+                                total spent
+
                             </small>
 
                         </div>
 
 
+                        {/* MONTHLY REVENUE */}
 
                         <div className="report-card">
 
@@ -864,17 +1904,28 @@ if (activeMenu === "Categories") {
                                 Monthly Revenue
                             </span>
 
+
                             <strong>
-                                $18,920
+
+                                {
+                                    formatCurrency(
+                                        monthlyRevenue
+                                    )
+                                }
+
                             </strong>
 
+
                             <small>
-                                ↑ 14.2% growth
+
+                                Current month revenue
+
                             </small>
 
                         </div>
 
 
+                        {/* PENDING ORDERS */}
 
                         <div className="report-card">
 
@@ -882,12 +1933,18 @@ if (activeMenu === "Categories") {
                                 Pending Orders
                             </span>
 
+
                             <strong>
-                                86
+                                {
+                                    pendingOrders.length
+                                }
                             </strong>
 
+
                             <small>
+
                                 Need attention
+
                             </small>
 
                         </div>
@@ -897,7 +1954,9 @@ if (activeMenu === "Categories") {
                 </section>
 
             </>
+
         );
+
     };
 
 
@@ -924,7 +1983,6 @@ if (activeMenu === "Categories") {
                 ></div>
 
             )}
-
 
 
             {/* =================================================
@@ -979,7 +2037,6 @@ if (activeMenu === "Categories") {
                 </div>
 
 
-
                 {/* PROFILE */}
 
                 <div className="admin-profile">
@@ -1001,7 +2058,9 @@ if (activeMenu === "Categories") {
                         <p>
 
                             {
-                                localStorage.getItem("email") ||
+                                localStorage.getItem(
+                                    "email"
+                                ) ||
                                 "admin@delulu.com"
                             }
 
@@ -1010,7 +2069,6 @@ if (activeMenu === "Categories") {
                     </div>
 
                 </div>
-
 
 
                 {/* NAVIGATION */}
@@ -1024,52 +2082,81 @@ if (activeMenu === "Categories") {
 
                 <nav className="admin-nav">
 
-                    {menuItems.map((item) => (
+                    {menuItems.map(
+                        item => (
 
-                        <button
-                            key={item.name}
-                            className={
-                                activeMenu === item.name
-                                    ? "admin-nav-item active"
-                                    : "admin-nav-item"
-                            }
-                            onClick={() =>
-                                handleMenuClick(
+                            <button
+                                key={
                                     item.name
-                                )
-                            }
-                        >
+                                }
+                                className={
+                                    activeMenu ===
+                                    item.name
+                                        ? "admin-nav-item active"
+                                        : "admin-nav-item"
+                                }
+                                onClick={() =>
+                                    handleMenuClick(
+                                        item.name
+                                    )
+                                }
+                            >
 
-                            <span className="admin-nav-icon">
+                                <span className="admin-nav-icon">
 
-                                {item.icon}
-
-                            </span>
-
-
-                            <span className="admin-nav-text">
-
-                                {item.name}
-
-                            </span>
-
-
-                            {activeMenu === item.name && (
-
-                                <span className="active-indicator">
-
-                                    →
+                                    {
+                                        item.icon
+                                    }
 
                                 </span>
 
-                            )}
 
-                        </button>
+                                <span className="admin-nav-text">
 
-                    ))}
+                                    {
+                                        item.name
+                                    }
+
+                                </span>
+
+
+                                {/* PENDING SELLER COUNT */}
+
+                                {item.name ===
+                                    "Seller Requests" &&
+                                    pendingSellers.length >
+                                        0 && (
+
+                                        <span className="notification-dot">
+
+                                            {
+                                                pendingSellers.length
+                                            }
+
+                                        </span>
+
+                                    )}
+
+
+                                {activeMenu ===
+                                    item.name &&
+                                    item.name !==
+                                        "Seller Requests" && (
+
+                                        <span className="active-indicator">
+
+                                            →
+
+                                        </span>
+
+                                    )}
+
+                            </button>
+
+                        )
+                    )}
 
                 </nav>
-
 
 
                 {/* SIDEBAR BOTTOM */}
@@ -1100,10 +2187,11 @@ if (activeMenu === "Categories") {
                     </button>
 
 
-
                     <button
                         className="admin-logout"
-                        onClick={handleLogout}
+                        onClick={
+                            handleLogout
+                        }
                     >
 
                         <span>
@@ -1118,7 +2206,6 @@ if (activeMenu === "Categories") {
                 </div>
 
             </aside>
-
 
 
             {/* =================================================
@@ -1141,7 +2228,9 @@ if (activeMenu === "Categories") {
                         <button
                             className="admin-menu-button"
                             onClick={() =>
-                                setSidebarOpen(true)
+                                setSidebarOpen(
+                                    true
+                                )
                             }
                         >
 
@@ -1161,7 +2250,9 @@ if (activeMenu === "Categories") {
 
                             <h1>
 
-                                {activeMenu}
+                                {
+                                    activeMenu
+                                }
 
                             </h1>
 
@@ -1176,7 +2267,6 @@ if (activeMenu === "Categories") {
                         </div>
 
                     </div>
-
 
 
                     <div className="admin-header-actions">
@@ -1195,15 +2285,15 @@ if (activeMenu === "Categories") {
                                 type="text"
                                 placeholder="Search..."
                                 value={search}
-                                onChange={(event) =>
-                                    setSearch(
-                                        event.target.value
-                                    )
+                                onChange={
+                                    event =>
+                                        setSearch(
+                                            event.target.value
+                                        )
                                 }
                             />
 
                         </div>
-
 
 
                         {/* NOTIFICATION */}
@@ -1220,18 +2310,20 @@ if (activeMenu === "Categories") {
                             🔔
 
 
-                            {pendingCount > 0 && (
+                            {pendingSellers.length >
+                                0 && (
 
                                 <span className="notification-dot">
 
-                                    {pendingCount}
+                                    {
+                                        pendingSellers.length
+                                    }
 
                                 </span>
 
                             )}
 
                         </button>
-
 
 
                         {/* ADMIN AVATAR */}
@@ -1247,28 +2339,27 @@ if (activeMenu === "Categories") {
                 </header>
 
 
-
                 {/* =================================================
                     PAGE CONTENT
                 ================================================= */}
 
-               <div className="admin-page-content">
+                <div className="admin-page-content">
 
-                 {activeMenu === "Dashboard" ? (
-                 renderDashboard()
-            ) : (
-        renderModule()
-        
-    )}
+                    {activeMenu ===
+                        "Dashboard"
+                        ? renderDashboard()
+                        : renderModule()}
 
-</div>
-
+                </div>
 
 
             </main>
 
         </div>
+
     );
+
 }
+
 
 export default AdminDashboard;
