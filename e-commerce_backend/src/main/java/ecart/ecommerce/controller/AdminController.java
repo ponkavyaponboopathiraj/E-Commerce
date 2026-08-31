@@ -5,6 +5,8 @@ import ecart.ecommerce.entity.Product;
 import ecart.ecommerce.enums.ProductStatus;
 import ecart.ecommerce.service.AdminService;
 import ecart.ecommerce.service.ProductService;
+import ecart.ecommerce.dto.response.AdminDashboardResponse;
+import ecart.ecommerce.service.AdminDashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +19,18 @@ public class AdminController {
 
     private final AdminService adminService;
     private final ProductService productService;
+    private final AdminDashboardService adminDashboardService;
 
     public AdminController(
-            AdminService adminService,
-            ProductService productService
+
+        AdminService adminService,
+        ProductService productService,
+        AdminDashboardService adminDashboardService
     ) {
         this.adminService = adminService;
         this.productService = productService;
+            this.adminDashboardService = adminDashboardService;
+
     }
 
 
