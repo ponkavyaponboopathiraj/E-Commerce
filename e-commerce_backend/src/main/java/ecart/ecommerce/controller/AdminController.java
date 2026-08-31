@@ -136,4 +136,11 @@ public class AdminController {
                 "Product deleted successfully."
         );
     }
+    @GetMapping("/dashboard")
+public ResponseEntity<AdminDashboardResponse> getDashboard() {
+
+    return ResponseEntity.ok(
+            adminDashboardService.getDashboardData()
+    );
+}
 }

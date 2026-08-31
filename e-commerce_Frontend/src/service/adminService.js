@@ -267,7 +267,6 @@ export const updateOrderStatus = async (
     return response.data;
 };
 
-
 // ==========================================
 // CANCEL ORDER
 // ==========================================
@@ -275,10 +274,111 @@ export const updateOrderStatus = async (
 export const cancelOrder = async (orderId) => {
 
     const response = await axios.patch(
-        `http://localhost:8080/api/orders/${orderId}/cancel`,
+        `${ORDER_BASE_URL}/${orderId}/cancel`,
         {},
         getHeaders()
     );
 
     return response.data;
+};
+
+
+// ==========================================
+// ADMIN DASHBOARD DATA
+// ==========================================
+
+export const getAdminDashboardData = async () => {
+
+    const [users, products, orders] = await Promise.all([
+        getAllUsers(),
+        getAllAdminProducts(),
+        getAllOrders()
+    ]);
+
+    // ==========================================
+    // TOTAL CUSTOMERS
+    // ==========================================
+
+    const customers = users.filter(
+        (user) =>
+            user.role === "CUSTOMER" ||
+            user.role === "ROLE_CUSTOMER"
+    );
+
+
+    // ==========================================
+    // TOTAL SALES
+    // ==========================================
+
+    const totalSales = orders
+        .filter(
+            (order) =>
+                order.status !== "CANCELLED"
+        )
+        .reduce(
+            (total, order) =>
+                total + Number(order.totalAmount || 0),
+            0
+        );
+
+
+    // ==========================================
+    // RECENT ORDERS
+    // ==========================================
+
+    const recentOrders = [...orders]
+        .sort(
+            (a, b) =>
+                new Date(b.createdAt || 0) -
+                new Date(a.createdAt || 0)
+        )
+        .slice(0, 5);
+
+
+    // ==========================================
+    // PENDING ORDERS
+    // ==========================================
+
+    const pendingOrders = orders.filter(
+        (order) =>
+            [
+                "PLACED",
+                "CONFIRMED",
+                "PROCESSING",
+                "SHIPPED",
+                "OUT_FOR_DELIVERY"
+            ].includes(order.status)
+    );
+
+
+    // ==========================================
+    // RETURN DASHBOARD DATA
+    // ==========================================
+
+    return {
+
+        users,
+
+        products,
+
+        orders,
+
+        customers,
+
+        totalCustomers:
+            customers.length,
+
+        totalProducts:
+            products.length,
+
+        totalOrders:
+            orders.length,
+
+        totalSales,
+
+        recentOrders,
+
+        pendingOrders:
+            pendingOrders.length
+    };
 };
